@@ -14,25 +14,23 @@ import (
 
 // Config describes a connection to one environment's Admin API.
 type Config struct {
-	// BaseURL is the complete Admin API base URL. It has no default: it is not derived from an
-	// environment ID or a region, because that would bake today's
-	// "<env>.env.<region>.restate.cloud:9070" hostname shape into the provider.
+	// BaseURL is the complete Admin API base URL. It has no default: deriving one from an environment
+	// ID would bake today's "<env>.env.<region>.restate.cloud:9070" hostname shape into the provider.
 	BaseURL string
-	// APIKey is an environment-scoped API key. It is sent to BaseURL and to nothing else. It must
-	// never be an account-scoped management key.
+	// APIKey is an environment-scoped API key, sent to BaseURL and nowhere else. Never a management key.
 	APIKey string
 	// UserAgent identifies the provider and Terraform versions.
 	UserAgent string
-	// Timeout bounds one request including its retries. Deployment registration performs service
-	// discovery against the user's own endpoint, so callers give it a generous value.
+	// Timeout is the default deadline for one request including its retries. It applies only when the
+	// caller's context has no deadline of its own, so the generous per-resource timeout that deployment
+	// discovery needs always wins.
 	Timeout time.Duration
 	// Retry bounds retrying.
 	Retry api.RetryPolicy
-	// AllowInsecureHTTP permits a plaintext base URL for a non-loopback host, for a self-hosted or
-	// local Restate.
+	// AllowInsecureHTTP permits a plaintext base URL for a non-loopback host.
 	AllowInsecureHTTP bool
 
-	// HTTPTransport is the underlying round tripper. Tests substitute one.
+	// HTTPTransport is the underlying round tripper. Nil means http.DefaultTransport.
 	HTTPTransport http.RoundTripper
 }
 
@@ -43,8 +41,7 @@ type Client struct {
 	executor  *api.Executor
 }
 
-// New validates cfg and returns a client. It performs no network I/O; version negotiation is a
-// separate, explicit step.
+// New validates cfg and returns a client. Version negotiation is a separate, explicit step.
 func New(cfg Config) (*Client, error) {
 	if strings.TrimSpace(cfg.BaseURL) == "" {
 		return nil, errors.New("an Admin API base URL is required")
@@ -62,7 +59,6 @@ func New(cfg Config) (*Client, error) {
 		BaseURL:           normalized,
 		BearerToken:       cfg.APIKey,
 		UserAgent:         cfg.UserAgent,
-		Timeout:           cfg.Timeout,
 		Retry:             cfg.Retry,
 		AllowInsecureHTTP: cfg.AllowInsecureHTTP,
 		Base:              cfg.HTTPTransport,
@@ -80,8 +76,9 @@ func New(cfg Config) (*Client, error) {
 		baseURL:   normalized,
 		generated: client,
 		executor: &api.Executor{
-			Service:     api.ServiceAdmin,
-			DecodeError: decodeError,
+			Service:        api.ServiceAdmin,
+			DecodeError:    decodeError,
+			RequestTimeout: cfg.Timeout,
 		},
 	}, nil
 }
@@ -90,11 +87,8 @@ func New(cfg Config) (*Client, error) {
 func (c *Client) BaseURL() string { return c.baseURL }
 
 // decodeError reads the Admin API's error body, which differs from the Cloud API's:
-// `{"message": <string>, "restate_code": <string>}`.
-//
-// The /query endpoint uses a body with only a message, which this also handles, and a gateway in
-// front of the environment can substitute a non-JSON error page, which must not become a decode
-// failure that hides the status.
+// `{"message": <string>, "restate_code": <string>}`. A gateway in front of the environment can
+// substitute a non-JSON error page, so that must not become a decode failure hiding the status.
 func decodeError(_ int, body []byte) (code, message string) {
 	var decoded struct {
 		Message     string `json:"message"`
@@ -115,9 +109,8 @@ func stringPointer(s string) *string {
 	return &s
 }
 
-// truePointer returns a pointer to true when set, and nil otherwise, so a false flag is omitted
-// rather than sent explicitly. The contract defaults several booleans to values that are not
-// Go's zero value, so sending an explicit false would change behaviour.
+// truePointer omits a false flag rather than sending it. The contract defaults several booleans to
+// true, so an explicit false would change behaviour.
 func truePointer(set bool) *bool {
 	if !set {
 		return nil
@@ -128,9 +121,9 @@ func truePointer(set bool) *bool {
 
 // mapPointer returns a pointer to a copy of m, or nil when m is nil.
 //
-// The nil/empty distinction is deliberate and load-bearing: nil means "do not send this field",
-// which leaves the server's value alone, while an empty map means "set this to no entries". Copying
-// prevents a caller's later mutation from reaching an in-flight request.
+// The nil/empty distinction is load-bearing: nil means "do not send this field", leaving the server's
+// value alone, while an empty map means "set this to no entries". The copy stops a caller's later
+// mutation reaching an in-flight request.
 func mapPointer(m map[string]string) *map[string]string {
 	if m == nil {
 		return nil

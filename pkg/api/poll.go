@@ -7,39 +7,42 @@ import (
 	"time"
 )
 
-// PollConfig bounds a convergence loop. Cloud environment creation and destruction are
-// asynchronous: the mutating call returns immediately and the caller must watch the environment's
-// status until it reaches a terminal state.
+// PollConfig bounds a convergence loop. Cloud environment creation and destruction are asynchronous:
+// the mutating call returns immediately, and the caller watches the status until it is terminal.
 type PollConfig struct {
 	// Interval is the wait between polls.
 	Interval time.Duration
 	// Timeout bounds the whole loop. Zero relies on the caller's context deadline, which is how a
-	// Terraform resource timeout reaches this code.
+	// Terraform resource timeout reaches here.
 	Timeout time.Duration
+	// AttemptTimeout bounds one fetch. Without it a single hung request would consume the whole
+	// budget -- a thirty-minute provisioning timeout spent on one describe that never answers. Zero
+	// uses DefaultPollConfig's value.
+	AttemptTimeout time.Duration
 
 	// sleep waits, honouring ctx. Tests substitute an instant implementation.
 	sleep func(ctx context.Context, d time.Duration) error
 }
 
-// DefaultPollConfig polls often enough that a fast operation is not needlessly slowed, without
-// hammering a rate-limited API during a slow one.
+// DefaultPollConfig polls often enough not to slow a fast operation, without hammering a
+// rate-limited API during a slow one.
 func DefaultPollConfig() PollConfig {
-	return PollConfig{Interval: 5 * time.Second}
+	return PollConfig{Interval: 5 * time.Second, AttemptTimeout: 30 * time.Second}
 }
 
 // ErrPollTimeout is returned when a poll loop runs out of time. Callers wrap it with the object's
-// identifier so an operator can find and clean up whatever was left half-provisioned.
+// identifier, so an operator can find whatever was left half-provisioned.
 var ErrPollTimeout = errors.New("timed out waiting for the operation to reach a terminal state")
 
-// PollUntil repeatedly calls fetch until done reports that the observed state is terminal.
+// PollUntil repeatedly calls fetch until done reports the observed state terminal.
 //
-// fetch is called immediately, before the first wait, because an operation may already be complete.
-// A fetch error aborts the loop: a poll loop that swallows errors turns an authentication failure
-// into a timeout. Callers that need to tolerate a specific error — a not-found response while
-// waiting for a delete to converge, say — handle it inside fetch.
+// fetch runs immediately, before the first wait, because the operation may already be complete. A
+// fetch error aborts the loop: swallowing errors would turn an authentication failure into a timeout.
+// A caller that needs to tolerate a specific error -- a not-found while waiting for a delete to
+// converge, say -- handles it inside fetch.
 //
-// done returning an error aborts the loop, which is how a terminal failure state such as an
-// environment reporting FAILED is reported without waiting for the timeout.
+// done returning an error also aborts, which is how a terminal failure such as FAILED is reported
+// without waiting out the timeout.
 func PollUntil[T any](ctx context.Context, cfg PollConfig, fetch func(context.Context) (T, error), done func(T) (bool, error)) (T, error) {
 	var zero T
 
@@ -54,8 +57,13 @@ func PollUntil[T any](ctx context.Context, cfg PollConfig, fetch func(context.Co
 		interval = DefaultPollConfig().Interval
 	}
 
+	attemptTimeout := cfg.AttemptTimeout
+	if attemptTimeout <= 0 {
+		attemptTimeout = DefaultPollConfig().AttemptTimeout
+	}
+
 	for attempt := 1; ; attempt++ {
-		observed, err := fetch(ctx)
+		observed, err := fetchOnce(ctx, attemptTimeout, fetch)
 		if err != nil {
 			// A deadline that expires while a fetch is in flight is still the loop running out of
 			// time, not a distinct failure. Report it as a timeout so callers have one condition to
@@ -79,6 +87,13 @@ func PollUntil[T any](ctx context.Context, cfg PollConfig, fetch func(context.Co
 			return observed, fmt.Errorf("%w after %d attempts: %w", ErrPollTimeout, attempt, err)
 		}
 	}
+}
+
+// fetchOnce bounds one fetch, so a hung request costs an attempt rather than the whole loop.
+func fetchOnce[T any](ctx context.Context, timeout time.Duration, fetch func(context.Context) (T, error)) (T, error) {
+	attemptCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	return fetch(attemptCtx)
 }
 
 func (c PollConfig) wait(ctx context.Context, d time.Duration) error {

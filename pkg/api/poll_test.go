@@ -228,3 +228,60 @@ func TestPollUntilDoesNotRelabelAnUnrelatedFetchError(t *testing.T) {
 		t.Errorf("err = %v, want the fetch error", err)
 	}
 }
+
+// A single hung fetch must cost one attempt, not the whole budget: without a per-attempt bound, a
+// thirty-minute provisioning timeout could be spent on one describe that never answers.
+func TestPollUntilBoundsEachAttempt(t *testing.T) {
+	cfg := PollConfig{Interval: time.Millisecond, AttemptTimeout: 20 * time.Millisecond}
+	attempts := 0
+
+	statuses := []string{"HUNG", "HUNG", "ACTIVE"}
+	got, err := PollUntil(context.Background(), cfg,
+		func(ctx context.Context) (string, error) {
+			status := statuses[attempts]
+			attempts++
+			if status == "HUNG" {
+				// Never answers; only the attempt deadline ends this.
+				<-ctx.Done()
+				return "", ctx.Err()
+			}
+			return status, nil
+		},
+		func(status string) (bool, error) { return status == "ACTIVE", nil },
+	)
+
+	// The hung attempts are fetch errors, so the loop reports the first one rather than pressing on:
+	// a fetch that fails is fatal by design, and a hung request is a fetch that failed.
+	if err == nil {
+		t.Fatalf("PollUntil returned %q, want the attempt deadline to surface", got)
+	}
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Errorf("err = %v, want the attempt deadline", err)
+	}
+	if attempts != 1 {
+		t.Errorf("attempts = %d, want 1", attempts)
+	}
+}
+
+// The per-attempt bound must not shorten the caller's own deadline when that is the tighter of the
+// two, and must not extend past it either.
+func TestPollUntilAttemptBoundRespectsTheCallersDeadline(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
+	defer cancel()
+
+	_, err := PollUntil(ctx, PollConfig{Interval: time.Millisecond, AttemptTimeout: time.Hour},
+		func(ctx context.Context) (string, error) {
+			deadline, ok := ctx.Deadline()
+			if !ok {
+				t.Error("fetch received a context with no deadline")
+			} else if time.Until(deadline) > time.Minute {
+				t.Errorf("fetch deadline is %v away, want the caller's tighter one", time.Until(deadline))
+			}
+			return "PENDING", nil
+		},
+		func(string) (bool, error) { return false, nil },
+	)
+	if !errors.Is(err, ErrPollTimeout) {
+		t.Fatalf("err = %v, want ErrPollTimeout", err)
+	}
+}

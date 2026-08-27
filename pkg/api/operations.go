@@ -7,16 +7,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
-// The capability interfaces below describe what an endpoint can do. Each facade adapter implements
-// exactly the ones its endpoint supports and asserts as much at compile time, so an endpoint's
-// missing capability is a build error rather than a runtime surprise. Subscriptions and Cloud API
-// keys, for instance, deliberately have no Updater.
-//
-// The type parameters keep identifiers, inputs, and remote models distinct, so a subscription ID
-// cannot be passed to a deployment operation and a create request cannot be reused as an update
-// request.
+// The capability interfaces below describe what an endpoint can do. Each facade adapter asserts, at
+// compile time, exactly the ones its endpoint supports, so a missing capability is a build error
+// rather than a runtime surprise: subscriptions and Cloud API keys deliberately have no Updater.
 
 // Getter reads one object by identity.
 type Getter[ID comparable, Remote any] interface {
@@ -33,55 +29,56 @@ type Updater[ID comparable, Input any, Remote any] interface {
 	Update(ctx context.Context, id ID, input Input) (Remote, error)
 }
 
-// Deleter removes an object. Options is endpoint-specific and is where a destructive escape hatch
-// such as forced deletion lives, so no caller can request one implicitly.
+// Deleter removes an object. Options is where a destructive escape hatch such as forced deletion
+// lives, so no caller can request one implicitly.
 type Deleter[ID comparable, Options any] interface {
 	Delete(ctx context.Context, id ID, options Options) error
 }
 
-// Lister enumerates every object of a kind.
-//
-// Neither pinned contract paginates any list operation, so this returns a complete slice. If a
-// future snapshot introduces pagination, this interface is where it gets absorbed — callers must
-// not assume one request per call.
+// Lister enumerates every object of a kind. Neither pinned contract paginates, so this returns a
+// complete slice; a future snapshot that does paginate gets absorbed here, so callers must not assume
+// one request per call.
 type Lister[Remote any] interface {
 	List(ctx context.Context) ([]Remote, error)
 }
 
-// Invoker performs one HTTP request. The generated clients own request construction, so the
-// generic helpers take a closure over a generated method rather than building requests themselves.
+// Invoker performs one HTTP request. The generated clients own request construction, so the helpers
+// below close over a generated method rather than building requests themselves.
 type Invoker func(ctx context.Context) (*http.Response, error)
 
-// ErrorDecoder extracts an API's own error representation from a response body. The two contracts
-// disagree on the shape — the Cloud API sends `{code, message}` and the Admin API sends
-// `{message, restate_code}` — so each facade supplies its own.
+// ErrorDecoder extracts an API's own error representation from a response body. The Cloud API sends
+// `{code, message}` and the Admin API sends `{message, restate_code}`, so each facade supplies its
+// own.
 //
-// It must tolerate an empty or malformed body and never return the raw body, which may contain
-// credentials echoed back or user payloads.
+// It must tolerate an empty or malformed body, and must never return the raw body: that can contain a
+// credential echoed back or a user payload.
 type ErrorDecoder func(status int, body []byte) (code, message string)
 
-// Executor holds the per-API decisions the generic helpers need: which service they are talking to,
-// how to read its errors, and how much of a response to trust.
+// Executor holds the per-API decisions the helpers below need.
 type Executor struct {
 	// Service names the API, for diagnostics.
 	Service Service
 	// DecodeError reads the API's error body. Required.
 	DecodeError ErrorDecoder
 	// MaxResponseBytes bounds how much of a response body is read. Zero uses
-	// DefaultMaxResponseBytes. A discovery response listing every handler of every service can be
-	// large, so this is generous but finite.
+	// DefaultMaxResponseBytes.
 	MaxResponseBytes int64
+	// RequestTimeout is the default deadline for one request including its retries. It applies only
+	// when the caller's context has no deadline of its own, so a resource-level timeout always wins:
+	// deployment discovery legitimately takes minutes, and a client-wide cap would make its configured
+	// timeout meaningless.
+	RequestTimeout time.Duration
 }
 
-// DefaultMaxResponseBytes bounds a response body. It is well above any response either contract can
-// produce for the operations this provider calls, while still preventing an unbounded read.
+// DefaultMaxResponseBytes is well above any response the operations this provider calls can produce,
+// while still preventing an unbounded read. A discovery response listing every handler of every
+// service is the large case.
 const DefaultMaxResponseBytes int64 = 32 << 20
 
 // Execute performs one request and decodes a JSON success body into Out.
 //
-// safety states how much of a failure the operation may be retried through and is not optional:
-// the caller is the only party that knows whether repeating this particular request could create a
-// second object.
+// safety is not optional: the caller is the only party that knows whether repeating this particular
+// request could create a second object.
 func Execute[Out any](ctx context.Context, ex *Executor, operation string, safety RetrySafety, invoke Invoker) (Out, error) {
 	var zero Out
 
@@ -90,8 +87,7 @@ func Execute[Out any](ctx context.Context, ex *Executor, operation string, safet
 		return zero, err
 	}
 
-	// An operation whose contract declares no response body legitimately returns nothing. Decoding
-	// an empty body into a struct would fail, so treat it as the zero value.
+	// An operation whose contract declares no response body legitimately returns nothing.
 	if len(body) == 0 {
 		return zero, nil
 	}
@@ -108,15 +104,14 @@ func Execute[Out any](ctx context.Context, ex *Executor, operation string, safet
 	return out, nil
 }
 
-// ExecuteNoContent performs one request and discards its body. Use it for operations whose response
-// carries no information the provider acts on.
+// ExecuteNoContent performs one request and discards its body.
 func ExecuteNoContent(ctx context.Context, ex *Executor, operation string, safety RetrySafety, invoke Invoker) error {
 	_, err := executeRaw(ctx, ex, operation, safety, invoke)
 	return err
 }
 
-// ExecuteRaw performs one request and returns its undecoded success body. Use it for an operation
-// whose response is not JSON, or whose union shape the facade decodes itself.
+// ExecuteRaw performs one request and returns its undecoded success body, for a response whose union
+// shape the facade decodes itself.
 func ExecuteRaw(ctx context.Context, ex *Executor, operation string, safety RetrySafety, invoke Invoker) ([]byte, error) {
 	return executeRaw(ctx, ex, operation, safety, invoke)
 }
@@ -124,6 +119,14 @@ func ExecuteRaw(ctx context.Context, ex *Executor, operation string, safety Retr
 func executeRaw(ctx context.Context, ex *Executor, operation string, safety RetrySafety, invoke Invoker) ([]byte, error) {
 	if ex == nil || ex.DecodeError == nil {
 		return nil, errors.New("api: executor is missing an error decoder")
+	}
+
+	if ex.RequestTimeout > 0 {
+		if _, hasDeadline := ctx.Deadline(); !hasDeadline {
+			var cancel context.CancelFunc
+			ctx, cancel = context.WithTimeout(ctx, ex.RequestTimeout)
+			defer cancel()
+		}
 	}
 
 	resp, err := invoke(WithRetrySafety(ctx, safety))
@@ -144,6 +147,16 @@ func executeRaw(ctx context.Context, ex *Executor, operation string, safety Retr
 			Message:   "could not reach the API",
 			Retryable: isRetryableTransportError(err),
 			Err:       redactError(err),
+		}
+	}
+	// A RoundTripper is required to return a non-nil response when it returns no error, but a broken
+	// one would otherwise panic here -- and a panic inside a provider crashes the plugin, so the user
+	// gets a stack trace instead of a diagnostic.
+	if resp == nil || resp.Body == nil {
+		return nil, &Error{
+			Service:   ex.Service,
+			Operation: operation,
+			Message:   "the HTTP client returned neither a response nor an error",
 		}
 	}
 	defer func() { _ = resp.Body.Close() }()
@@ -193,9 +206,8 @@ func executeRaw(ctx context.Context, ex *Executor, operation string, safety Retr
 	return body, nil
 }
 
-// requestIDHeaders are the correlation headers either API might send, most specific first. Keeping
-// the request ID in an error is the difference between an actionable support request and a
-// screenshot.
+// requestIDHeaders are the correlation headers either API might send, most specific first. A request
+// ID in an error is the difference between an actionable support request and a screenshot.
 var requestIDHeaders = []string{
 	"X-Amzn-Requestid",
 	"X-Amzn-Trace-Id",

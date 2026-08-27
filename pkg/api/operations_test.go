@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 // The generic helpers are exercised once here with synthetic types. Every endpoint adapter is
@@ -366,5 +367,55 @@ func TestRequestIDPrefersTheMostSpecificHeader(t *testing.T) {
 	}
 	if got := requestID(http.Header{}); got != "" {
 		t.Errorf("requestID = %q, want empty", got)
+	}
+}
+
+// The request timeout is a default, not a cap. A resource that has set its own, longer deadline --
+// deployment discovery's ten minutes, say -- must not be cut short by it.
+func TestExecuteRequestTimeoutDoesNotShortenTheCallersDeadline(t *testing.T) {
+	var observed time.Duration
+	invoke := func(ctx context.Context) (*http.Response, error) {
+		deadline, ok := ctx.Deadline()
+		if !ok {
+			t.Fatal("no deadline reached the request")
+		}
+		observed = time.Until(deadline)
+		return &http.Response{StatusCode: 200, Body: http.NoBody, Header: http.Header{}}, nil
+	}
+
+	ex := testExecutor()
+	ex.RequestTimeout = time.Second
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
+	defer cancel()
+
+	if _, err := Execute[synthetic](ctx, ex, "Describe", RetryTransportErrors, invoke); err != nil {
+		t.Fatalf("Execute: %v", err)
+	}
+	if observed < 30*time.Minute {
+		t.Errorf("request deadline was %v away, want the caller's hour: the request timeout must not cap it", observed)
+	}
+}
+
+// With no deadline from the caller, the request timeout is what stops a hung request hanging forever.
+func TestExecuteRequestTimeoutAppliesWhenTheCallerSetNone(t *testing.T) {
+	var observed time.Duration
+	invoke := func(ctx context.Context) (*http.Response, error) {
+		deadline, ok := ctx.Deadline()
+		if !ok {
+			t.Fatal("the request timeout did not apply")
+		}
+		observed = time.Until(deadline)
+		return &http.Response{StatusCode: 200, Body: http.NoBody, Header: http.Header{}}, nil
+	}
+
+	ex := testExecutor()
+	ex.RequestTimeout = 45 * time.Second
+
+	if _, err := Execute[synthetic](context.Background(), ex, "Describe", RetryTransportErrors, invoke); err != nil {
+		t.Fatalf("Execute: %v", err)
+	}
+	if observed > 45*time.Second || observed < 30*time.Second {
+		t.Errorf("request deadline was %v away, want roughly the 45s request timeout", observed)
 	}
 }

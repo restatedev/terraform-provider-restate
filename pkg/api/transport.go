@@ -20,29 +20,24 @@ type Doer interface {
 
 // TransportConfig describes one authenticated connection to one API.
 type TransportConfig struct {
-	// BaseURL is the API root. It is normalized by NormalizeBaseURL, which strips trailing
-	// slashes but preserves deliberate path prefixes such as "/cloud".
+	// BaseURL is the API root, normalized by NormalizeBaseURL.
 	BaseURL string
 	// BearerToken authenticates every request. It is sent to this base URL and nowhere else.
 	BearerToken string
 	// UserAgent identifies the provider and Terraform versions.
 	UserAgent string
-	// Timeout bounds a single request including its retries. Zero means no client-side deadline
-	// beyond the caller's context.
-	Timeout time.Duration
 	// Retry bounds retrying. The zero value disables it.
 	Retry RetryPolicy
-	// AllowInsecureHTTP permits a plaintext base URL for a non-loopback host. It exists for
-	// testing against a local or self-hosted Restate and must be opted into explicitly.
+	// AllowInsecureHTTP permits a plaintext base URL for a non-loopback host, for testing against a
+	// local or self-hosted Restate.
 	AllowInsecureHTTP bool
 
-	// Base is the underlying round tripper. Tests substitute one; production leaves it nil and
-	// gets http.DefaultTransport.
+	// Base is the underlying round tripper. Nil means http.DefaultTransport.
 	Base http.RoundTripper
 }
 
-// NewTransport validates cfg and returns a client that adds authentication and the user agent to
-// every request and retries according to each request's declared retry safety.
+// NewTransport validates cfg and returns a client that authenticates every request and retries
+// according to each request's declared retry safety.
 func NewTransport(cfg TransportConfig) (*http.Client, error) {
 	normalized, err := NormalizeBaseURL(cfg.BaseURL)
 	if err != nil {
@@ -64,8 +59,10 @@ func NewTransport(cfg TransportConfig) (*http.Client, error) {
 		base = http.DefaultTransport
 	}
 
+	// No http.Client.Timeout: it is a hard cap on the whole request that would silently override a
+	// longer context deadline, so a resource-level timeout -- deployment discovery's ten minutes, say --
+	// could never take effect. Every request is bounded by a context instead; see Executor.RequestTimeout.
 	return &http.Client{
-		Timeout: cfg.Timeout,
 		Transport: &authRoundTripper{
 			token:     cfg.BearerToken,
 			userAgent: cfg.UserAgent,
@@ -77,10 +74,9 @@ func NewTransport(cfg TransportConfig) (*http.Client, error) {
 	}, nil
 }
 
-// NormalizeBaseURL trims trailing slashes and whitespace from a base URL and rejects a URL that
-// cannot address an API. It deliberately does not strip or add a path: "https://host/cloud" and
-// "https://host" address different things, and the Cloud Management API's canonical URL includes
-// the "/cloud" prefix.
+// NormalizeBaseURL trims trailing slashes and whitespace, and rejects a URL that cannot address an
+// API. It deliberately neither strips nor adds a path: "https://host/cloud" and "https://host"
+// address different things, and the Cloud Management API's canonical URL includes the "/cloud" prefix.
 func NormalizeBaseURL(raw string) (string, error) {
 	trimmed := strings.TrimSpace(raw)
 	if trimmed == "" {
@@ -110,8 +106,8 @@ func NormalizeBaseURL(raw string) (string, error) {
 	return parsed.String(), nil
 }
 
-// requireSecureScheme enforces HTTPS for anything that is not a loopback address. A bearer token
-// over plaintext to a remote host is a credential leak, so it needs an explicit opt-in.
+// requireSecureScheme enforces HTTPS for anything that is not loopback: a bearer token over plaintext
+// to a remote host is a credential leak.
 func requireSecureScheme(parsed *url.URL, allowInsecure bool) error {
 	if parsed.Scheme == "https" || allowInsecure {
 		return nil
@@ -133,8 +129,8 @@ func isLoopbackHost(host string) bool {
 	return false
 }
 
-// authRoundTripper attaches the bearer token and user agent. It is the outermost tripper so the
-// credential is added once and the retrying tripper below it replays a fully formed request.
+// authRoundTripper attaches the bearer token and user agent. It is outermost so the credential is
+// added once and the retrying tripper below replays a fully formed request.
 type authRoundTripper struct {
 	token     string
 	userAgent string
@@ -162,9 +158,8 @@ func (rt *retryRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 	safety := retrySafetyFrom(ctx)
 	attempts := max(rt.policy.MaxAttempts, 1)
 
-	// A request can only be replayed if its body can be rewound. The generated clients send
-	// bodies from a *bytes.Reader, which net/http gives a GetBody, but a caller-supplied stream
-	// may not, and silently retrying a partially consumed body would corrupt the request.
+	// A request can only be replayed if its body can be rewound. Retrying a partially consumed body
+	// would silently corrupt the request.
 	if req.Body != nil && req.Body != http.NoBody && req.GetBody == nil {
 		attempts = 1
 	}
@@ -200,8 +195,7 @@ func (rt *retryRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 			delay = min(serverDelay, rt.policy.maxDelay())
 		}
 
-		// The response is being discarded, so its body must be drained and closed or the
-		// connection cannot be reused.
+		// Drain the discarded response, or the connection cannot be reused.
 		drain(lastResponse)
 
 		if err := rt.policy.wait(ctx, delay); err != nil {
@@ -231,8 +225,8 @@ func (rt *retryRoundTripper) rewind(req *http.Request) error {
 	return nil
 }
 
-// isRetryableTransportError reports whether a failure to get any response is worth another try.
-// A context cancellation is the caller's decision and is never retried.
+// isRetryableTransportError reports whether a failure to get any response is worth another try. A
+// context cancellation is the caller's decision and is never retried.
 func isRetryableTransportError(err error) bool {
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 		return false
@@ -242,8 +236,8 @@ func isRetryableTransportError(err error) bool {
 	if errors.As(err, &netErr) {
 		return true
 	}
-	// A server that closes an idle keep-alive connection mid-request surfaces as one of these
-	// rather than as a net.Error.
+	// A server closing an idle keep-alive connection mid-request surfaces as one of these rather than
+	// as a net.Error.
 	return errors.Is(err, io.EOF) ||
 		errors.Is(err, io.ErrUnexpectedEOF) ||
 		errors.Is(err, syscall.ECONNRESET) ||

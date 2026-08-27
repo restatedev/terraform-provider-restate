@@ -14,10 +14,10 @@ import (
 )
 
 // DefaultBaseURL is the Cloud Management API's canonical URL. The "/cloud" suffix is part of the
-// endpoint, not an artefact: the API's operation paths are appended to it.
+// endpoint, not an artefact: operation paths are appended to it.
 //
-// This is not inferred from an environment's region. An environment lives in a region; the
-// management API that provisions it does not.
+// It is not inferred from an environment's region. An environment lives in a region; the management
+// API that provisions it does not.
 const DefaultBaseURL = "https://api.us.restate.cloud/cloud"
 
 // Config describes a connection to the Cloud Management API for one account.
@@ -26,18 +26,17 @@ type Config struct {
 	BaseURL string
 	// AccountID is the account every operation is scoped to. Required.
 	AccountID string
-	// ManagementAPIKey is an account-scoped key with role rst:role::ManagementApiAccess. Required.
-	// It is sent to BaseURL and to nothing else.
+	// ManagementAPIKey is an account-scoped key with role rst:role::ManagementApiAccess. Required, and
+	// sent to BaseURL and nowhere else.
 	ManagementAPIKey string
 	// UserAgent identifies the provider and Terraform versions.
 	UserAgent string
-	// Timeout bounds one request including its retries.
+	// Timeout is the default deadline for one request including its retries. It applies only when the
+	// caller's context has no deadline of its own, so a resource-level timeout always wins.
 	Timeout time.Duration
-	// Retry bounds retrying. The zero value disables it; callers normally pass
-	// api.DefaultRetryPolicy.
+	// Retry bounds retrying. The zero value disables it.
 	Retry api.RetryPolicy
-	// Poll bounds the asynchronous environment lifecycle loops. The zero value uses
-	// api.DefaultPollConfig.
+	// Poll bounds the asynchronous environment lifecycle loops.
 	Poll api.PollConfig
 	// AllowInsecureHTTP permits a plaintext base URL for a non-loopback host. For testing only.
 	AllowInsecureHTTP bool
@@ -46,8 +45,8 @@ type Config struct {
 	HTTPTransport http.RoundTripper
 }
 
-// Client is a concurrency-safe, immutable client for one account. Every operation it exposes is
-// account-scoped, so an account ID can never be passed to the wrong call.
+// Client is a concurrency-safe, immutable client for one account. Every operation is account-scoped,
+// so an account ID cannot be passed to the wrong call.
 type Client struct {
 	accountID string
 	baseURL   string
@@ -56,8 +55,8 @@ type Client struct {
 	poll      api.PollConfig
 }
 
-// New validates cfg and returns a client. It performs no network I/O: credential validation is a
-// separate, explicit step so a caller decides when to spend a round trip on it.
+// New validates cfg and returns a client. It performs no network I/O; credential validation is a
+// separate, explicit step.
 func New(cfg Config) (*Client, error) {
 	if strings.TrimSpace(cfg.AccountID) == "" {
 		return nil, errors.New("an account ID is required")
@@ -79,7 +78,6 @@ func New(cfg Config) (*Client, error) {
 		BaseURL:           normalized,
 		BearerToken:       cfg.ManagementAPIKey,
 		UserAgent:         cfg.UserAgent,
-		Timeout:           cfg.Timeout,
 		Retry:             cfg.Retry,
 		AllowInsecureHTTP: cfg.AllowInsecureHTTP,
 		Base:              cfg.HTTPTransport,
@@ -103,8 +101,9 @@ func New(cfg Config) (*Client, error) {
 		baseURL:   normalized,
 		generated: client,
 		executor: &api.Executor{
-			Service:     api.ServiceCloud,
-			DecodeError: decodeError,
+			Service:        api.ServiceCloud,
+			DecodeError:    decodeError,
+			RequestTimeout: cfg.Timeout,
 		},
 		poll: poll,
 	}, nil
@@ -117,11 +116,8 @@ func (c *Client) AccountID() string { return c.accountID }
 func (c *Client) BaseURL() string { return c.baseURL }
 
 // decodeError reads the Cloud API's error body, which every documented error response shares:
-// `{"code": <number>, "message": <string>}`.
-//
-// It tolerates an empty, truncated, or non-JSON body — a gateway between the client and the API can
-// substitute an HTML error page — and never returns the raw body, which could echo a submitted
-// credential.
+// `{"code": <number>, "message": <string>}`. A gateway in front of the API can substitute an HTML
+// error page, so a non-JSON body must not become a decode failure that hides the status.
 func decodeError(status int, body []byte) (code, message string) {
 	var decoded struct {
 		Code    json.Number `json:"code"`
@@ -132,8 +128,7 @@ func decodeError(status int, body []byte) (code, message string) {
 	}
 
 	code = decoded.Code.String()
-	// The contract types `code` as a number and every documented value repeats the HTTP status, so
-	// echoing it back alongside "HTTP 403" would be pure noise.
+	// Every documented value repeats the HTTP status, so echoing it alongside "HTTP 403" is noise.
 	if code == strconv.Itoa(status) {
 		code = ""
 	}

@@ -33,9 +33,9 @@ const (
 	envEnvironmentAPIKey = "RESTATE_AUTH_TOKEN"
 )
 
-// DefaultRequestTimeout bounds one API request including its retries. Deployment registration
-// performs discovery against the user's own endpoint, so resources that need longer set their own
-// timeout rather than raising this default for everything.
+// DefaultRequestTimeout is the default deadline for one API request including its retries. It applies
+// only where a resource has not set a timeout of its own, so raising it is not how a slow deployment
+// discovery is accommodated -- that is what the resource's own `timeouts` block is for.
 const DefaultRequestTimeout = 60 * time.Second
 
 // RestateProvider is the provider implementation.
@@ -133,9 +133,11 @@ func (p *RestateProvider) Schema(_ context.Context, _ provider.SchemaRequest, re
 			"request_timeout": schema.StringAttribute{
 				Optional: true,
 				MarkdownDescription: fmt.Sprintf(
-					"Timeout for a single API request including its retries, as a Go duration such as `30s` or "+
-						"`2m`. Defaults to `%s`. Resource-level timeouts bound whole operations such as environment "+
-						"provisioning and deployment discovery, and are set per resource.", DefaultRequestTimeout),
+					"Default deadline for a single API request including its retries, as a Go duration such as "+
+						"`30s` or `2m`. Defaults to `%s`.\n\n"+
+						"It applies only where a resource has not set a timeout of its own, so it never shortens "+
+						"one: environment provisioning and deployment discovery are bounded by each resource's "+
+						"`timeouts` block instead.", DefaultRequestTimeout),
 			},
 			"allow_insecure_http": schema.BoolAttribute{
 				Optional: true,
@@ -148,19 +150,10 @@ func (p *RestateProvider) Schema(_ context.Context, _ provider.SchemaRequest, re
 }
 
 // providerData is what resources and data sources receive. Either client may be nil: a Cloud-only or
-// Admin-only configuration is valid, and the resource that needs a missing client is the one that
-// reports it.
+// Admin-only configuration is valid, and the resource that needs a missing client reports it.
 type providerData struct {
 	Cloud *cloud.Client
 	Admin *admin.Client
-
-	// AdminCompatibility is the result of the version check performed at configure time, so a
-	// resource can mention it without repeating the round trip.
-	AdminCompatibility *admin.Compatibility
-
-	// RequestTimeout is the configured per-request timeout, for resources that build their own
-	// bounded contexts.
-	RequestTimeout time.Duration
 }
 
 func (p *RestateProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
@@ -170,9 +163,8 @@ func (p *RestateProvider) Configure(ctx context.Context, req provider.ConfigureR
 		return
 	}
 
-	// A resource operation cannot run before provider configuration is known. Bail out rather than
-	// building a client from an unknown value, which would send a literal placeholder as a
-	// credential.
+	// A resource operation cannot run before provider configuration is known. Bail out rather than build a
+	// client from an unknown value, which would send a literal placeholder as a credential.
 	if unknown := unknownAttributes(config); len(unknown) > 0 {
 		resp.Diagnostics.AddError(
 			"Provider configuration is not known yet",
@@ -193,16 +185,14 @@ func (p *RestateProvider) Configure(ctx context.Context, req provider.ConfigureR
 
 	allowInsecure := config.AllowInsecureHTTP.ValueBool()
 	userAgent := p.userAgent(req.TerraformVersion)
-	data := &providerData{RequestTimeout: timeout}
-
+	data := &providerData{}
 	data.Cloud = p.configureCloud(ctx, config, userAgent, timeout, allowInsecure, resp)
-	data.Admin, data.AdminCompatibility = p.configureAdmin(ctx, config, userAgent, timeout, allowInsecure, resp)
+	data.Admin = p.configureAdmin(ctx, config, userAgent, timeout, allowInsecure, resp)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Neither credential set configured is not an error in itself: a configuration may exist only to
-	// declare provider aliases. The resources report it when they need a client they do not have.
+	// No credentials at all is not an error: a configuration may exist only to declare provider aliases.
 	resp.DataSourceData = data
 	resp.ResourceData = data
 	resp.EphemeralResourceData = data
@@ -220,8 +210,8 @@ func (p *RestateProvider) configureCloud(
 	accountID := firstNonEmpty(config.AccountID.ValueString(), os.Getenv(envCloudAccountID))
 	apiKey := firstNonEmpty(config.ManagementAPIKey.ValueString(), os.Getenv(envManagementAPIKey))
 
-	// A partial credential set is a mistake, not a Cloud-less configuration. Failing here beats
-	// failing on the first environment resource with a confusing "not configured" message.
+	// A partial credential set is a mistake, not a Cloud-less configuration. Failing here beats failing on
+	// the first environment resource with a confusing "not configured" message.
 	switch {
 	case accountID == "" && apiKey == "":
 		return nil
@@ -256,8 +246,8 @@ func (p *RestateProvider) configureCloud(
 		return nil
 	}
 
-	// The Cloud Management API has no version endpoint, so a read-only account describe is the only
-	// available proof that the credential works and is pointed at the right account.
+	// The API has no version endpoint, so a read-only account describe is the only available proof that the
+	// credential works and is pointed at the right account.
 	if err := client.ValidateCredentials(ctx); err != nil {
 		resp.Diagnostics.AddError("Could not authenticate to the Restate Cloud Management API", err.Error())
 		return nil
@@ -272,27 +262,27 @@ func (p *RestateProvider) configureAdmin(
 	timeout time.Duration,
 	allowInsecure bool,
 	resp *provider.ConfigureResponse,
-) (*admin.Client, *admin.Compatibility) {
+) *admin.Client {
 	baseURL := firstNonEmpty(config.AdminURL.ValueString(), os.Getenv(envAdminURL))
 	apiKey := firstNonEmpty(config.EnvironmentAPIKey.ValueString(), os.Getenv(envEnvironmentAPIKey))
 
 	switch {
 	case baseURL == "" && apiKey == "":
-		return nil, nil
+		return nil
 	case baseURL == "":
 		resp.Diagnostics.AddAttributeError(path.Root("admin_url"),
 			"Incomplete Restate Admin API configuration",
 			fmt.Sprintf("An environment API key was configured without an Admin API URL. Set `admin_url` or the "+
 				"`%s` environment variable, or remove `environment_api_key` if this provider instance should not "+
 				"manage environment resources.", envAdminURL))
-		return nil, nil
+		return nil
 	case apiKey == "":
 		resp.Diagnostics.AddAttributeError(path.Root("environment_api_key"),
 			"Incomplete Restate Admin API configuration",
 			fmt.Sprintf("An Admin API URL was configured without an environment API key. Set "+
 				"`environment_api_key` or the `%s` environment variable, or remove `admin_url` if this provider "+
 				"instance should not manage environment resources.", envEnvironmentAPIKey))
-		return nil, nil
+		return nil
 	}
 
 	client, err := admin.New(admin.Config{
@@ -305,7 +295,7 @@ func (p *RestateProvider) configureAdmin(
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Restate Admin API configuration", err.Error())
-		return nil, nil
+		return nil
 	}
 
 	compatibility, err := client.CheckServerCompatibility(ctx)
@@ -314,17 +304,17 @@ func (p *RestateProvider) configureAdmin(
 			fmt.Sprintf("Reading the server version from %s failed. Check that `admin_url` points at an "+
 				"environment's Admin API port and that `environment_api_key` is valid for it.\n\n%s",
 				client.BaseURL(), err.Error()))
-		return nil, nil
+		return nil
 	}
 	if !compatibility.Compatible {
 		resp.Diagnostics.AddError("Incompatible Restate Admin API version", compatibility.Problem)
-		return nil, nil
+		return nil
 	}
 	if compatibility.Warning != "" {
 		resp.Diagnostics.AddWarning("Restate Admin API version is older than this provider's contract", compatibility.Warning)
 	}
 
-	return client, &compatibility
+	return client
 }
 
 func (p *RestateProvider) userAgent(terraformVersion string) string {
@@ -342,8 +332,8 @@ func (p *RestateProvider) userAgent(terraformVersion string) string {
 	return agent
 }
 
-// unknownAttributes lists the configured-but-unknown attributes, which is the signal that a provider
-// attribute references something created in the same apply.
+// unknownAttributes lists configured-but-unknown attributes, the signal that a provider attribute
+// references something created in the same apply.
 func unknownAttributes(config providerModel) []string {
 	candidates := []struct {
 		name  string
