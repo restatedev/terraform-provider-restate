@@ -99,8 +99,8 @@ jobs:
             exit 1
           fi
 
-      # The examples are embedded verbatim into the generated docs, so unformatted or broken HCL ships
-      # as unformatted or broken HCL on the registry.
+      # Every examples/{resources,data-sources}/<name>.tf is embedded verbatim into that name's
+      # documentation page, so unformatted or broken HCL ships as-is on the registry.
       - name: Check example formatting
         run: terraform fmt -check -recursive examples/
 
@@ -120,15 +120,17 @@ jobs:
           export TF_CLI_CONFIG_FILE="$RUNNER_TEMP/dev.tfrc"
 
           status=0
-          for dir in examples/provider examples/resources/*/ examples/data-sources/*/; do
-            ls "$dir"*.tf >/dev/null 2>&1 || continue
 
-            work="$RUNNER_TEMP/validate/$(echo "$dir" | tr '/' '_')"
+          # examples/resources/ and examples/data-sources/ are each a single Terraform module whose
+          # files happen to be named after the page that embeds them, so validating the directory
+          # validates every snippet together -- including the references they make to each other.
+          # They are copied out first because they need a provider requirement injected, which the
+          # reader of a documentation page is assumed to have already.
+          for dir in examples/resources examples/data-sources; do
+            work="$RUNNER_TEMP/validate/$(basename "$dir")"
             mkdir -p "$work"
-            cp "$dir"*.tf "$work/"
+            cp "$dir"/*.tf "$work/"
 
-            # Each example is a fragment: the reader is assumed to have a provider requirement
-            # already, so supply one rather than repeating it in every file.
             cat > "$work/_provider.tf" <<'PROV'
           terraform {
             required_providers {
@@ -140,14 +142,14 @@ jobs:
           PROV
 
             if ! terraform -chdir="$work" validate -no-color; then
-              echo "::error file=$dir::example does not validate"
+              echo "::error file=$dir::examples do not validate"
               status=1
             fi
           done
 
-          # The two-stage example is a pair of complete root modules, so it validates in place.
-          for dir in examples/two-stage-bootstrap/*/; do
-            ls "$dir"*.tf >/dev/null 2>&1 || continue
+          # The provider example and the two bootstrap stages declare their own provider
+          # requirement, so they validate in place.
+          for dir in examples/provider examples/two-stage-bootstrap/stage1-provision examples/two-stage-bootstrap/stage2-configure; do
             if ! terraform -chdir="$dir" validate -no-color; then
               echo "::error file=$dir::example does not validate"
               status=1

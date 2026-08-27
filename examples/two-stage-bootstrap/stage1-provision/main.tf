@@ -55,7 +55,7 @@ resource "restate_cloud_environment" "this" {
 
 # The credential stage 2 authenticates with. AdminAccess can manage configuration but cannot invoke
 # services, which is the right scope for a Terraform run.
-resource "restate_cloud_api_key" "admin" {
+resource "restate_cloud_api_key" "terraform" {
   environment_id = restate_cloud_environment.this.id
   role_id        = "rst:role::AdminAccess"
   description    = "terraform stage 2 (${var.environment_name})"
@@ -65,4 +65,64 @@ resource "restate_cloud_api_key" "admin" {
   lifecycle {
     create_before_destroy = true
   }
+}
+
+variable "environment_name" {
+  description = "Environment name: lowercase letters, digits and hyphens, 2 to 63 characters."
+  type        = string
+  default     = "example-production"
+}
+
+variable "region" {
+  description = "Region to place the environment in. Cannot be changed without replacing the environment."
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "tier_id" {
+  description = "Environment tier: FREE, STARTER, BUSINESS or PREMIUM."
+  type        = string
+  default     = "FREE"
+}
+
+variable "unprotect" {
+  description = <<-EOT
+    Clear deletion_protection so the environment can be destroyed.
+
+    Apply this on its own before running destroy. It is a separate apply on purpose: an accidental
+    destroy must not be able to clear its own guard.
+  EOT
+  type        = bool
+  default     = false
+}
+
+# The admin URL is not a secret, so a plain output is fine.
+output "admin_url" {
+  description = "Admin API base URL, for stage 2's RESTATE_ADMIN_URL."
+  value       = restate_cloud_environment.this.admin_base_url
+}
+
+# The key is a live credential. Marking the output sensitive keeps it out of CLI output, but it is
+# still stored in plaintext in this state -- which is why the README recommends a secret store for
+# anything beyond a trial.
+output "admin_api_key" {
+  description = "Environment API key, for stage 2's RESTATE_AUTH_TOKEN. Read it with `terraform output -raw admin_api_key`."
+  value       = restate_cloud_api_key.terraform.api_key
+  sensitive   = true
+}
+
+output "environment_id" {
+  description = "Environment ID, for `terraform import` and for the restate_cloud_environment data source."
+  value       = restate_cloud_environment.this.id
+}
+
+# Pass this to your service deployments so they can verify that a request came from Restate.
+output "signing_public_key" {
+  description = "Public key services use to verify requests from this environment."
+  value       = restate_cloud_environment.this.signing_public_key
+}
+
+output "ingress_base_url" {
+  description = "Base URL for invoking services in this environment."
+  value       = restate_cloud_environment.this.ingress_base_url
 }

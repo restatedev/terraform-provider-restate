@@ -5,10 +5,6 @@
 
 data "restate_cloud_regions" "available" {}
 
-output "region_names" {
-  value = data.restate_cloud_regions.available.names
-}
-
 # Fail the plan rather than the apply if the intended region is not available to this account.
 check "region_is_available" {
   assert {
@@ -17,7 +13,7 @@ check "region_is_available" {
   }
 }
 
-variable "region" {
-  type    = string
-  default = "us-east-1"
+resource "restate_cloud_environment" "production" {
+  name   = "production"
+  region = var.region
 }

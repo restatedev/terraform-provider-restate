@@ -62,5 +62,5 @@ terraform -chdir=stage1-provision destroy
 - It does not manage the account, its billing, or the management key. Those need an interactive user
   identity.
 - It does not rotate the environment key. Rotation is
-  `terraform apply -replace=restate_cloud_api_key.admin`, which mints a new secret and revokes the
+  `terraform apply -replace=restate_cloud_api_key.terraform`, which mints a new secret and revokes the
   old one; stage 2 then needs the new value.

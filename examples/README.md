@@ -1,53 +1,46 @@
 # Examples
 
-These configurations are runnable and are embedded verbatim into the generated documentation, so they
-are kept `terraform fmt` clean and are checked in CI.
-
 ```text
 examples/
-├── provider/provider.tf                  # the provider block, both credential sets
-├── resources/<name>/resource.tf          # rendered into docs/resources/<name>.md
-├── resources/<name>/import.sh            # the import command, rendered into the same page
-├── data-sources/<name>/data-source.tf    # rendered into docs/data-sources/<name>.md
-└── two-stage-bootstrap/                  # a complete, applyable pair of root modules
+├── provider/                   the provider block, both credential sets
+├── resources/<name>.tf         embedded into docs/resources/<name>.md
+├── resources/<name>.sh         the import command, embedded into the same page
+├── data-sources/<name>.tf      embedded into docs/data-sources/<name>.md
+└── two-stage-bootstrap/        a complete, applyable pair of root modules
 ```
 
-The first three layouts are what `terraform-plugin-docs` expects; those file names are not arbitrary.
+`resources/` and `data-sources/` are each **one Terraform module**, not a pile of unrelated
+snippets. The files are named after the page that embeds them, and they reference each other the way
+a real configuration would: `restate_subscription.tf` consumes the cluster that
+`restate_kafka_cluster.tf` declares, and CI validates each directory as a whole. `variables.tf`
+holds the values a real configuration would supply and is the only file not rendered anywhere.
 
-## Start here: `two-stage-bootstrap/`
+The layout comes from `templates/resources.md.tmpl` and `templates/data-sources.md.tmpl`. Adding a
+resource means adding `resources/<name>.tf` and `resources/<name>.sh`, or generation fails.
 
-If you want something you can actually apply, use that. It is two root modules — one that provisions
-an environment and its API key, one that configures the environment — with variables, outputs, and
-teardown instructions. It is the only example that is complete on its own.
+## The application
 
-Everything else is a **documentation fragment**: single-resource snippets that get embedded into the
-generated reference. Several reference variables a real configuration would supply, and the Admin API
-ones assume a provider already configured with `admin_url` and `environment_api_key`. They are checked
-for formatting and validity in CI, but they are not root modules.
+Every example describes the same system, so the snippets across the reference fit together instead
+of each inventing its own names.
 
-## Trying a fragment
+| | |
+| --- | --- |
+| environment | `production`, `us-east-1`, `BUSINESS` |
+| API keys | `terraform` (`AdminAccess`), `ingress` (`IngressAccess`) |
+| deployments | `orders` (HTTP), `billing` (Cloud Run), `reports` (Lambda) |
+| services | `OrderService` with handler `handleOrder`, `OnboardingWorkflow` |
+| Kafka | cluster `events`, topic `orders` |
 
-Copy it next to a provider block and supply the variables:
+## Applying it
 
-```sh
-mkdir -p /tmp/restate-example && cd /tmp/restate-example
-cp /path/to/examples/provider/provider.tf .
-cp /path/to/examples/resources/restate_cloud_environment/resource.tf .
+`two-stage-bootstrap/` is the applyable version: one root module that provisions the environment and
+its API key, one that configures the environment, with teardown instructions in its README.
 
-export RESTATE_CLOUD_ACCOUNT_ID=acc_...
-export RESTATE_CLOUD_MANAGEMENT_API_KEY=...
+The `resources/` module deliberately is not applyable in one run. It declares Cloud and Admin
+resources together, and Terraform configures a provider before it plans any resource, so an
+`admin_url` produced by `restate_cloud_environment` is not known when the provider that needs it is
+configured. That split is what `two-stage-bootstrap/` exists to demonstrate.
 
-terraform init
-terraform plan
-```
-
-Point this at a throwaway account. Several examples set `deletion_protection = true` or leave
+Point any of this at a throwaway account. Several examples set `deletion_protection = true` or leave
 `force_destroy = false`, so tearing the result down takes two applies — deliberately. The destructive
 operations guide explains each guard.
-
-## Why the Admin API examples need a second stage
-
-Terraform configures a provider before it plans any resource, so an `admin_url` produced by
-`restate_cloud_environment` is not known when the provider that needs it is configured. Deployments,
-Kafka clusters, subscriptions and service configuration therefore belong to a separate apply. See the
-two-stage bootstrap guide, or `two-stage-bootstrap/` for the working version.

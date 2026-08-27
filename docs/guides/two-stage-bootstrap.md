@@ -21,7 +21,7 @@ resource "restate_cloud_environment" "production" {
   name = "production"
 }
 
-resource "restate_cloud_api_key" "admin" {
+resource "restate_cloud_api_key" "terraform" {
   environment_id = restate_cloud_environment.production.id
   role_id        = "rst:role::AdminAccess"
 }
@@ -29,7 +29,7 @@ resource "restate_cloud_api_key" "admin" {
 provider "restate" {
   alias               = "production"
   admin_url           = restate_cloud_environment.production.admin_base_url # unknown at plan time
-  environment_api_key = restate_cloud_api_key.admin.api_key                 # unknown at plan time
+  environment_api_key = restate_cloud_api_key.terraform.api_key             # unknown at plan time
 }
 ```
 
@@ -85,7 +85,7 @@ resource "restate_cloud_environment" "production" {
   deletion_protection = true
 }
 
-resource "restate_cloud_api_key" "admin" {
+resource "restate_cloud_api_key" "terraform" {
   environment_id = restate_cloud_environment.production.id
   role_id        = "rst:role::AdminAccess"
   description    = "terraform stage 2"
@@ -108,7 +108,7 @@ resource "aws_secretsmanager_secret_version" "restate_admin" {
   secret_id = aws_secretsmanager_secret.restate_admin.id
   secret_string = jsonencode({
     admin_url = restate_cloud_environment.production.admin_base_url
-    api_key   = restate_cloud_api_key.admin.api_key
+    api_key   = restate_cloud_api_key.terraform.api_key
   })
 }
 

@@ -19,9 +19,6 @@ The connection metadata this resource exports -- notably `admin_base_url` -- can
 ## Example Usage
 
 ```terraform
-# Provisioning is asynchronous: the provider polls until the environment is ACTIVE, so the
-# connection metadata below is populated by the time the apply finishes.
-
 resource "restate_cloud_environment" "production" {
   name    = "production"
   region  = "us-east-1"
@@ -31,6 +28,8 @@ resource "restate_cloud_environment" "production" {
   # separate, deliberate apply.
   deletion_protection = true
 
+  # Provisioning is asynchronous. The provider polls until the environment is ACTIVE, so the
+  # connection metadata below is populated by the time the apply finishes.
   timeouts {
     create = "30m"
     delete = "30m"
@@ -42,8 +41,7 @@ output "signing_public_key" {
   value = restate_cloud_environment.production.signing_public_key
 }
 
-# The Admin API URL for a provider configured in a *later* stage. It cannot configure a provider in
-# this apply; see the two-stage bootstrap guide.
+# Configures the Admin API provider of a *later* stage, never one in this apply.
 output "admin_base_url" {
   value = restate_cloud_environment.production.admin_base_url
 }

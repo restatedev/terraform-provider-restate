@@ -16,13 +16,20 @@ Services are created and destroyed by deployment discovery, never by Terraform. 
 ## Example Usage
 
 ```terraform
-# Services are created and destroyed by deployment discovery, never by Terraform. This reads one.
+# Services are created and destroyed by deployment discovery, never by Terraform. This reads one so
+# a configuration can depend on what discovery actually found.
 
 data "restate_service" "order_service" {
   name = "OrderService"
+}
 
-  # A service exists only once a deployment exposing it has been registered.
-  depends_on = [restate_deployment.orders]
+# Turn a stale service name or a handler that was renamed in the SDK into a plan failure, rather than
+# an apply that wires a subscription to a handler that is not there.
+check "handle_order_exists" {
+  assert {
+    condition     = contains(data.restate_service.order_service.handler_names, "handleOrder")
+    error_message = "OrderService does not expose handleOrder. Discovery may not have run since the service was renamed."
+  }
 }
 
 output "service_revision" {
@@ -31,12 +38,6 @@ output "service_revision" {
 
 output "handlers" {
   value = data.restate_service.order_service.handler_names
-}
-
-resource "restate_deployment" "orders" {
-  http = {
-    uri = "https://orders.internal.example.com:9080"
-  }
 }
 ```
 

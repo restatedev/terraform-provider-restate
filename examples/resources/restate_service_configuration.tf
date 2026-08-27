@@ -32,9 +32,3 @@ resource "restate_service_configuration" "onboarding_workflow" {
 
   depends_on = [restate_deployment.orders]
 }
-
-resource "restate_deployment" "orders" {
-  http = {
-    uri = "https://orders.internal.example.com:9080"
-  }
-}

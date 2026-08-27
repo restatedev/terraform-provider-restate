@@ -26,8 +26,8 @@ The Admin API redacts sensitive property values when it reads a cluster back, so
 # configured value for anything it cannot verify. Non-secret properties are still compared against
 # the API, so a genuine out-of-band change shows as drift.
 
-resource "restate_kafka_cluster" "orders" {
-  name = "orders-cluster"
+resource "restate_kafka_cluster" "events" {
+  name = "events"
 
   properties = {
     "bootstrap.servers" = "broker-1.kafka.example.com:9092,broker-2.kafka.example.com:9092"
@@ -40,11 +40,6 @@ resource "restate_kafka_cluster" "orders" {
   # Leave this false so the API's own dependency check stays in charge: deleting a cluster that
   # subscriptions still reference would orphan them. Delete the subscriptions instead.
   force_destroy = false
-}
-
-variable "kafka_password" {
-  type      = string
-  sensitive = true
 }
 ```
 
@@ -85,5 +80,5 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 # Sensitive property values come back redacted and an import has no configured values to fall back
 # on, so state holds the API's placeholders rather than real credentials. Put the real values in your
 # configuration and apply before relying on the cluster; the provider warns about this on import.
-terraform import restate_kafka_cluster.orders orders-cluster
+terraform import restate_kafka_cluster.events events
 ```

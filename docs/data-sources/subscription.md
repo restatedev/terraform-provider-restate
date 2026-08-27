@@ -13,12 +13,19 @@ A Kafka subscription, looked up by ID. Useful for reading a subscription created
 ## Example Usage
 
 ```terraform
-data "restate_subscription" "existing" {
+# Read a subscription created outside this configuration -- by the Restate CLI, or by an earlier
+# Terraform state. `options` includes the defaults the server applied, not only what was requested.
+
+data "restate_subscription" "orders" {
   id = "sub_1a2b3c"
 }
 
-output "source" {
-  value = data.restate_subscription.existing.source
+output "consumes" {
+  value = data.restate_subscription.orders.source
+}
+
+output "invokes" {
+  value = data.restate_subscription.orders.sink
 }
 ```
 

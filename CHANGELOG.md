@@ -51,7 +51,10 @@ Provider:
 Documentation:
 
 - Guides on the two-stage bootstrap, state and secret handling, and every destructive operation.
-- Generated reference documentation and runnable examples for every resource and data source.
+- Generated reference documentation, plus an example and import command for every resource and
+  data source. The examples all describe one order-processing application, so the snippets across
+  the reference fit together, and a complete applyable version of it lives in
+  `examples/two-stage-bootstrap/`.
 
 ### Correctness notes
 

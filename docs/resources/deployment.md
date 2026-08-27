@@ -30,8 +30,8 @@ resource "restate_deployment" "orders" {
   http = {
     uri = "https://orders.internal.example.com:9080"
 
-    # Sensitive. Preserved from configuration on refresh, so a value the API declines to echo back
-    # cannot silently erase the configured credential.
+    # Sensitive, and preserved from configuration on refresh, so a value the API declines to echo
+    # back cannot silently erase the configured credential.
     additional_headers = {
       "x-api-key" = var.orders_api_key
     }
@@ -53,7 +53,7 @@ resource "restate_deployment" "orders" {
   }
 }
 
-# A Cloud Run function that authenticates callers with a Google-signed OIDC token.
+# A Cloud Run service, which authenticates callers with a Google-signed OIDC token.
 resource "restate_deployment" "billing" {
   http = {
     uri = "https://billing-abc123-uc.a.run.app"
@@ -66,7 +66,8 @@ resource "restate_deployment" "billing" {
   }
 }
 
-# An AWS Lambda deployment, invoked through a chained role.
+# An AWS Lambda function, invoked through a chained role. Pin the version: an unqualified ARN moves
+# under Terraform, and Restate would keep invoking whatever discovery last saw.
 resource "restate_deployment" "reports" {
   lambda = {
     arn             = "arn:aws:lambda:us-east-1:123456789012:function:reports:3"
@@ -74,13 +75,9 @@ resource "restate_deployment" "reports" {
   }
 }
 
+# Discovery output. Terraform does not own it: re-registering the endpoint can change it.
 output "discovered_services" {
   value = restate_deployment.orders.services
-}
-
-variable "orders_api_key" {
-  type      = string
-  sensitive = true
 }
 ```
 

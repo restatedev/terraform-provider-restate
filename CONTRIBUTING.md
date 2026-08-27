@@ -20,17 +20,29 @@ checklist, and the decisions that are still open. Also read the two pinned OpenA
 - `docs/` is **generated**, in its entirety, from the provider's schema descriptions and the
   configurations in `examples/`. Anything placed directly in `docs/` is deleted on the next
   generation.
-- `templates/guides/` holds the handwritten guides, which are copied through verbatim. Everything in
-  `templates/` is copied, so this directory holds guides and nothing else -- contributor
-  documentation belongs here in CONTRIBUTING.md.
-
-  There are deliberately no page templates. The default rendering is good, and every resource's
-  description, attribute documentation, and example already live next to the thing they describe. A
-  template would move prose away from the code it documents and let the two drift.
+- `templates/guides/` holds the handwritten guides, which are copied through verbatim. Contributor
+  documentation is not a guide and belongs here in CONTRIBUTING.md.
 
   Each guide needs YAML frontmatter with `page_title`, `subcategory: "Guides"` and `description`; the
   Terraform Registry uses them, and a guide without them renders untitled.
-- `examples/` holds runnable configurations that are embedded verbatim into the generated docs.
+- `templates/resources.md.tmpl` and `templates/data-sources.md.tmpl` are fallback page templates
+  applied to every resource and data source. They reproduce `tfplugindocs`' default rendering
+  exactly; the only thing they change is where the example comes from, which is what lets
+  `examples/` be flat instead of one directory per page.
+
+  There are deliberately no *per-page* templates. A resource's description, attribute documentation,
+  and example already live next to the thing they describe, and a page template would move prose
+  away from the code it documents and let the two drift.
+- `examples/resources/` and `examples/data-sources/` are each a single Terraform module whose files
+  are named after the page that embeds them: `restate_deployment.tf` is what
+  `docs/resources/deployment.md` shows, and `restate_deployment.sh` is its import command. CI
+  validates each directory as a whole, so a snippet may reference a resource another file declares
+  rather than repeating it.
+
+  Every example describes the same order-processing application. Keep it that way -- the point is
+  that the snippets across the reference fit together. Do not pad a documented snippet with a
+  resource that exists only to make `terraform validate` pass; put variables in `variables.tf`,
+  which is the one file nothing renders. `examples/README.md` has the details.
 
 ## Rules
 

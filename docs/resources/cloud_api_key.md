@@ -19,11 +19,12 @@ The Cloud Management API has no update operation for keys, so changing any attri
 ## Example Usage
 
 ```terraform
-# The bearer secret is returned when the key is created and never again. It is stored in Terraform
-# state, marked sensitive -- so state contains a live credential. Use an encrypted,
-# access-controlled backend.
+# The bearer secret is returned when a key is created and never again, so Terraform state holds the
+# only copy. Use an encrypted, access-controlled backend.
 
-resource "restate_cloud_api_key" "admin" {
+# The credential a later Terraform stage configures its Admin API provider with. AdminAccess can
+# manage configuration but cannot invoke services, which is the right scope for a Terraform run.
+resource "restate_cloud_api_key" "terraform" {
   environment_id = restate_cloud_environment.production.id
   role_id        = "rst:role::AdminAccess"
   description    = "terraform stage 2"
@@ -35,15 +36,16 @@ resource "restate_cloud_api_key" "ingress" {
   role_id        = "rst:role::IngressAccess"
   description    = "order service ingress"
 
-  # Any change to this resource replaces the key, which revokes the old secret. Create the
-  # replacement first so a running consumer is never left without a valid credential.
+  # Any change to a key replaces it, revoking the old secret. Mint the replacement first so a
+  # running consumer is never left without a valid credential.
   lifecycle {
     create_before_destroy = true
   }
 }
 
-resource "restate_cloud_environment" "production" {
-  name = "production"
+output "ingress_api_key" {
+  value     = restate_cloud_api_key.ingress.api_key
+  sensitive = true
 }
 ```
 
@@ -82,5 +84,5 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 # A key ID is only unique within an environment, so the import ID carries account, environment, and
 # key. The bearer secret CANNOT be recovered by an import -- Restate Cloud returns it only when the
 # key is created. After importing, `api_key` is null; the provider warns about this.
-terraform import restate_cloud_api_key.admin acc_1a2b3c/env_1a2b3c/key_1a2b3c
+terraform import restate_cloud_api_key.terraform acc_1a2b3c/env_1a2b3c/key_1a2b3c
 ```
