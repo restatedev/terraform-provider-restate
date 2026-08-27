@@ -402,6 +402,7 @@ func (p *RestateProvider) Resources(context.Context) []func() resource.Resource 
 	return []func() resource.Resource{
 		NewCloudEnvironmentResource,
 		NewCloudAPIKeyResource,
+		NewDeploymentResource,
 	}
 }
 
