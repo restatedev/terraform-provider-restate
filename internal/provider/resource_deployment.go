@@ -25,8 +25,8 @@ import (
 	"github.com/restatedev/terraform-provider-restate/pkg/api/admin"
 )
 
-// Registration and update both perform service discovery against the user's own endpoint, which the
-// provider does not control the speed of, so these defaults are generous.
+// Registration and update both perform discovery against the caller's own endpoint, whose speed the
+// provider does not control, so these defaults are generous.
 const (
 	defaultDeploymentCreateTimeout = 10 * time.Minute
 	defaultDeploymentUpdateTimeout = 10 * time.Minute
@@ -333,18 +333,15 @@ func (r *DeploymentResource) Schema(ctx context.Context, _ resource.SchemaReques
 // requiresReplaceOnEndpointKindChange replaces the deployment when its endpoint kind changes, and only
 // then.
 //
-// The Admin API models HTTP and Lambda deployments as separate union members in both its register and
-// its update request, so there is no request that turns one into the other -- but the fields *within*
-// a kind are largely updatable, and replacing a deployment because its URI moved would needlessly
-// break every in-flight invocation.
-//
-// So the trigger is the attribute appearing or disappearing, not its contents changing. A per-field
-// RequiresReplace handles the fields the update request genuinely cannot carry.
+// The contract models HTTP and Lambda as separate union members in both its register and its update
+// request, so no request turns one into the other -- but the fields within a kind are largely
+// updatable, and replacing a deployment because its URI moved would needlessly break every in-flight
+// invocation. So the trigger is the attribute appearing or disappearing, not its contents changing.
 func requiresReplaceOnEndpointKindChange() planmodifier.Object {
 	return objectplanmodifier.RequiresReplaceIf(
 		func(_ context.Context, req planmodifier.ObjectRequest, resp *objectplanmodifier.RequiresReplaceIfFuncResponse) {
-			// Null-to-set is the initial create, and set-to-null only happens alongside the other
-			// endpoint kind becoming set, which its own modifier reports.
+			// Null-to-set is the initial create; set-to-null only happens alongside the other kind becoming set,
+			// which its own modifier reports.
 			resp.RequiresReplace = req.StateValue.IsNull() != req.PlanValue.IsNull()
 		},
 		"Changing a deployment's endpoint kind replaces it.",
@@ -388,12 +385,11 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 			fmt.Sprintf("%s\n\n%s", err.Error(), discoveryHint(err, timeout)))
 		return
 	}
-	// Discovery notices explain silently-degraded behaviour, such as a deprecated SDK. They are not
-	// errors, but hiding them would leave an operator wondering why something behaves oddly.
+	// Discovery notices explain silently-degraded behaviour, such as a deprecated SDK.
 	appendNotices(&resp.Diagnostics, "registering", registered.Info)
 
-	// Read back rather than assembling state from the registration response: the read path is what a
-	// later refresh sees, so state must describe that.
+	// Read back rather than assemble state from the registration response: the read path is what a later
+	// refresh sees.
 	deployment, err := r.data.Admin.Deployments().Get(ctx, registered.ID)
 	if err != nil {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), registered.ID)...)
@@ -432,8 +428,7 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	// An endpoint kind that changed underneath us means this ID now addresses something else
-	// entirely. Removing it from state lets the next plan register the deployment that was asked for.
+	// A changed endpoint kind means this ID now addresses something else entirely.
 	if r.stateKind(state) != "" && r.stateKind(state) != deployment.Kind {
 		resp.Diagnostics.AddWarning("Restate deployment changed endpoint kind",
 			fmt.Sprintf("Deployment %s was registered as an %s endpoint but the API now reports it as %s. "+
@@ -470,8 +465,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	// force and breaking apply only at registration. Saying so beats letting a user believe a
-	// flipped flag changed something about the deployment that already exists.
+	// force and breaking apply only at registration.
 	r.warnAboutRegistrationOnlyChanges(&resp.Diagnostics, plan, state)
 
 	input, diags := r.updateInput(ctx, plan)
@@ -529,8 +523,8 @@ func (r *DeploymentResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 }
 
-// ImportState takes a bare deployment ID: the Admin API is already scoped to one environment by the
-// provider's admin_url, so nothing else is needed to address a deployment.
+// ImportState takes a bare deployment ID: the provider's admin_url already scopes the Admin API to one
+// environment.
 func (r *DeploymentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	if req.ID == "" {
 		resp.Diagnostics.AddError("Invalid import ID", "Expected a deployment ID, for example `dp_1a2b3c`.")
@@ -538,9 +532,8 @@ func (r *DeploymentResource) ImportState(ctx context.Context, req resource.Impor
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 
-	// These four are provider-side behaviour with no server-side representation, so an import cannot
-	// discover them. They are set to the schema defaults, which keeps the first plan after import
-	// empty for a configuration that does not set them.
+	// Provider-side behaviour with no server-side representation, so an import cannot discover it. The
+	// schema defaults keep the first plan after import empty for a configuration that does not set them.
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("force"), false)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("breaking"), false)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("overwrite"), false)...)
@@ -633,15 +626,15 @@ func (r *DeploymentResource) registerInput(ctx context.Context, plan deploymentM
 		}}, diags
 
 	default:
-		// The ExactlyOneOf validator makes this unreachable through Terraform.
+		// Unreachable through Terraform: the ExactlyOneOf validator catches this first.
 		diags.AddError("No Restate deployment endpoint configured",
 			"Exactly one of `http` and `lambda` must be set. This is a bug in the provider; please report it.")
 		return admin.RegisterInput{}, diags
 	}
 }
 
-// updateInput builds an update request. It deliberately carries neither authentication nor metadata:
-// the Admin API's update request accepts neither, and changes to them require replacement.
+// updateInput builds an update request. It carries neither authentication nor metadata, because the
+// contract's update accepts neither and the input types have no field for them.
 func (r *DeploymentResource) updateInput(ctx context.Context, plan deploymentModel) (admin.UpdateInput, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -673,23 +666,7 @@ func (r *DeploymentResource) updateInput(ctx context.Context, plan deploymentMod
 	}
 }
 
-// applyMode says which direction state is being reconciled in.
-//
-// Terraform requires the value after an apply to equal what was planned, so the write path keeps the
-// planned values for configured attributes and verifies the API agrees. Adopting a different value
-// there would fail Terraform's consistency check with a "this is a bug in the provider" message that
-// says nothing about the real problem, which is a server that did not apply the change.
-//
-// The read path is the opposite: it adopts the API's values, because that is what makes an
-// out-of-band change show up as drift.
-type applyMode int
-
-const (
-	applyWrite applyMode = iota
-	applyRead
-)
-
-// applyDeployment copies API state into the model.
+// applyDeployment copies API state into the model. See reconcileString for the write/read distinction.
 func (r *DeploymentResource) applyDeployment(ctx context.Context, model *deploymentModel, deployment admin.Deployment, mode applyMode) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -720,12 +697,12 @@ func (r *DeploymentResource) applyDeployment(ctx context.Context, model *deploym
 		}
 		model.Lambda = nil
 
-		// Always computed: these are outcomes the caller cannot configure.
+		// Outcomes the caller cannot configure.
 		model.HTTP.HTTPVersion = types.StringValue(deployment.HTTPVersion)
 		model.HTTP.ProtocolType = types.StringValue(string(deployment.ProtocolType))
 
-		// use_http_11 is never touched in either direction: http_version is the negotiated outcome,
-		// not the read-back of the request, so there is nothing here to reconcile it against.
+		// use_http_11 is never touched in either direction: http_version is the negotiated outcome, not the
+		// read-back of the request, so there is nothing to reconcile it against.
 
 		if mode == applyRead {
 			model.HTTP.URI = types.StringValue(deployment.URI)
@@ -739,9 +716,8 @@ func (r *DeploymentResource) applyDeployment(ctx context.Context, model *deploym
 		}
 
 		if model.HTTP.Auth == nil {
-			// Authentication cannot be updated, so state's value came from configuration at create
-			// time. It is reconstructed from the response only when there is nothing to preserve --
-			// on an import, say.
+			// Authentication cannot be updated, so state's value came from configuration. It is reconstructed from
+			// the response only when there is nothing to preserve -- on an import.
 			model.HTTP.Auth = authFromDeployment(deployment.Auth)
 		}
 
@@ -769,20 +745,17 @@ func (r *DeploymentResource) applyDeployment(ctx context.Context, model *deploym
 	return diags
 }
 
-// mergeHeaders reconciles the header map the API reported with what is already in state.
+// mergeHeaders reconciles the header map the API reported with what state already holds.
 //
-// Header values are frequently API keys, and it is not established whether the Admin API echoes them
-// back verbatim, redacts them, or omits them. Taking the API's value unconditionally would risk
-// overwriting a live credential with a placeholder; ignoring the API entirely would hide a genuine
-// out-of-band change. The redaction-aware merge does neither: it keeps the configured value for a
-// value that looks redacted or whose header name is sensitive, and takes the API's value otherwise.
+// Header values are frequently API keys, and it is not established whether the API echoes them back,
+// redacts them, or omits them. Taking the API's value unconditionally would risk overwriting a live
+// credential with a placeholder; ignoring the API entirely would hide a genuine out-of-band change.
 func mergeHeaders(ctx context.Context, configured types.Map, remote map[string]string, diags *diag.Diagnostics) types.Map {
-	// A configuration with no headers and an API reporting none must stay null, not become an empty
-	// map, or the resource would never converge.
+	// A configuration with no headers and an API reporting none must stay null, not become an empty map, or
+	// the resource would never converge.
 	//
-	// The null is rebuilt with an explicit element type rather than returning the incoming value:
-	// during an import the model field has never been set, so it is a zero types.Map with no element
-	// type, which the framework rejects.
+	// The null is rebuilt with an explicit element type rather than returned as-is: during an import the
+	// field has never been set, so it is a zero types.Map with no element type, which the framework rejects.
 	if len(remote) == 0 && (configured.IsNull() || len(configured.Elements()) == 0) {
 		if configured.IsNull() || configured.IsUnknown() {
 			return types.MapNull(types.StringType)
@@ -835,8 +808,8 @@ func authFromDeployment(auth *admin.HTTPAuth) *authModel {
 	}}
 }
 
-// optionalString keeps an absent value null rather than an empty string, so an unconfigured optional
-// attribute does not show a permanent diff against "".
+// optionalString keeps an absent value null rather than "", so an unconfigured optional attribute does
+// not diff against "" forever.
 func optionalString(s string) types.String {
 	if s == "" {
 		return types.StringNull()
@@ -844,8 +817,8 @@ func optionalString(s string) types.String {
 	return types.StringValue(s)
 }
 
-// appendNotices surfaces the configuration and deprecation messages the server attaches to an
-// object. They are warnings: the operation succeeded, but something about it is worth knowing.
+// appendNotices surfaces the server's own notices: the operation succeeded, but something about it is
+// worth knowing.
 func appendNotices(diags *diag.Diagnostics, operation string, notices []admin.Notice) {
 	for _, notice := range notices {
 		summary := fmt.Sprintf("Restate reported a notice while %s the deployment", operation)
@@ -857,8 +830,8 @@ func appendNotices(diags *diag.Diagnostics, operation string, notices []admin.No
 	}
 }
 
-// discoveryHint explains a timeout in terms of what actually takes the time, since discovery calls
-// the user's own endpoint rather than anything Restate controls.
+// discoveryHint explains a failure in terms of what actually takes the time: discovery calls the
+// caller's endpoint, not anything Restate controls.
 func discoveryHint(err error, timeout time.Duration) string {
 	hint := "Registering or updating a deployment makes Restate call the endpoint to discover its services, so " +
 		"this can fail because the endpoint is unreachable from Restate, is slow to respond, or rejected the " +
