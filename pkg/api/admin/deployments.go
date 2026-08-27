@@ -17,9 +17,8 @@ type Deployments struct{ client *Client }
 // Deployments returns the deployment adapter.
 func (c *Client) Deployments() *Deployments { return &Deployments{client: c} }
 
-// Deployments support the full set of capabilities. RegisterInput and UpdateInput are distinct
-// types, so a create request cannot be reused as an update request -- which matters here, because
-// the contract's update request accepts strictly fewer fields than its register request.
+// RegisterInput and UpdateInput are distinct types, so a create request cannot be reused as an update
+// request -- which matters here, because the contract's update accepts strictly fewer fields.
 var (
 	_ api.Creator[RegisterInput, RegisteredDeployment] = (*Deployments)(nil)
 	_ api.Getter[string, Deployment]                   = (*Deployments)(nil)
@@ -28,9 +27,8 @@ var (
 	_ api.Lister[Deployment]                           = (*Deployments)(nil)
 )
 
-// RegisterInput is a deployment registration. Exactly one of HTTP and Lambda must be set: the
-// contract models the two as an untagged union, and sending fields from both would produce a body
-// that matches neither member.
+// RegisterInput is a deployment registration. Exactly one of HTTP and Lambda must be set: the contract
+// models the two as an untagged union, so a body carrying fields from both matches neither member.
 type RegisterInput struct {
 	HTTP   *RegisterHTTPDeployment
 	Lambda *RegisterLambdaDeployment
@@ -70,8 +68,7 @@ func (i UpdateInput) Kind() (EndpointKind, error) {
 	}
 }
 
-// RegisteredDeployment is what registration reports: the new identifier and the services discovery
-// found.
+// RegisteredDeployment is what registration reports: the new identifier and what discovery found.
 type RegisteredDeployment struct {
 	ID       string
 	Services []Service
@@ -82,17 +79,15 @@ type RegisteredDeployment struct {
 	Info               []Notice
 }
 
-// Create registers a deployment, which performs service discovery against the endpoint.
+// Create registers a deployment, which performs service discovery against the caller's own endpoint --
+// so it can be slow and can fail for reasons unrelated to Restate. Callers give it a generous context.
 //
-// Discovery calls the user's own service, so this can be slow and can fail for reasons that have
-// nothing to do with Restate. Callers give it a generous timeout through the context.
+// Retry safety is RetryThrottleOnly: registration is not idempotent, so a retry after an ambiguous 5xx
+// could register a second deployment, or trip the `force` behaviour against the one the first attempt
+// created.
 //
-// Retry safety is RetryThrottleOnly. Registration is not idempotent: a retry after an ambiguous 5xx
-// could register a second deployment, or trip the `force` behaviour against the deployment the
-// first attempt created.
-//
-// dry_run is deliberately never sent. It is an action -- "tell me what would happen" -- and cannot
-// produce a deployment for Terraform to own.
+// dry_run is never sent. It is an action -- "tell me what would happen" -- and cannot produce a
+// deployment for Terraform to own.
 func (d *Deployments) Create(ctx context.Context, input RegisterInput) (RegisteredDeployment, error) {
 	kind, err := input.Kind()
 	if err != nil {
@@ -168,8 +163,7 @@ func (d *Deployments) Create(ctx context.Context, input RegisterInput) (Register
 	return registered, nil
 }
 
-// Get reads one deployment. The response is an untagged union of an HTTP and a Lambda variant, which
-// this decodes by looking for the field that only one member has.
+// Get reads one deployment. The response is an untagged union, which decodeDeployment resolves.
 func (d *Deployments) Get(ctx context.Context, deploymentID string) (Deployment, error) {
 	if deploymentID == "" {
 		return Deployment{}, errors.New("a deployment ID is required")
@@ -215,15 +209,14 @@ func (d *Deployments) List(ctx context.Context) ([]Deployment, error) {
 
 // Update changes a deployment in place.
 //
-// Without Overwrite the update does not rediscover schemas, so a moved URI keeps the previously
-// discovered services. With Overwrite it does rediscover and will accept breaking schema changes.
+// Without Overwrite it does not rediscover schemas, so a moved URI keeps the previously discovered
+// services. With Overwrite it rediscovers and will accept breaking schema changes.
 //
-// The contract's update request accepts neither authentication nor metadata. UpdateHTTPDeployment
-// and UpdateLambdaDeployment therefore do not carry them, so there is no field here that could be
-// silently dropped.
+// The contract's update request accepts neither authentication nor metadata, and the input types have
+// no field for either, so there is nothing here that could be silently dropped.
 //
-// Retry safety is RetryThrottleOnly: an update can trigger rediscovery, which is a side effect
-// against the user's own endpoint, and the contract makes no idempotency promise about it.
+// Retry safety is RetryThrottleOnly: an update can trigger rediscovery, which is a side effect against
+// the caller's own endpoint.
 func (d *Deployments) Update(ctx context.Context, deploymentID string, input UpdateInput) (Deployment, error) {
 	if deploymentID == "" {
 		return Deployment{}, errors.New("a deployment ID is required")
@@ -264,17 +257,16 @@ func (d *Deployments) Update(ctx context.Context, deploymentID string, input Upd
 		return Deployment{}, err
 	}
 
-	// The update response is a detailed deployment, but re-reading is both simpler and more honest:
-	// it reports the state a subsequent refresh would see, so an update cannot leave state
-	// describing something the read path disagrees with.
+	// Re-read rather than decode the update response: the read path is what a later refresh sees, so an
+	// update cannot leave state describing something the read path disagrees with.
 	return d.Get(ctx, deploymentID)
 }
 
 // Delete removes a deployment.
 //
-// The pinned contract implements only forced deletion, and forced deletion can put in-flight
-// invocations into an unrecoverable error state. Delete therefore refuses unless the caller sets
-// Force, rather than quietly doing the destructive thing.
+// The contract implements only forced deletion, which can put in-flight invocations into an
+// unrecoverable state, so this refuses unless the caller opts in rather than quietly doing the
+// destructive thing.
 func (d *Deployments) Delete(ctx context.Context, deploymentID string, options DeleteDeploymentOptions) error {
 	if deploymentID == "" {
 		return errors.New("a deployment ID is required")
@@ -296,9 +288,9 @@ func (d *Deployments) Delete(ctx context.Context, deploymentID string, options D
 
 // decodeDeployment resolves the response union.
 //
-// The two members have no discriminator, so they are told apart by the field only one of them
-// carries: `arn` for Lambda and `uri` for HTTP. Both are required in their respective members, so
-// exactly one is always present in a well-formed response.
+// The members have no discriminator, so they are told apart by the field only one of them carries:
+// `arn` for Lambda and `uri` for HTTP. Both are required in their own member, so exactly one is present
+// in a well-formed response.
 func decodeDeployment(raw []byte, operation string) (Deployment, error) {
 	var probe struct {
 		ARN *string `json:"arn"`
@@ -309,6 +301,13 @@ func decodeDeployment(raw []byte, operation string) (Deployment, error) {
 	}
 
 	switch {
+	case probe.ARN != nil && probe.URI != nil:
+		return Deployment{}, &api.Error{
+			Service:   api.ServiceAdmin,
+			Operation: operation,
+			Message:   "the API returned a deployment with both a uri and an arn, which matches neither an HTTP nor a Lambda endpoint",
+		}
+
 	case probe.ARN != nil:
 		var response generated.DeploymentResponse1
 		if err := json.Unmarshal(raw, &response); err != nil {
@@ -411,8 +410,7 @@ func headerMapFrom(headers *generated.SerdeableHeaderHashMap) map[string]string 
 	return copied
 }
 
-// authRequest encodes the deployment authentication union, which is externally tagged:
-// `{"GoogleIdToken": {...}}`.
+// authRequest encodes the authentication union, which is externally tagged: `{"GoogleIdToken": {...}}`.
 func authRequest(auth *HTTPAuth) (*generated.HttpAuth, error) {
 	if auth == nil || auth.GoogleIDToken == nil {
 		return nil, nil
@@ -435,8 +433,8 @@ func authFrom(encoded *generated.HttpAuth) (*HTTPAuth, error) {
 	if encoded == nil {
 		return nil, nil
 	}
-	// An explicit JSON null decodes into a union whose raw message is empty or "null"; that is
-	// "no authentication", not a malformed response.
+	// An explicit JSON null decodes into an empty union, which means "no authentication" rather than a
+	// malformed response.
 	raw, err := encoded.MarshalJSON()
 	if err != nil {
 		return nil, err

@@ -405,3 +405,59 @@ func patchRequests(server *testutil.APIServer) []testutil.Request {
 	}
 	return patches
 }
+
+// An attribute whose value is not known until apply is still an attribute the user asked to manage.
+// The emptiness check must count it, or a configuration that derives a retention from another
+// resource would be rejected at validate time as managing nothing.
+func TestServiceConfigurationAcceptsAnUnknownAttributeValue(t *testing.T) {
+	clearProviderEnvironment(t)
+	admin, _ := serviceServer(t, "OrderService", "Service", "7days")
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{{
+			Config: adminConfig(admin.URL, `
+resource "terraform_data" "retention" {
+  input = "7 days"
+}
+
+resource "restate_service_configuration" "test" {
+  service_name      = "OrderService"
+  journal_retention = terraform_data.retention.output
+}
+`),
+			Check: resource.TestCheckResourceAttr("restate_service_configuration.test", "journal_retention", "7 days"),
+		}},
+	})
+}
+
+// A duration with no fixed length is legitimate -- the server is the authority -- but the provider
+// cannot compare it semantically, so it warns and sends the value unchanged rather than rejecting it.
+func TestServiceConfigurationWarnsAboutAnIncomparableDuration(t *testing.T) {
+	clearProviderEnvironment(t)
+	admin, _ := serviceServer(t, "OrderService", "Service", "P1M")
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{{
+			Config: adminConfig(admin.URL, `
+resource "restate_service_configuration" "test" {
+  service_name      = "OrderService"
+  journal_retention = "P1M"
+}
+`),
+			// The apply succeeds: a calendar duration is sent unchanged.
+			Check: resource.TestCheckResourceAttr("restate_service_configuration.test", "journal_retention", "P1M"),
+		}},
+	})
+
+	patches := patchRequests(admin)
+	if len(patches) == 0 {
+		t.Fatal("no modify request was sent")
+	}
+	var body map[string]any
+	patches[0].DecodeBody(t, &body)
+	if body["journal_retention"] != "P1M" {
+		t.Errorf("journal_retention = %v, want it sent unchanged", body["journal_retention"])
+	}
+}

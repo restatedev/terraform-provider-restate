@@ -299,6 +299,13 @@ func (d *SubscriptionDataSource) Metadata(_ context.Context, req datasource.Meta
 	resp.TypeName = req.ProviderTypeName + "_subscription"
 }
 
+type subscriptionDataSourceModel struct {
+	ID      types.String `tfsdk:"id"`
+	Source  types.String `tfsdk:"source"`
+	Sink    types.String `tfsdk:"sink"`
+	Options types.Map    `tfsdk:"options"`
+}
+
 func (d *SubscriptionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "A Kafka subscription, looked up by ID. Useful for reading a subscription created " +
@@ -329,7 +336,7 @@ func (d *SubscriptionDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	var config subscriptionModel
+	var config subscriptionDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -346,7 +353,7 @@ func (d *SubscriptionDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	state := subscriptionModel{
+	state := subscriptionDataSourceModel{
 		ID:      types.StringValue(subscription.ID),
 		Source:  types.StringValue(subscription.Source),
 		Sink:    types.StringValue(subscription.Sink),
