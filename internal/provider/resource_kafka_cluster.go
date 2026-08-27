@@ -148,10 +148,13 @@ func (r *KafkaClusterResource) Create(ctx context.Context, req resource.CreateRe
 	appendKafkaNotices(&resp.Diagnostics, cluster.Info)
 
 	state := plan
-	resp.Diagnostics.Append(r.applyWrite(&state, cluster, properties)...)
-	if resp.Diagnostics.HasError() {
-		return
+	writeDiags := r.applyWrite(&state, cluster, properties)
+	if writeDiags.HasError() {
+		// Kafka clusters are addressed by name. If a broken server returns a different name after
+		// creating one, cleanup must use the name that actually exists rather than the plan's name.
+		state.Name = types.StringValue(cluster.Name)
 	}
+	resp.Diagnostics.Append(writeDiags...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -222,9 +225,8 @@ func (r *KafkaClusterResource) Update(ctx context.Context, req resource.UpdateRe
 
 	updated := plan
 	resp.Diagnostics.Append(r.applyWrite(&updated, cluster, properties)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// The update has happened and was re-read. Preserve its identity even if a requested property did
+	// not stick, so subsequent refresh and destroy operations act on the remote cluster.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updated)...)
 }
 

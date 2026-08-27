@@ -26,7 +26,7 @@ jobs:
 
       - name: Check formatting
         run: |
-          unformatted="$(gofmt -l . | grep -v '/internal/generated/' || true)"
+          unformatted="$(find . -name '*.go' -not -path '*/internal/generated/*' -exec gofmt -l {} +)"
           if [ -n "$unformatted" ]; then
             echo "These files are not gofmt-clean:"
             echo "$unformatted"
@@ -44,8 +44,21 @@ jobs:
       - name: Build
         run: go build ./...
 
+      # The race detector roughly triples the provider package's runtime, and that package drives a
+      # real Terraform CLI per test, so the whole suite takes tens of minutes on a CI runner. The
+      # timeout is set well above the observed time rather than close to it, because a suite that
+      # fails on a slow runner is indistinguishable from a broken one.
       - name: Test
-        run: go test -race -count=1 ./...
+        run: go test -race -count=1 -timeout=60m ./...
+
+      # A handful of tests skip themselves under -race, because terraform-plugin-testing serves
+      # aliased provider configurations from one in-process server that races inside the framework
+      # rather than in provider code. Without this step they would never run at all. Add any further
+      # race-skipped test to this list.
+      - name: Test the cases that cannot run under the race detector
+        run: |
+          go test -count=1 -timeout=10m ./internal/provider/ \
+            -run 'TestAliasedProvidersAddressDifferentAccounts'
 
       - name: Check for whitespace errors
         run: git diff --check

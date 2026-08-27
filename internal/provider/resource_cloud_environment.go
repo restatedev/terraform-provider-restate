@@ -250,9 +250,8 @@ func (r *CloudEnvironmentResource) Create(ctx context.Context, req resource.Crea
 
 	state := plan
 	r.applyEnvironment(&state, environment, applyWrite, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Persist the remote identity even when verification found a mismatch. The environment already
+	// exists at this point, and dropping state would orphan it.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -345,9 +344,8 @@ func (r *CloudEnvironmentResource) Update(ctx context.Context, req resource.Upda
 
 	updated := plan
 	r.applyEnvironment(&updated, environment, applyWrite, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// A write has already happened. Preserve the re-read state even when verification reports that
+	// the API applied a different value, so the next refresh and cleanup address the real object.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updated)...)
 }
 
@@ -403,12 +401,13 @@ func (r *CloudEnvironmentResource) Delete(ctx context.Context, req resource.Dele
 // The account ID is part of the identity rather than taken from the provider, so importing into a
 // provider configured for a different account is caught here.
 func (r *CloudEnvironmentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	accountID, environmentID, ok := splitImportID(req.ID, 2)
+	fields, ok := splitImportID(req.ID, 2)
 	if !ok {
 		resp.Diagnostics.AddError("Invalid import ID",
 			fmt.Sprintf("Expected `<account ID>/<environment ID>`, for example `acc_1a2b3c/env_1a2b3c`, but got %q.", req.ID))
 		return
 	}
+	accountID, environmentID := fields[0], fields[1]
 
 	if !requireCloudClient(r.data, "restate_cloud_environment", &resp.Diagnostics) {
 		return
@@ -506,21 +505,22 @@ func (r *CloudEnvironmentResource) refreshAfterPartialUpdate(ctx context.Context
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
-// splitImportID splits a two-part slash-separated import ID, requiring both parts non-empty.
-func splitImportID(id string, parts int) (string, string, bool) {
+// splitImportID splits a slash-separated composite import ID into exactly want parts, requiring every
+// part to be non-blank. The parts are returned trimmed, so a copied-and-pasted ID with stray
+// whitespace is not compared against a configured account ID and rejected for the wrong reason.
+func splitImportID(id string, want int) ([]string, bool) {
 	fields := strings.Split(id, "/")
-	if len(fields) != parts {
-		return "", "", false
+	if len(fields) != want {
+		return nil, false
 	}
-	for _, field := range fields {
-		if strings.TrimSpace(field) == "" {
-			return "", "", false
+	for i, field := range fields {
+		trimmed := strings.TrimSpace(field)
+		if trimmed == "" {
+			return nil, false
 		}
+		fields[i] = trimmed
 	}
-	if parts == 2 {
-		return fields[0], fields[1], true
-	}
-	return "", "", false
+	return fields, true
 }
 
 func quotedTiers() string {

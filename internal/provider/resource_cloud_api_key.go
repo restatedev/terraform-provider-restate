@@ -91,8 +91,9 @@ func (r *CloudAPIKeyResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Optional: true,
 				MarkdownDescription: "Free-text description, useful for identifying a key in the Restate Cloud " +
 					"console. Changing it replaces the key: the API has no update operation, so there is no way to " +
-					"edit a description in place.",
+					"edit a description in place. Omit it instead of setting an empty string.",
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				Validators:    []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
 
 			"state": schema.StringAttribute{
@@ -149,7 +150,11 @@ func (r *CloudAPIKeyResource) Create(ctx context.Context, req resource.CreateReq
 		// it rather than leaving an untracked credential behind.
 		if key.ID != "" {
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), key.ID)...)
-			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("environment_id"), plan.EnvironmentID)...)
+			environmentID := plan.EnvironmentID.ValueString()
+			if key.EnvironmentID != "" {
+				environmentID = key.EnvironmentID
+			}
+			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("environment_id"), environmentID)...)
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("account_id"), r.data.Cloud.AccountID())...)
 			resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("role_id"), plan.RoleID)...)
 		}
@@ -159,11 +164,13 @@ func (r *CloudAPIKeyResource) Create(ctx context.Context, req resource.CreateReq
 
 	state := plan
 	r.applyKey(&state, key, applyWrite, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	// The secret comes from this response and nowhere else.
 	state.APIKey = types.StringValue(key.Secret)
+	if resp.Diagnostics.HasError() && key.EnvironmentID != "" {
+		// Keys are deleted through their environment scope. If verification found a mismatched scope,
+		// retain the server's scope so the newly minted credential can still be revoked.
+		state.EnvironmentID = types.StringValue(key.EnvironmentID)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -234,8 +241,8 @@ func (r *CloudAPIKeyResource) Delete(ctx context.Context, req resource.DeleteReq
 // A key ID is only unique within an environment, so the environment is part of the identity rather
 // than something the provider could look up.
 func (r *CloudAPIKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	fields := strings.Split(req.ID, "/")
-	if len(fields) != 3 || anyBlank(fields) {
+	fields, ok := splitImportID(req.ID, 3)
+	if !ok {
 		resp.Diagnostics.AddError("Invalid import ID",
 			fmt.Sprintf("Expected `<account ID>/<environment ID>/<key ID>`, for example "+
 				"`acc_1a2b3c/env_1a2b3c/key_1a2b3c`, but got %q.", req.ID))
@@ -290,15 +297,6 @@ func (r *CloudAPIKeyResource) applyKey(model *cloudAPIKeyModel, key cloud.APIKey
 			model.Description = types.StringValue(key.Description)
 		}
 	}
-}
-
-func anyBlank(fields []string) bool {
-	for _, field := range fields {
-		if strings.TrimSpace(field) == "" {
-			return true
-		}
-	}
-	return false
 }
 
 func quotedEnvironmentRoles() string {

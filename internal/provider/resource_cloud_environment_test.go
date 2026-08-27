@@ -71,6 +71,24 @@ func TestEnvironmentCreate(t *testing.T) {
 	})
 }
 
+func TestEnvironmentCreateMismatchRetainsStateForCleanup(t *testing.T) {
+	clearProviderEnvironment(t)
+	cloud := cloudFake(t)
+	cloud.CreatedEnvironmentNameOverride = "server-returned-name"
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{{
+			Config:      environmentConfig(cloud.URL, "\n  name = \"requested-name\"\n"),
+			ExpectError: regexp.MustCompile(`(?s)did not apply the requested value.*server-returned-name`),
+		}},
+	})
+
+	if got := cloud.EnvironmentCount(); got != 0 {
+		t.Errorf("EnvironmentCount = %d, want 0: failed create should retain state for cleanup", got)
+	}
+}
+
 // The create response is an acknowledgement, not proof of provisioning, so the provider must poll
 // until the status is terminal.
 func TestEnvironmentCreatePollsUntilActive(t *testing.T) {

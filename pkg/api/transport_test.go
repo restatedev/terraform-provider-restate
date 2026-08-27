@@ -144,6 +144,47 @@ func TestTransportSendsBearerTokenAndUserAgent(t *testing.T) {
 	}
 }
 
+func TestTransportDoesNotForwardCredentialsThroughRedirects(t *testing.T) {
+	var redirectedRequests atomic.Int32
+	// Recorded atomically because the assertion below reads it from the test goroutine while the
+	// handler writes it from the server's.
+	var redirectedAuth atomic.Value
+	destination := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		redirectedRequests.Add(1)
+		redirectedAuth.Store(r.Header.Get("Authorization"))
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer destination.Close()
+
+	origin := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Redirect(w, &http.Request{}, destination.URL+"/credential-sink", http.StatusTemporaryRedirect)
+	}))
+	defer origin.Close()
+
+	client, err := NewTransport(TransportConfig{
+		BaseURL:           origin.URL,
+		BearerToken:       "must-not-leave-origin",
+		AllowInsecureHTTP: true,
+	})
+	if err != nil {
+		t.Fatalf("NewTransport: %v", err)
+	}
+
+	resp, err := client.Get(origin.URL)
+	if err != nil {
+		t.Fatalf("request: %v", err)
+	}
+	drain(resp)
+
+	if resp.StatusCode != http.StatusTemporaryRedirect {
+		t.Errorf("status = %d, want %d", resp.StatusCode, http.StatusTemporaryRedirect)
+	}
+	if got := redirectedRequests.Load(); got != 0 {
+		leaked, _ := redirectedAuth.Load().(string)
+		t.Errorf("redirect destination received %d requests, want none; Authorization = %q", got, leaked)
+	}
+}
+
 // The auth tripper must not mutate the caller's request, which is a documented RoundTripper
 // requirement and matters because the retrying tripper below it replays the same *http.Request.
 func TestAuthRoundTripperDoesNotMutateTheCallersRequest(t *testing.T) {

@@ -44,6 +44,10 @@ type CloudFake struct {
 
 	// FailProvisioning makes a newly created environment settle in FAILED rather than ACTIVE.
 	FailProvisioning bool
+	// CreatedEnvironmentNameOverride and CreatedAPIKeyRoleOverride simulate successful creates whose
+	// read-back disagrees with the request, for partial-state cleanup tests.
+	CreatedEnvironmentNameOverride string
+	CreatedAPIKeyRoleOverride      string
 
 	// PendingPolls is how many times an environment reports PENDING before becoming ACTIVE, so a
 	// test can exercise the create poll loop.
@@ -223,6 +227,9 @@ func (f *CloudFake) createEnvironment(request Request) Response {
 		Tier:   "FREE",
 		Status: "ACTIVE",
 	}
+	if f.CreatedEnvironmentNameOverride != "" {
+		environment.Name = f.CreatedEnvironmentNameOverride
+	}
 	if body.Region != nil {
 		environment.Region = *body.Region
 	}
@@ -375,6 +382,9 @@ func (f *CloudFake) createAPIKey(request Request) Response {
 		// A distinct per-key secret, so a test can tell one key's secret from another's after a
 		// replacement.
 		Secret: fmt.Sprintf("key_secret_%d", f.keyCounter),
+	}
+	if f.CreatedAPIKeyRoleOverride != "" {
+		key.Role = f.CreatedAPIKeyRoleOverride
 	}
 	if body.Description != nil {
 		key.Description = *body.Description

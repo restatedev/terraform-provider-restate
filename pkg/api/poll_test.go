@@ -230,7 +230,8 @@ func TestPollUntilDoesNotRelabelAnUnrelatedFetchError(t *testing.T) {
 }
 
 // A single hung fetch must cost one attempt, not the whole budget: without a per-attempt bound, a
-// thirty-minute provisioning timeout could be spent on one describe that never answers.
+// thirty-minute provisioning timeout could be spent on one describe that never answers. The loop
+// therefore presses on past a hung attempt, because a slow server is not a failed operation.
 func TestPollUntilBoundsEachAttempt(t *testing.T) {
 	cfg := PollConfig{Interval: time.Millisecond, AttemptTimeout: 20 * time.Millisecond}
 	attempts := 0
@@ -249,14 +250,61 @@ func TestPollUntilBoundsEachAttempt(t *testing.T) {
 		},
 		func(status string) (bool, error) { return status == "ACTIVE", nil },
 	)
+	if err != nil {
+		t.Fatalf("PollUntil: %v", err)
+	}
+	if got != "ACTIVE" {
+		t.Errorf("got = %q, want ACTIVE", got)
+	}
+	if attempts != 3 {
+		t.Errorf("attempts = %d, want 3: each hung fetch should cost one attempt", attempts)
+	}
+}
 
-	// The hung attempts are fetch errors, so the loop reports the first one rather than pressing on:
-	// a fetch that fails is fatal by design, and a hung request is a fetch that failed.
-	if err == nil {
-		t.Fatalf("PollUntil returned %q, want the attempt deadline to surface", got)
+// Tolerating a hung attempt must not become tolerating an endpoint that never answers, including when
+// the caller set no deadline of its own for the loop to run out of.
+func TestPollUntilGivesUpOnPersistentlyHungAttempts(t *testing.T) {
+	cfg := PollConfig{Interval: time.Millisecond, AttemptTimeout: 5 * time.Millisecond}
+	attempts := 0
+
+	_, err := PollUntil(context.Background(), cfg,
+		func(ctx context.Context) (string, error) {
+			attempts++
+			<-ctx.Done()
+			return "", ctx.Err()
+		},
+		func(string) (bool, error) { return true, nil },
+	)
+	if !errors.Is(err, ErrPollTimeout) {
+		t.Fatalf("err = %v, want ErrPollTimeout", err)
 	}
 	if !errors.Is(err, context.DeadlineExceeded) {
-		t.Errorf("err = %v, want the attempt deadline", err)
+		t.Errorf("err = %v, want the attempt deadline to stay reachable", err)
+	}
+	if attempts != maxConsecutiveAttemptTimeouts {
+		t.Errorf("attempts = %d, want %d", attempts, maxConsecutiveAttemptTimeouts)
+	}
+}
+
+// A fetch that fails for a reason other than running out of time is still fatal on its first
+// occurrence: retrying an expired credential would report it as a timeout.
+func TestPollUntilDoesNotRetryANonTimeoutFetchError(t *testing.T) {
+	cfg := PollConfig{Interval: time.Millisecond, AttemptTimeout: time.Minute}
+	attempts := 0
+	unauthorized := errors.New("401 unauthorized")
+
+	_, err := PollUntil(context.Background(), cfg,
+		func(context.Context) (string, error) {
+			attempts++
+			return "", unauthorized
+		},
+		func(string) (bool, error) { return true, nil },
+	)
+	if !errors.Is(err, unauthorized) {
+		t.Fatalf("err = %v, want the fetch error", err)
+	}
+	if errors.Is(err, ErrPollTimeout) {
+		t.Errorf("err = %v, must not be reported as a timeout", err)
 	}
 	if attempts != 1 {
 		t.Errorf("attempts = %d, want 1", attempts)

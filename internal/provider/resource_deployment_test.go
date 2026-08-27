@@ -74,6 +74,29 @@ resource "restate_deployment" "test" {
 	}
 }
 
+func TestDeploymentCreateMismatchRetainsStateForCleanup(t *testing.T) {
+	clearProviderEnvironment(t)
+	admin := adminFake(t)
+	admin.CreatedDeploymentURIOverride = "https://server-returned.example.com"
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{{
+			Config: adminConfig(admin.URL, `
+resource "restate_deployment" "test" {
+  http = { uri = "https://requested.example.com" }
+  force_destroy = true
+}
+`),
+			ExpectError: regexp.MustCompile(`(?s)does not have the requested URI`),
+		}},
+	})
+
+	if got := admin.DeploymentCount(); got != 0 {
+		t.Errorf("DeploymentCount = %d, want 0: failed create should retain state for cleanup", got)
+	}
+}
+
 // use_http_11 is a request-time choice the API does not report back. The provider keeps the
 // configured value and exports the negotiated http_version separately, so a deployment registered
 // this way converges instead of diffing against an outcome it cannot control.
@@ -302,6 +325,45 @@ resource "restate_deployment" "test" {
 					},
 				},
 				Check: resource.TestCheckResourceAttr("restate_deployment.test", "http.additional_headers.x-api-key", "rotated"),
+			},
+		},
+	})
+}
+
+func TestDeploymentCanClearLambdaAssumeRoleARNInPlace(t *testing.T) {
+	clearProviderEnvironment(t)
+	admin := adminFake(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{
+			{Config: adminConfig(admin.URL, `
+resource "restate_deployment" "test" {
+  lambda = {
+    arn             = "arn:aws:lambda:us-east-1:123456789012:function:reports:3"
+    assume_role_arn = "arn:aws:iam::123456789012:role/restate-invoke"
+  }
+  force_destroy = true
+}
+`)},
+			{
+				Config: adminConfig(admin.URL, `
+resource "restate_deployment" "test" {
+  lambda = {
+    arn = "arn:aws:lambda:us-east-1:123456789012:function:reports:3"
+  }
+  force_destroy = true
+}
+`),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("restate_deployment.test", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("restate_deployment.test", "id", "dp_1"),
+					resource.TestCheckNoResourceAttr("restate_deployment.test", "lambda.assume_role_arn"),
+				),
 			},
 		},
 	})
@@ -581,6 +643,107 @@ resource "restate_deployment" "test" {
 				Check: resource.TestCheckResourceAttr("restate_deployment.test", "http.uri", "https://orders.example.com"),
 			},
 		},
+	})
+}
+
+func TestDeploymentRefreshDetectsOutOfBandAuthenticationRemoval(t *testing.T) {
+	clearProviderEnvironment(t)
+	admin := adminFake(t)
+
+	config := adminConfig(admin.URL, `
+resource "restate_deployment" "test" {
+  http = {
+    uri = "https://orders.example.com"
+    auth = {
+      google_id_token = {
+        audience = "https://orders.example.com"
+			}
+		}
+  }
+  force_destroy = true
+}
+`)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{
+			{Config: config},
+			{
+				PreConfig: func() { admin.Deployment("dp_1").Auth = nil },
+				Config:    config,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("restate_deployment.test", plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: resource.TestCheckResourceAttr("restate_deployment.test", "id", "dp_2"),
+			},
+		},
+	})
+}
+
+// `audience` and `impersonate_service_account` are both documented as derivable from the deployment
+// when left unset, so a server that reports the value it derived must not be treated as having ignored
+// the configuration. Authentication carries RequiresReplace, so getting this wrong would replace a
+// working deployment on every apply.
+func TestDeploymentKeepsAuthenticationTheServerDerived(t *testing.T) {
+	clearProviderEnvironment(t)
+	admin := adminFake(t)
+	admin.CreatedDeploymentAuthOverride = `{"GoogleIdToken":{"audience":"https://derived.example.com","impersonate_service_account":"restate@example.iam.gserviceaccount.com"}}`
+
+	config := adminConfig(admin.URL, `
+resource "restate_deployment" "test" {
+  http = {
+    uri  = "https://orders.example.com"
+    auth = { google_id_token = {} }
+  }
+  force_destroy = true
+}
+`)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("restate_deployment.test", "id", "dp_1"),
+					resource.TestCheckNoResourceAttr("restate_deployment.test", "http.auth.google_id_token.audience"),
+					resource.TestCheckNoResourceAttr("restate_deployment.test",
+						"http.auth.google_id_token.impersonate_service_account"),
+				),
+			},
+			{
+				// The second plan is the one that would replace the deployment if the derived values
+				// had been adopted into state.
+				Config:   config,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+// A sub-attribute the configuration *did* set must still be verified: that is a value the server was
+// asked for, not one it was left to choose.
+func TestDeploymentReportsAnAuthenticationAudienceTheServerDidNotApply(t *testing.T) {
+	clearProviderEnvironment(t)
+	admin := adminFake(t)
+	admin.CreatedDeploymentAuthOverride = `{"GoogleIdToken":{"audience":"https://not-what-was-asked.example.com"}}`
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{{
+			Config: adminConfig(admin.URL, `
+resource "restate_deployment" "test" {
+  http = {
+    uri  = "https://orders.example.com"
+    auth = { google_id_token = { audience = "https://requested.example.com" } }
+  }
+  force_destroy = true
+}
+`),
+			ExpectError: regexp.MustCompile(`(?s)audience.*not-what-was-asked`),
+		}},
 	})
 }
 

@@ -63,7 +63,7 @@ Changing the role replaces the key, because the API has no update operation.
 
 ### Optional
 
-- `description` (String) Free-text description, useful for identifying a key in the Restate Cloud console. Changing it replaces the key: the API has no update operation, so there is no way to edit a description in place.
+- `description` (String) Free-text description, useful for identifying a key in the Restate Cloud console. Changing it replaces the key: the API has no update operation, so there is no way to edit a description in place. Omit it instead of setting an empty string.
 
 ### Read-Only
 

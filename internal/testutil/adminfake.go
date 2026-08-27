@@ -42,6 +42,13 @@ type AdminFake struct {
 
 	// DiscoveryError, when set, makes registration fail the way an unreachable endpoint does.
 	DiscoveryError string
+	// CreatedDeploymentURIOverride and CreatedKafkaNameOverride simulate a successful write whose
+	// response disagrees with the request, for partial-state cleanup tests.
+	CreatedDeploymentURIOverride string
+	CreatedKafkaNameOverride     string
+	// CreatedDeploymentAuthOverride is the raw `auth` object a registration reports back, for testing
+	// a server that fills in authentication details the request left for it to derive.
+	CreatedDeploymentAuthOverride string
 
 	// RedactionMarker is substituted for a sensitive Kafka property value on read.
 	RedactionMarker string
@@ -281,7 +288,13 @@ func (f *AdminFake) registerDeployment(request Request) Response {
 	if body.URI != nil {
 		deployment.Kind = "http"
 		deployment.URI = *body.URI
+		if f.CreatedDeploymentURIOverride != "" {
+			deployment.URI = f.CreatedDeploymentURIOverride
+		}
 		deployment.Auth = body.Auth
+		if f.CreatedDeploymentAuthOverride != "" {
+			deployment.Auth = json.RawMessage(f.CreatedDeploymentAuthOverride)
+		}
 		if body.UseHTTP11 != nil {
 			deployment.UseHTTP11 = *body.UseHTTP11
 		}
@@ -382,7 +395,7 @@ func (f *AdminFake) updateDeployment(id string, request Request) Response {
 		URI               *string           `json:"uri"`
 		UseHTTP11         *bool             `json:"use_http_11"`
 		ARN               *string           `json:"arn"`
-		AssumeRoleARN     *string           `json:"assume_role_arn"`
+		AssumeRoleARN     json.RawMessage   `json:"assume_role_arn"`
 		AdditionalHeaders map[string]string `json:"additional_headers"`
 	}
 	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
@@ -406,7 +419,11 @@ func (f *AdminFake) updateDeployment(id string, request Request) Response {
 		deployment.ARN = *body.ARN
 	}
 	if body.AssumeRoleARN != nil {
-		deployment.AssumeRoleARN = *body.AssumeRoleARN
+		if string(body.AssumeRoleARN) == "null" {
+			deployment.AssumeRoleARN = ""
+		} else if err := json.Unmarshal(body.AssumeRoleARN, &deployment.AssumeRoleARN); err != nil {
+			return adminError(http.StatusBadRequest, "malformed assume_role_arn")
+		}
 	}
 	if body.AdditionalHeaders != nil {
 		deployment.AdditionalHeaders = body.AdditionalHeaders
@@ -443,11 +460,15 @@ func (f *AdminFake) createKafkaCluster(request Request) Response {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	if _, exists := f.kafkaClusters[body.Name]; exists {
+	name := body.Name
+	if f.CreatedKafkaNameOverride != "" {
+		name = f.CreatedKafkaNameOverride
+	}
+	if _, exists := f.kafkaClusters[name]; exists {
 		return adminError(http.StatusConflict, "a Kafka cluster with this name already exists")
 	}
-	cluster := &FakeKafkaCluster{Name: body.Name, Properties: body.Properties}
-	f.kafkaClusters[body.Name] = cluster
+	cluster := &FakeKafkaCluster{Name: name, Properties: body.Properties}
+	f.kafkaClusters[name] = cluster
 	return jsonResponse(http.StatusCreated, f.kafkaClusterBody(cluster, false))
 }
 

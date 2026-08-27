@@ -273,9 +273,9 @@ func TestCreateHTTPDeployment(t *testing.T) {
 	}
 }
 
-// The contract defaults `force` to true. Sending an explicit false would be a behaviour change, and
-// sending nothing is what leaves the server's own default in charge, so an unset flag is omitted.
-func TestCreateDeploymentOmitsUnsetFlags(t *testing.T) {
+// The contract defaults `force` to true, while the provider's safe default is false. The facade must
+// therefore send false explicitly rather than leaving the destructive server default in charge.
+func TestCreateDeploymentSendsSafeForceDefaultAndOmitsOtherUnsetFlags(t *testing.T) {
 	server := testutil.NewAPIServer(t)
 	server.UseFullPath = true
 	server.On("/deployments", testutil.JSON(`{"id":"dp_new","services":[]}`))
@@ -288,7 +288,10 @@ func TestCreateDeploymentOmitsUnsetFlags(t *testing.T) {
 
 	var body map[string]any
 	server.LastRequest().DecodeBody(t, &body)
-	for _, field := range []string{"force", "breaking", "use_http_11", "additional_headers", "metadata", "auth"} {
+	if force, present := body["force"]; !present || force != false {
+		t.Errorf("force = %v (present %t), want explicit false", force, present)
+	}
+	for _, field := range []string{"breaking", "use_http_11", "additional_headers", "metadata", "auth"} {
 		if _, present := body[field]; present {
 			t.Errorf("%s was sent despite not being configured: %v", field, body[field])
 		}
@@ -559,6 +562,29 @@ func TestUpdateLambdaDeployment(t *testing.T) {
 	server.Requests()[0].DecodeBody(t, &body)
 	if body["arn"] != "arn:aws:lambda:us-east-1:123456789012:function:orders:2" {
 		t.Errorf("arn = %v", body["arn"])
+	}
+	if _, present := body["assume_role_arn"]; present {
+		t.Errorf("assume_role_arn was sent despite being unspecified: %v", body["assume_role_arn"])
+	}
+}
+
+func TestUpdateLambdaDeploymentCanClearAssumeRoleARN(t *testing.T) {
+	server := testutil.NewAPIServer(t)
+	server.UseFullPath = true
+	server.On("/deployments/dp_lambda", testutil.Status(http.StatusOK), testutil.JSON(lambdaDeploymentJSON))
+
+	clear := ""
+	if _, err := newClient(t, server).Deployments().Update(context.Background(), "dp_lambda", admin.UpdateInput{
+		Lambda: &admin.UpdateLambdaDeployment{AssumeRoleARN: &clear},
+	}); err != nil {
+		t.Fatalf("Update: %v", err)
+	}
+
+	var body map[string]any
+	server.Requests()[0].DecodeBody(t, &body)
+	value, present := body["assume_role_arn"]
+	if !present || value != nil {
+		t.Errorf("assume_role_arn = %v (present %t), want explicit null", value, present)
 	}
 }
 

@@ -169,7 +169,7 @@ Required:
 Optional:
 
 - `additional_headers` (Map of String, Sensitive) Headers added to every discover and invoke request. Sensitive, and preserved from configuration on refresh; see the `http` variant for details.
-- `assume_role_arn` (String) Role Restate assumes when invoking the function, for role chaining. Applied in place.
+- `assume_role_arn` (String) Role Restate assumes when invoking the function, for role chaining. Applied in place. Removing this attribute clears an existing role.
 - `metadata` (Map of String) Free-form deployment metadata. Changing it **replaces** the deployment: the Admin API's update request does not accept metadata.
 
 Read-Only:

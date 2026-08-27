@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -103,7 +104,7 @@ func (d *Deployments) Create(ctx context.Context, input RegisterInput) (Register
 		variant := generated.RegisterDeploymentRequest0{
 			Uri:               input.HTTP.URI,
 			UseHttp11:         truePointer(input.HTTP.UseHTTP11),
-			Force:             truePointer(input.HTTP.Force),
+			Force:             boolPointer(input.HTTP.Force),
 			Breaking:          truePointer(input.HTTP.Breaking),
 			AdditionalHeaders: headerMapPointer(input.HTTP.AdditionalHeaders),
 			Metadata:          mapPointer(input.HTTP.Metadata),
@@ -121,7 +122,7 @@ func (d *Deployments) Create(ctx context.Context, input RegisterInput) (Register
 		variant := generated.RegisterDeploymentRequest1{
 			Arn:               input.Lambda.ARN,
 			AssumeRoleArn:     stringPointer(input.Lambda.AssumeRoleARN),
-			Force:             truePointer(input.Lambda.Force),
+			Force:             boolPointer(input.Lambda.Force),
 			Breaking:          truePointer(input.Lambda.Breaking),
 			AdditionalHeaders: headerMapPointer(input.Lambda.AdditionalHeaders),
 			Metadata:          mapPointer(input.Lambda.Metadata),
@@ -226,9 +227,10 @@ func (d *Deployments) Update(ctx context.Context, deploymentID string, input Upd
 		return Deployment{}, err
 	}
 
-	var body generated.UpdateDeploymentJSONRequestBody
+	var send func(context.Context) (*http.Response, error)
 	switch kind {
 	case EndpointHTTP:
+		var body generated.UpdateDeploymentJSONRequestBody
 		variant := generated.UpdateDeploymentRequest0{
 			Uri:               stringPointer(input.HTTP.URI),
 			UseHttp11:         truePointer(input.HTTP.UseHTTP11),
@@ -238,28 +240,57 @@ func (d *Deployments) Update(ctx context.Context, deploymentID string, input Upd
 		if err := body.FromUpdateDeploymentRequest0(variant); err != nil {
 			return Deployment{}, fmt.Errorf("encode HTTP deployment update: %w", err)
 		}
-	case EndpointLambda:
-		variant := generated.UpdateDeploymentRequest1{
-			Arn:               stringPointer(input.Lambda.ARN),
-			AssumeRoleArn:     stringPointer(input.Lambda.AssumeRoleARN),
-			Overwrite:         truePointer(input.Lambda.Overwrite),
-			AdditionalHeaders: headerMapPointer(input.Lambda.AdditionalHeaders),
+		send = func(ctx context.Context) (*http.Response, error) {
+			return d.client.generated.UpdateDeployment(ctx, deploymentID, body)
 		}
-		if err := body.FromUpdateDeploymentRequest1(variant); err != nil {
+	case EndpointLambda:
+		encoded, err := marshalLambdaDeploymentUpdate(*input.Lambda)
+		if err != nil {
 			return Deployment{}, fmt.Errorf("encode Lambda deployment update: %w", err)
+		}
+		send = func(ctx context.Context) (*http.Response, error) {
+			return d.client.generated.UpdateDeploymentWithBody(ctx, deploymentID, "application/json", bytes.NewReader(encoded))
 		}
 	}
 
 	if err := api.ExecuteNoContent(ctx, d.client.executor, "UpdateDeployment", api.RetryThrottleOnly,
-		func(ctx context.Context) (*http.Response, error) {
-			return d.client.generated.UpdateDeployment(ctx, deploymentID, body)
-		}); err != nil {
+		send); err != nil {
 		return Deployment{}, err
 	}
 
 	// Re-read rather than decode the update response: the read path is what a later refresh sees, so an
 	// update cannot leave state describing something the read path disagrees with.
 	return d.Get(ctx, deploymentID)
+}
+
+// marshalLambdaDeploymentUpdate is a narrow wire override for a nullable OpenAPI field that the
+// generator represents as *string with omitempty. That generated shape cannot encode explicit null,
+// which is the contract's operation for clearing assume_role_arn.
+func marshalLambdaDeploymentUpdate(input UpdateLambdaDeployment) ([]byte, error) {
+	var assumeRoleARN json.RawMessage
+	if input.AssumeRoleARN != nil {
+		if *input.AssumeRoleARN == "" {
+			assumeRoleARN = json.RawMessage("null")
+		} else {
+			encoded, err := json.Marshal(*input.AssumeRoleARN)
+			if err != nil {
+				return nil, err
+			}
+			assumeRoleARN = encoded
+		}
+	}
+
+	return json.Marshal(struct {
+		ARN               *string                           `json:"arn,omitempty"`
+		AssumeRoleARN     json.RawMessage                   `json:"assume_role_arn,omitempty"`
+		Overwrite         *bool                             `json:"overwrite,omitempty"`
+		AdditionalHeaders *generated.SerdeableHeaderHashMap `json:"additional_headers,omitempty"`
+	}{
+		ARN:               stringPointer(input.ARN),
+		AssumeRoleARN:     assumeRoleARN,
+		Overwrite:         truePointer(input.Overwrite),
+		AdditionalHeaders: headerMapPointer(input.AdditionalHeaders),
+	})
 }
 
 // Delete removes a deployment.

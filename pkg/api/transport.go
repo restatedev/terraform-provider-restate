@@ -71,6 +71,12 @@ func NewTransport(cfg TransportConfig) (*http.Client, error) {
 				next:   base,
 			},
 		},
+		// API endpoints are not expected to redirect. Refusing redirects keeps the bearer token scoped
+		// to the configured endpoint: following one would pass the redirected request back through the
+		// authentication transport, which would otherwise attach the token to the new destination.
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
 	}, nil
 }
 

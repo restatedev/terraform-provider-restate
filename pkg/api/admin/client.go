@@ -119,6 +119,10 @@ func truePointer(set bool) *bool {
 	return &value
 }
 
+// boolPointer always sends a boolean, including false. Use it for contract fields whose server-side
+// default is not the safe provider default.
+func boolPointer(value bool) *bool { return &value }
+
 // mapPointer returns a pointer to a copy of m, or nil when m is nil.
 //
 // The nil/empty distinction is load-bearing: nil means "do not send this field", leaving the server's

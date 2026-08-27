@@ -23,7 +23,10 @@ Resources:
   Every change replaces the key, because the API has no update operation.
 - `restate_deployment` — register an HTTP or AWS Lambda service deployment. Registration performs
   service discovery, so timeouts are configurable. Deletion requires `force_destroy`: the API
-  implements only forced deletion, which can break in-flight invocations.
+  implements only forced deletion, which can break in-flight invocations. `force` defaults to
+  `false` and is sent explicitly on every registration, because the API's own default is `true` —
+  omitting it would let a registration override an existing deployment on the same URI. Removing
+  `lambda.assume_role_arn` clears role chaining in place rather than being ignored.
 - `restate_kafka_cluster` — Kafka connection configuration, with redaction-aware state handling so a
   refresh neither erases a credential the API will not disclose nor produces a permanent diff.
 - `restate_subscription` — Kafka-to-handler subscriptions. Every change replaces the subscription,
@@ -71,6 +74,16 @@ Behaviours worth stating explicitly, because they are the ones most likely to su
 - **A deployment is replaced only when its endpoint kind changes**, not when a field inside it does.
   Moving a URI is an in-place update; the Admin API supports that, and replacing a deployment breaks
   every in-flight invocation.
+- **A value the configuration left unset is never adopted from the API where the API is entitled to
+  choose it.** `use_http_11`, deployment headers, Kafka properties the API redacts, and the
+  `google_id_token` sub-attributes the contract documents as derivable are all preserved from
+  configuration, because adopting a server-chosen value would produce a permanent diff — and, for
+  authentication, a deployment replaced on every apply. Genuine out-of-band changes are still
+  reported: authentication being removed entirely shows up as drift.
+- **A hung poll attempt costs that attempt, not the operation.** An environment create that polls for
+  thirty minutes survives a describe that never answers; the tolerance is bounded, and a fetch that
+  fails for any other reason — an expired credential — is still fatal immediately rather than being
+  reported as a timeout.
 
 ### Notes
 

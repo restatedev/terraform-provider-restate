@@ -181,8 +181,10 @@ type UpdateHTTPDeployment struct {
 type UpdateLambdaDeployment struct {
 	// ARN, when non-empty, repoints the deployment.
 	ARN string
-	// AssumeRoleARN, when non-empty, changes role chaining.
-	AssumeRoleARN string
+	// AssumeRoleARN distinguishes all three update operations: nil leaves role chaining unchanged, a
+	// pointer to a non-empty ARN sets it, and a pointer to an empty string clears it by sending JSON
+	// null. The pointer is necessary because omission and null have different wire semantics.
+	AssumeRoleARN *string
 	// AdditionalHeaders replaces the header map. Nil leaves it unchanged.
 	AdditionalHeaders map[string]string
 	Overwrite         bool

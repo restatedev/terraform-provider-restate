@@ -57,6 +57,24 @@ func TestKafkaClusterCreate(t *testing.T) {
 	})
 }
 
+func TestKafkaClusterCreateMismatchRetainsRemoteNameForCleanup(t *testing.T) {
+	clearProviderEnvironment(t)
+	admin := adminFake(t)
+	admin.CreatedKafkaNameOverride = "server-returned-cluster"
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{{
+			Config:      adminConfig(admin.URL, kafkaClusterBody),
+			ExpectError: regexp.MustCompile(`(?s)did not apply the requested value.*server-returned-cluster`),
+		}},
+	})
+
+	if got := admin.KafkaClusterCount(); got != 0 {
+		t.Errorf("KafkaClusterCount = %d, want 0: failed create should retain the remote name for cleanup", got)
+	}
+}
+
 // This is the regression the redaction handling exists for: a refresh must neither erase the
 // credential nor produce a permanent diff.
 func TestKafkaClusterRefreshDoesNotDiffOnRedactedSecrets(t *testing.T) {

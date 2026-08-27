@@ -219,7 +219,8 @@ func (r *DeploymentResource) Schema(ctx context.Context, _ resource.SchemaReques
 					"assume_role_arn": schema.StringAttribute{
 						Optional: true,
 						MarkdownDescription: "Role Restate assumes when invoking the function, for role chaining. " +
-							"Applied in place.",
+							"Applied in place. Removing this attribute clears an existing role.",
+						Validators: []validator.String{stringvalidator.LengthAtLeast(1)},
 					},
 					"additional_headers": schema.MapAttribute{
 						Optional:    true,
@@ -392,7 +393,9 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 	// refresh sees.
 	deployment, err := r.data.Admin.Deployments().Get(ctx, registered.ID)
 	if err != nil {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), registered.ID)...)
+		state := plan
+		state.ID = types.StringValue(registered.ID)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 		resp.Diagnostics.AddError("Could not read the Restate deployment after registering it",
 			fmt.Sprintf("Deployment %s was registered but could not be read back, so its state is incomplete. "+
 				"Run `terraform refresh`.\n\n%s", registered.ID, err.Error()))
@@ -401,9 +404,8 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 
 	state := plan
 	resp.Diagnostics.Append(r.applyDeployment(ctx, &state, deployment, applyWrite)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Registration has succeeded. Keep the ID even if verification reports that the server did not
+	// apply a requested field, otherwise Terraform cannot destroy it.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -491,9 +493,8 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	updated := plan
 	resp.Diagnostics.Append(r.applyDeployment(ctx, &updated, deployment, applyWrite)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Update already re-read the remote object. Record that identity even when verification fails so
+	// state does not conceal a partial server-side change.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updated)...)
 }
 
@@ -652,9 +653,10 @@ func (r *DeploymentResource) updateInput(ctx context.Context, plan deploymentMod
 	case plan.Lambda != nil:
 		headers, headerDiags := stringMap(ctx, plan.Lambda.AdditionalHeaders)
 		diags.Append(headerDiags...)
+		assumeRoleARN := plan.Lambda.AssumeRoleARN.ValueString()
 		return admin.UpdateInput{Lambda: &admin.UpdateLambdaDeployment{
 			ARN:               plan.Lambda.ARN.ValueString(),
-			AssumeRoleARN:     plan.Lambda.AssumeRoleARN.ValueString(),
+			AssumeRoleARN:     &assumeRoleARN,
 			AdditionalHeaders: headers,
 			Overwrite:         plan.Overwrite.ValueBool(),
 		}}, diags
@@ -715,10 +717,10 @@ func (r *DeploymentResource) applyDeployment(ctx context.Context, model *deploym
 					deployment.ID, model.HTTP.URI.ValueString(), deployment.URI))
 		}
 
-		if model.HTTP.Auth == nil {
-			// Authentication cannot be updated, so state's value came from configuration. It is reconstructed from
-			// the response only when there is nothing to preserve -- on an import.
-			model.HTTP.Auth = authFromDeployment(deployment.Auth)
+		if mode == applyRead {
+			model.HTTP.Auth = mergeHTTPAuth(model.HTTP.Auth, deployment.Auth)
+		} else {
+			verifyHTTPAuth(model.HTTP.Auth, deployment.Auth, deployment.ID, &diags)
 		}
 
 	case admin.EndpointLambda:
@@ -734,11 +736,19 @@ func (r *DeploymentResource) applyDeployment(ctx context.Context, model *deploym
 			model.Lambda.AssumeRoleARN = optionalString(deployment.AssumeRoleARN)
 			model.Lambda.AdditionalHeaders = mergeHeaders(ctx, model.Lambda.AdditionalHeaders, deployment.AdditionalHeaders, &diags)
 			model.Lambda.Metadata = stringMapValue(ctx, deployment.Metadata, &diags)
-		} else if deployment.ARN != "" && model.Lambda.ARN.ValueString() != deployment.ARN {
-			diags.AddAttributeError(path.Root("lambda").AtName("arn"),
-				"The Restate deployment does not have the requested ARN",
-				fmt.Sprintf("Deployment %s was registered with ARN %q, but the API reports %q.",
-					deployment.ID, model.Lambda.ARN.ValueString(), deployment.ARN))
+		} else {
+			if deployment.ARN != "" && model.Lambda.ARN.ValueString() != deployment.ARN {
+				diags.AddAttributeError(path.Root("lambda").AtName("arn"),
+					"The Restate deployment does not have the requested ARN",
+					fmt.Sprintf("Deployment %s was registered with ARN %q, but the API reports %q.",
+						deployment.ID, model.Lambda.ARN.ValueString(), deployment.ARN))
+			}
+			if model.Lambda.AssumeRoleARN.ValueString() != deployment.AssumeRoleARN {
+				diags.AddAttributeError(path.Root("lambda").AtName("assume_role_arn"),
+					"The Restate deployment does not have the requested assume-role ARN",
+					fmt.Sprintf("Deployment %s was asked to set the assume-role ARN to %q, but the API reports %q.",
+						deployment.ID, model.Lambda.AssumeRoleARN.ValueString(), deployment.AssumeRoleARN))
+			}
 		}
 	}
 
@@ -806,6 +816,80 @@ func authFromDeployment(auth *admin.HTTPAuth) *authModel {
 		Audience:                  optionalString(auth.GoogleIDToken.Audience),
 		ImpersonateServiceAccount: optionalString(auth.GoogleIDToken.ImpersonateServiceAccount),
 	}}
+}
+
+// mergeHTTPAuth reconciles the authentication the API reported with what state already holds, on the
+// same principle as mergeHeaders.
+//
+// Whether authentication is configured at all is taken from the API, so authentication removed out of
+// band shows up as drift. Within it, a sub-attribute the configuration left null stays null when the
+// API reports a value: `audience` and `impersonate_service_account` are both documented as derivable
+// from the deployment, so adopting a server-derived value would turn "let Restate work it out" into a
+// permanent diff -- and, because authentication carries RequiresReplace, into a deployment replaced on
+// every apply. An out-of-band edit to a sub-attribute the configuration *did* set is still reported.
+func mergeHTTPAuth(configured *authModel, reported *admin.HTTPAuth) *authModel {
+	if reported == nil || reported.GoogleIDToken == nil {
+		return nil
+	}
+	adopted := authFromDeployment(reported)
+	if configured == nil || configured.GoogleIDToken == nil {
+		// Nothing to preserve, which is the import case.
+		return adopted
+	}
+
+	if configured.GoogleIDToken.Audience.IsNull() {
+		adopted.GoogleIDToken.Audience = types.StringNull()
+	}
+	if configured.GoogleIDToken.ImpersonateServiceAccount.IsNull() {
+		adopted.GoogleIDToken.ImpersonateServiceAccount = types.StringNull()
+	}
+	return adopted
+}
+
+// verifyHTTPAuth reports authentication the API did not apply as asked, after a create.
+//
+// Only sub-attributes the configuration actually set are compared, for the reason mergeHTTPAuth
+// describes: a null one is a request for the server's own choice, so it cannot disagree with the
+// answer. Presence is always compared -- authentication silently dropped or added is a real problem.
+func verifyHTTPAuth(configured *authModel, reported *admin.HTTPAuth, deploymentID string, diags *diag.Diagnostics) {
+	attribute := path.Root("http").AtName("auth")
+	requested := configured != nil && configured.GoogleIDToken != nil
+	applied := reported != nil && reported.GoogleIDToken != nil
+
+	switch {
+	case requested && !applied:
+		diags.AddAttributeError(attribute, "The Restate deployment does not have the requested authentication",
+			fmt.Sprintf("Deployment %s was registered with `google_id_token` authentication, but the API reports "+
+				"none. Requests to this deployment would be unauthenticated.", deploymentID))
+		return
+	case !requested && applied:
+		diags.AddAttributeError(attribute, "The Restate deployment has authentication that was not requested",
+			fmt.Sprintf("Deployment %s was registered without authentication, but the API reports "+
+				"`google_id_token` authentication.", deploymentID))
+		return
+	case !requested:
+		return
+	}
+
+	for _, field := range []struct {
+		name      string
+		requested types.String
+		applied   string
+	}{
+		{"audience", configured.GoogleIDToken.Audience, reported.GoogleIDToken.Audience},
+		{"impersonate_service_account", configured.GoogleIDToken.ImpersonateServiceAccount,
+			reported.GoogleIDToken.ImpersonateServiceAccount},
+	} {
+		if field.requested.IsNull() || field.requested.IsUnknown() {
+			continue
+		}
+		if field.requested.ValueString() != field.applied {
+			diags.AddAttributeError(attribute.AtName("google_id_token").AtName(field.name),
+				"The Restate deployment does not have the requested authentication",
+				fmt.Sprintf("Deployment %s was asked to set `%s` to %q, but the API reports %q.",
+					deploymentID, field.name, field.requested.ValueString(), field.applied))
+		}
+	}
 }
 
 // optionalString keeps an absent value null rather than "", so an unconfigured optional attribute does

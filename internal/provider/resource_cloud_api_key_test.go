@@ -51,6 +51,30 @@ func TestAPIKeyCreateReturnsTheSecret(t *testing.T) {
 	})
 }
 
+func TestAPIKeyCreateMismatchRetainsStateForRevocation(t *testing.T) {
+	clearProviderEnvironment(t)
+	cloud := cloudFake(t)
+	cloud.CreatedAPIKeyRoleOverride = "rst:role::DeveloperAccess"
+
+	config := cloudProviderConfig(cloud.URL) + `
+resource "restate_cloud_api_key" "test" {
+  environment_id = "env_existing"
+  role_id        = "rst:role::AdminAccess"
+}
+`
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{{
+			Config:      config,
+			ExpectError: regexp.MustCompile(`(?s)did not apply the requested value.*DeveloperAccess`),
+		}},
+	})
+
+	if got := cloud.KeyCount(); got != 0 {
+		t.Errorf("KeyCount = %d, want 0: failed create should retain state for revocation", got)
+	}
+}
+
 // Describe never returns the secret, so a refresh must keep what state already holds. Overwriting it
 // would destroy the only copy of a live credential.
 func TestAPIKeyRefreshPreservesTheSecret(t *testing.T) {
@@ -104,6 +128,22 @@ func TestAPIKeyWithNoDescriptionConverges(t *testing.T) {
 				},
 			},
 		},
+	})
+}
+
+func TestAPIKeyRejectsAnExplicitEmptyDescription(t *testing.T) {
+	clearProviderEnvironment(t)
+	cloud := cloudFake(t)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{{
+			Config: apiKeyConfig(cloud.URL, `
+  role_id     = "rst:role::AdminAccess"
+  description = ""
+`),
+			ExpectError: regexp.MustCompile(`(?s)description.*at least 1`),
+		}},
 	})
 }
 
