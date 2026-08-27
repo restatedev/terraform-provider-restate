@@ -24,6 +24,16 @@ access-controlled state backend. Never commit state or `.tfvars` containing cred
 
 ## Logging
 
-The provider redacts `Authorization` headers, deployment `additional_headers`, and Kafka
-properties from diagnostics and from `TF_LOG` output. If you find a credential in provider output,
-treat it as a vulnerability and report it.
+The provider's errors carry the API's own message, the HTTP status, and a request ID. They
+deliberately carry **no response body and no request headers**, because either can contain a bearer
+token, a Kafka credential, or a user payload — so a credential is not omitted from output, it is
+never put there in the first place.
+
+As defence in depth, any text that could still carry one — a transport error quoting a URL, or a
+server echoing a submitted value back in its own message — is passed through a redaction pass that
+replaces bearer credentials and URL userinfo with `[REDACTED]`.
+
+If you find a credential in provider output, treat it as a vulnerability and report it.
+
+Terraform's own trace logging is separate: `TF_LOG=trace` logs the values Terraform passes around,
+including sensitive ones. Do not attach a trace log to a public issue.

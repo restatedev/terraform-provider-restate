@@ -53,6 +53,22 @@ Documentation:
 - Guides on the two-stage bootstrap, state and secret handling, and every destructive operation.
 - Generated reference documentation and runnable examples for every resource and data source.
 
+### Correctness notes
+
+Behaviours worth stating explicitly, because they are the ones most likely to surprise:
+
+- **Writes keep planned values; refreshes adopt the API's.** Terraform requires the value after an
+  apply to equal what was planned, so every resource verifies that the API applied what it was asked
+  for and reports a discrepancy directly, rather than adopting a different value and failing
+  Terraform's own consistency check with a message that blames the provider.
+- **Request deadlines are layered, not capped.** `request_timeout` is a default that applies only
+  where a resource sets no timeout of its own, so a resource-level timeout always wins — deployment
+  discovery legitimately takes minutes. Poll loops bound each attempt separately, so one hung request
+  costs an attempt rather than a whole provisioning budget.
+- **A deployment is replaced only when its endpoint kind changes**, not when a field inside it does.
+  Moving a URI is an in-place update; the Admin API supports that, and replacing a deployment breaks
+  every in-flight invocation.
+
 ### Notes
 
 - Restate Cloud API contract: `v1`, from `restatedev/restate-cloud` at `d9886ea`.

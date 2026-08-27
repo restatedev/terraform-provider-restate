@@ -99,10 +99,62 @@ jobs:
             exit 1
           fi
 
-      # The examples are embedded verbatim into the generated docs, so unformatted HCL ships as
-      # unformatted HCL on the registry.
+      # The examples are embedded verbatim into the generated docs, so unformatted or broken HCL ships
+      # as unformatted or broken HCL on the registry.
       - name: Check example formatting
         run: terraform fmt -check -recursive examples/
+
+      - name: Validate the examples
+        run: |
+          mkdir -p "$RUNNER_TEMP/provider-bin"
+          go build -o "$RUNNER_TEMP/provider-bin/terraform-provider-restate" .
+
+          cat > "$RUNNER_TEMP/dev.tfrc" <<EOF
+          provider_installation {
+            dev_overrides {
+              "restatedev/restate" = "$RUNNER_TEMP/provider-bin"
+            }
+            direct {}
+          }
+          EOF
+          export TF_CLI_CONFIG_FILE="$RUNNER_TEMP/dev.tfrc"
+
+          status=0
+          for dir in examples/provider examples/resources/*/ examples/data-sources/*/; do
+            ls "$dir"*.tf >/dev/null 2>&1 || continue
+
+            work="$RUNNER_TEMP/validate/$(echo "$dir" | tr '/' '_')"
+            mkdir -p "$work"
+            cp "$dir"*.tf "$work/"
+
+            # Each example is a fragment: the reader is assumed to have a provider requirement
+            # already, so supply one rather than repeating it in every file.
+            cat > "$work/_provider.tf" <<'PROV'
+          terraform {
+            required_providers {
+              restate = {
+                source = "restatedev/restate"
+              }
+            }
+          }
+          PROV
+
+            if ! terraform -chdir="$work" validate -no-color; then
+              echo "::error file=$dir::example does not validate"
+              status=1
+            fi
+          done
+
+          # The two-stage example is a pair of complete root modules, so it validates in place.
+          for dir in examples/two-stage-bootstrap/*/; do
+            ls "$dir"*.tf >/dev/null 2>&1 || continue
+            if ! terraform -chdir="$dir" validate -no-color; then
+              echo "::error file=$dir::example does not validate"
+              status=1
+            fi
+          done
+
+          exit $status
 
   vulncheck:
     name: Vulnerability scan

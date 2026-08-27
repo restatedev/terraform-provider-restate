@@ -410,6 +410,8 @@ Do not silently choose answers to these during implementation; resolve them with
     **Still open:** whether a null restores the SDK-discovered value or a server default. If it restores the discovered value, destroy could become a real reset, which would be a behaviour change worth a major release.
 6. **Partly resolved.** Retry safety is a per-operation property, not a transport setting, and the zero value is the safest: retry only responses that prove the request was not acted on (429, and 503 with `Retry-After`). Creates use that level; idempotent writes additionally retry retryable 5xx; only reads retry transport errors, where the provider cannot tell whether the server saw the request. `Retry-After` is honoured but clamped, so a broken server cannot park an apply.
 
+    Relatedly, request deadlines are layered rather than capped. `request_timeout` is a **default** applied only when the caller's context has no deadline, so a resource timeout always wins -- an `http.Client.Timeout` would silently override the ten minutes deployment discovery needs. Poll loops bound each attempt separately, so one hung describe costs an attempt rather than the whole provisioning budget.
+
     **Still open:** whether the Cloud API actually sends `Retry-After`, and whether any create has an idempotency guarantee. Until it does, no create is retried through an ambiguous 5xx — which is why a failed create records the object's ID in state so Terraform can destroy it rather than leaving an orphan.
 7. **Partly resolved.** The pinned `v1` snapshot **is** the compatibility boundary; the API has no version endpoint to negotiate against. The policy is recorded in `pkg/api/cloud/PROVENANCE.md`: send only what the snapshot defines, ignore unknown response fields, fail with an actionable diagnostic when a required field is missing, and treat a refreshed snapshot that changes a field the provider reads as a breaking provider change.
 
@@ -435,7 +437,8 @@ These are things a reader should not have to discover by reading the code.
   `restate_cloud_environment` passing a live lifecycle -- is therefore **not met**, and the provider
   must not be published until it is.
 - **The default timeouts are estimates.** 30 minutes for environment create and delete, 10 minutes for
-  deployment registration. They are deliberately generous rather than measured, and should be revised
+  deployment registration, 60 seconds per request where a resource sets no timeout of its own, and 30
+  seconds per poll attempt. They are deliberately generous rather than measured, and should be revised
   from live data.
 - **The Kafka redaction marker is a heuristic.** The provider does not depend on recognising it -- see
   decision 4 -- but the marker list should be corrected from a live cluster.

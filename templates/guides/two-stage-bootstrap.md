@@ -58,6 +58,10 @@ be configured from an EKS cluster it creates in the same apply either.
 
 Split the work into two states, and pass the connection details between them deliberately.
 
+A complete, applyable version of everything below — with variables, outputs and teardown
+instructions — is in [`examples/two-stage-bootstrap/`](https://github.com/restatedev/terraform-provider-restate/tree/main/examples/two-stage-bootstrap)
+in the provider repository.
+
 ### Stage 1: provision
 
 ```hcl

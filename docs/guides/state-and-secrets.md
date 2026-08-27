@@ -66,14 +66,16 @@ the provider cannot simply trust the response:
 
 ## Logging
 
-The provider redacts credentials from its own diagnostics and from `TF_LOG` output:
-
-- Errors carry the API's own message, the HTTP status, and a request ID. They deliberately never carry
-  the response body or the request headers, because either can contain a bearer token or a user
-  payload.
+- Errors carry the API's own message, the HTTP status, and a request ID. They deliberately carry
+  **no response body and no request headers**, because either can contain a bearer token or a user
+  payload. A credential is not filtered out of provider output; it is never put there.
 - Where a value could still get through — a transport error quoting a URL, or a server echoing a
   submitted token back in its message — it is passed through a redaction pass that replaces bearer
   credentials and URL userinfo with `[REDACTED]`.
+
+  One consequence worth knowing: Restate key IDs and key secrets share a prefix, so a long key ID
+  quoted by the *server* is redacted too. The provider's own diagnostics name key IDs directly and
+  are not affected, so "delete key `key_…`" still tells you which key.
 
 If you find a credential in provider output, that is a vulnerability. Report it as described in
 `SECURITY.md`.
