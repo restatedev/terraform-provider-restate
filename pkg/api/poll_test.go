@@ -190,3 +190,41 @@ func TestPollUntilUsesADefaultIntervalWhenUnset(t *testing.T) {
 		t.Errorf("fetches = %d, want 1", fetches)
 	}
 }
+
+// A deadline can expire while a fetch is in flight rather than during a wait. Both are the loop
+// running out of time, so both must be reported as a timeout; otherwise the caller's timeout
+// handling would work only when the timing happened to land between polls.
+func TestPollUntilReportsATimeoutThatLandsDuringAFetch(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	_, err := PollUntil(ctx, PollConfig{Interval: time.Hour},
+		func(ctx context.Context) (string, error) {
+			cancel()
+			return "", ctx.Err()
+		},
+		func(string) (bool, error) { return false, nil },
+	)
+	if !errors.Is(err, ErrPollTimeout) {
+		t.Fatalf("err = %v, want ErrPollTimeout", err)
+	}
+	if !errors.Is(err, context.Canceled) {
+		t.Errorf("err = %v, want the underlying cause preserved", err)
+	}
+}
+
+// A fetch error that is not caused by the deadline must not be relabelled as a timeout, or an
+// expired credential becomes indistinguishable from a slow provision.
+func TestPollUntilDoesNotRelabelAnUnrelatedFetchError(t *testing.T) {
+	sentinel := errors.New("401 unauthorized")
+
+	_, err := PollUntil(context.Background(), instantPoll(time.Second, nil),
+		func(context.Context) (string, error) { return "", sentinel },
+		func(string) (bool, error) { return false, nil },
+	)
+	if errors.Is(err, ErrPollTimeout) {
+		t.Errorf("err = %v, want the fetch error unlabelled", err)
+	}
+	if !errors.Is(err, sentinel) {
+		t.Errorf("err = %v, want the fetch error", err)
+	}
+}

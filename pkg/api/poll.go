@@ -57,6 +57,13 @@ func PollUntil[T any](ctx context.Context, cfg PollConfig, fetch func(context.Co
 	for attempt := 1; ; attempt++ {
 		observed, err := fetch(ctx)
 		if err != nil {
+			// A deadline that expires while a fetch is in flight is still the loop running out of
+			// time, not a distinct failure. Report it as a timeout so callers have one condition to
+			// check regardless of which phase the deadline happened to land in, while keeping the
+			// underlying error reachable through errors.Is.
+			if ctx.Err() != nil {
+				return zero, fmt.Errorf("%w after %d attempts: %w", ErrPollTimeout, attempt, err)
+			}
 			return zero, err
 		}
 
