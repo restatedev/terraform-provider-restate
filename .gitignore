@@ -1,0 +1,25 @@
+# Build output
+/terraform-provider-restate
+/dist/
+
+# Go
+*.test
+*.out
+/vendor/
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+terraform.rc
+.terraformrc
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Local secrets — never commit credentials
+*.env
+.envrc
