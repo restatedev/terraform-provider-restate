@@ -1,6 +1,6 @@
 resource "restate_cloud_environment" "production" {
   name    = "production"
-  region  = "us-east-1"
+  region  = "us-east-2"
   tier_id = "BUSINESS"
 
   # Destroying an environment is irreversible and takes its data with it. Clearing this guard is a

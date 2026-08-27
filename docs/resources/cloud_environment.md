@@ -21,7 +21,7 @@ The connection metadata this resource exports -- notably `admin_base_url` -- can
 ```terraform
 resource "restate_cloud_environment" "production" {
   name    = "production"
-  region  = "us-east-1"
+  region  = "us-east-2"
   tier_id = "BUSINESS"
 
   # Destroying an environment is irreversible and takes its data with it. Clearing this guard is a
@@ -61,7 +61,7 @@ output "ingress_base_url" {
 ### Optional
 
 - `deletion_protection` (Boolean) When true, `terraform destroy` refuses to delete this environment. Destroying an environment is irreversible and takes its data with it, so guard production environments with this and clear it deliberately when you mean to tear one down.
-- `region` (String) Region to place the environment in, for example `us-east-1`. When omitted, Restate Cloud picks the account's default and the provider records it, so later plans converge.
+- `region` (String) Region to place the environment in, for example `us-east-2`. When omitted, Restate Cloud picks the account's default and the provider records it, so later plans converge.
 
 Changing it replaces the environment: the API has no migration operation, so there is no way to move an environment between regions. Use `restate_cloud_regions` to see what the account may use.
 - `tier_id` (String) Environment tier: one of `FREE`, `STARTER`, `BUSINESS`, `PREMIUM`. When omitted, Restate Cloud applies its default and the provider records it.

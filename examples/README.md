@@ -25,7 +25,7 @@ of each inventing its own names.
 
 | | |
 | --- | --- |
-| environment | `production`, `us-east-1`, `BUSINESS` |
+| environment | `production`, `us-east-2`, `BUSINESS` |
 | API keys | `terraform` (`AdminAccess`), `ingress` (`IngressAccess`) |
 | deployments | `orders` (HTTP), `billing` (Cloud Run), `reports` (Lambda) |
 | services | `OrderService` with handler `handleOrder`, `OnboardingWorkflow` |

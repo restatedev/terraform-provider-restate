@@ -108,7 +108,7 @@ func (r *CloudEnvironmentResource) Schema(ctx context.Context, _ resource.Schema
 			"region": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
-				MarkdownDescription: "Region to place the environment in, for example `us-east-1`. When omitted, " +
+				MarkdownDescription: "Region to place the environment in, for example `us-east-2`. When omitted, " +
 					"Restate Cloud picks the account's default and the provider records it, so later plans " +
 					"converge.\n\n" +
 					"Changing it replaces the environment: the API has no migration operation, so there is no way " +

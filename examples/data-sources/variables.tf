@@ -16,5 +16,5 @@ variable "restate_environment_api_key" {
 variable "region" {
   description = "Region to place the environment in."
   type        = string
-  default     = "us-east-1"
+  default     = "us-east-2"
 }

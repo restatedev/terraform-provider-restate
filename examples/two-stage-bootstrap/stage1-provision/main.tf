@@ -76,7 +76,7 @@ variable "environment_name" {
 variable "region" {
   description = "Region to place the environment in. Cannot be changed without replacing the environment."
   type        = string
-  default     = "us-east-1"
+  default     = "us-east-2"
 }
 
 variable "tier_id" {
