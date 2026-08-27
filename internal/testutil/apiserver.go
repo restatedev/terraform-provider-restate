@@ -96,6 +96,15 @@ func (s *APIServer) On(operation string, responses ...Response) *APIServer {
 	return s
 }
 
+// Replace sets an operation's responses, discarding anything already queued for it. Use it to
+// override a default a helper registered, where appending would make the default answer first.
+func (s *APIServer) Replace(operation string, responses ...Response) *APIServer {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.routes[operation] = append([]Response(nil), responses...)
+	return s
+}
+
 // Requests returns the calls received so far, in order.
 func (s *APIServer) Requests() []Request {
 	s.mu.Lock()
