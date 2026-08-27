@@ -1,0 +1,12 @@
+# Configuration for the pinned oapi-codegen generator. See pkg/api/admin/generate.go.
+package: generated
+output: internal/generated/admin.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  # The facade exposes a subset of the Admin API, but the contract's schemas cross-reference each
+  # other freely; pruning would drop types the retained operations depend on.
+  skip-prune: true
+  # Keeps generated response wrappers from colliding with same-named contract schemas.
+  response-type-suffix: HTTPResult

@@ -1,0 +1,2866 @@
+openapi: 3.1.0
+info:
+  title: Restate Cloud API
+  version: v1
+servers:
+  - url: https://api.dev.restate.cloud/cloud
+    description: Dev Endpoint
+security:
+  - bearerAuth: []
+paths:
+  /GetUserIdentity:
+    post:
+      operationId: GetUserIdentity
+      summary: Retrieve the current user's identity
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetUserIdentityRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserIdentityResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /ListAccounts:
+    post:
+      operationId: ListAccounts
+      summary: List the accounts available to the current user
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListAccountsRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListAccountsResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /GetUserLimits:
+    post:
+      operationId: GetUserLimits
+      summary: Retrieve the limits of the current user
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetUserLimitsRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserLimitsResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /ListOrganizationUsers:
+    post:
+      operationId: ListOrganizationUsers
+      summary: List all users in the current user's organization with their roles
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListOrganizationUsersRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListOrganizationUsersResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/PutAccountUserRoleBinding:
+    post:
+      operationId: PutAccountUserRoleBinding
+      summary: Set the role binding for a user on an organization account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutAccountUserRoleBindingRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PutAccountUserRoleBindingResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DeleteAccountUserRoleBinding:
+    post:
+      operationId: DeleteAccountUserRoleBinding
+      summary: Remove the role binding for a user on an organization account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteAccountUserRoleBindingRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteAccountUserRoleBindingResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/PutAccountGroupRoleBinding:
+    post:
+      operationId: PutAccountGroupRoleBinding
+      summary: Set the role binding for a directory group on an organization account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutAccountGroupRoleBindingRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PutAccountGroupRoleBindingResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DeleteAccountGroupRoleBinding:
+    post:
+      operationId: DeleteAccountGroupRoleBinding
+      summary: Remove the role binding for a directory group on an organization account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteAccountGroupRoleBindingRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteAccountGroupRoleBindingResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/ListAccountRoleBindings:
+    post:
+      operationId: ListAccountRoleBindings
+      summary: List all role bindings (users and groups) on this organization account
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListAccountRoleBindingsRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListAccountRoleBindingsResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /PutOrganizationUserRoleBinding:
+    post:
+      operationId: PutOrganizationUserRoleBinding
+      summary: Set the org-level role binding for a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutOrganizationUserRoleBindingRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PutOrganizationUserRoleBindingResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /DeleteOrganizationUserRoleBinding:
+    post:
+      operationId: DeleteOrganizationUserRoleBinding
+      summary: Remove the org-level role binding for a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteOrganizationUserRoleBindingRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteOrganizationUserRoleBindingResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /PutOrganizationGroupRoleBinding:
+    post:
+      operationId: PutOrganizationGroupRoleBinding
+      summary: Set the org-level role binding for a directory group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutOrganizationGroupRoleBindingRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PutOrganizationGroupRoleBindingResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /DeleteOrganizationGroupRoleBinding:
+    post:
+      operationId: DeleteOrganizationGroupRoleBinding
+      summary: Remove the org-level role binding for a directory group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteOrganizationGroupRoleBindingRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteOrganizationGroupRoleBindingResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /ListOrganizationGroups:
+    post:
+      operationId: ListOrganizationGroups
+      summary: List directory groups linked to the current user's organization
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListOrganizationGroupsRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListOrganizationGroupsResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /ListOrganizationGroupMembers:
+    post:
+      operationId: ListOrganizationGroupMembers
+      summary: List members of a directory group in the current user's organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListOrganizationGroupMembersRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListOrganizationGroupMembersResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /ListOrganizationRoleBindings:
+    post:
+      operationId: ListOrganizationRoleBindings
+      summary: List all role bindings (users and groups) at organization scope
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListOrganizationRoleBindingsRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListOrganizationRoleBindingsResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /CreateAccount:
+    post:
+      operationId: CreateAccount
+      summary: Create a new account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAccountResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /DeleteAccount:
+    post:
+      operationId: DeleteAccount
+      summary: Delete an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteAccountRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteAccountResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /UpdateAccount:
+    post:
+      operationId: UpdateAccount
+      summary: Update account details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAccountRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateAccountResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DescribeAccount:
+    post:
+      operationId: DescribeAccount
+      summary: Retrieve an account's details
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DescribeAccountRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DescribeAccountResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/CreateStripePortalSession:
+    post:
+      operationId: CreateStripePortalSession
+      summary: Create Stripe portal session
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStripePortalSessionRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateStripePortalSessionResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/CreateEnvironment:
+    post:
+      operationId: CreateEnvironment
+      summary: Create a new environment
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEnvironmentRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateEnvironmentResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/UpdateEnvironment:
+    post:
+      operationId: UpdateEnvironment
+      summary: Update environment details
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEnvironmentRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateEnvironmentResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/UpdateEnvironmentTier:
+    post:
+      operationId: UpdateEnvironmentTier
+      summary: Update environment tier
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEnvironmentTierRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateEnvironmentTierResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/GetAccountLimits:
+    post:
+      operationId: GetAccountLimits
+      summary: Retrieve an account's limits
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetAccountLimitsRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetAccountLimitsResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/ListRegions:
+    post:
+      operationId: ListRegions
+      summary: Retrieve an account's available regions
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListRegionsRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListRegionsResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/ListEnvironments:
+    post:
+      operationId: ListEnvironments
+      summary: Retrieve an account's environments
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListEnvironmentsRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListEnvironmentsResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DescribeEnvironment:
+    post:
+      operationId: DescribeEnvironment
+      summary: Retrieve an environment's details
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DescribeEnvironmentRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DescribeEnvironmentResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DestroyEnvironment:
+    post:
+      operationId: DestroyEnvironment
+      summary: Shut down an environment and destroy all its stored metadata and state
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestroyEnvironmentRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestroyEnvironmentResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/CreateApiKey:
+    post:
+      operationId: CreateApiKey
+      summary: Create a new API key for the specified environment
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateApiKeyRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateApiKeyResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/ListApiKeys:
+    post:
+      operationId: ListApiKeys
+      summary: List the known API keys for an environment
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListApiKeysRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListApiKeysResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DescribeApiKey:
+    post:
+      operationId: DescribeApiKey
+      summary: Retrieve the details of a specific API key
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DescribeApiKeyRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DescribeApiKeyResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DeleteApiKey:
+    post:
+      operationId: DeleteApiKey
+      summary: Delete the specified API key
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteApiKeyRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteApiKeyResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/CreateAccountApiKey:
+    post:
+      operationId: CreateAccountApiKey
+      summary: Create a new account-scoped management API key
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountApiKeyRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAccountApiKeyResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/ListAccountApiKeys:
+    post:
+      operationId: ListAccountApiKeys
+      summary: List the account-scoped management API keys for an account
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListAccountApiKeysRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListAccountApiKeysResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DeleteAccountApiKey:
+    post:
+      operationId: DeleteAccountApiKey
+      summary: Delete an account-scoped management API key
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteAccountApiKeyRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteAccountApiKeyResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/ListAccountSecondaryOwners:
+    post:
+      operationId: ListAccountSecondaryOwners
+      summary: List an account's secondary owners
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListAccountSecondaryOwnersRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListAccountSecondaryOwnersResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/AddAccountSecondaryOwner:
+    post:
+      operationId: AddAccountSecondaryOwner
+      summary: Add a secondary owning user to an account
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddAccountSecondaryOwnerRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddAccountSecondaryOwnerResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/RemoveAccountSecondaryOwner:
+    post:
+      operationId: RemoveAccountSecondaryOwner
+      summary: Remove a secondary owning user from an account
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RemoveAccountSecondaryOwnerRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RemoveAccountSecondaryOwnerResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/GetAccountUsage:
+    post:
+      operationId: GetAccountUsage
+      summary: Get the usage data for an account
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetAccountUsageRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetAccountUsageResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+components:
+  schemas:
+    GetUserIdentityRequest:
+      type: object
+      properties: {}
+    ListAccountsRequest:
+      type: object
+      properties: {}
+    GetUserLimitsRequest:
+      type: object
+      properties: {}
+    ListOrganizationUsersRequest:
+      type: object
+      properties: {}
+    PutAccountUserRoleBindingRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+        roles:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicAccountRoleId"
+      required:
+        - userId
+        - roles
+    PublicAccountRoleId:
+      type: string
+      minLength: 1
+      description: Account-level role identifier. Built-in role IDs include
+        `restate/AccountAdmin` and `restate/AccountReadOnly`. The `restate/*`
+        prefix is reserved for Restate-supplied built-in roles; customer-defined
+        role IDs must use a non-reserved namespace.
+      example: restate/AccountAdmin
+    DeleteAccountUserRoleBindingRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+      required:
+        - userId
+    PutAccountGroupRoleBindingRequest:
+      type: object
+      properties:
+        groupId:
+          type: string
+        roles:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicAccountRoleId"
+      required:
+        - groupId
+        - roles
+    DeleteAccountGroupRoleBindingRequest:
+      type: object
+      properties:
+        groupId:
+          type: string
+      required:
+        - groupId
+    ListAccountRoleBindingsRequest:
+      type: object
+      properties: {}
+    PutOrganizationUserRoleBindingRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+        roles:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicOrganizationRoleId"
+      required:
+        - userId
+        - roles
+    PublicOrganizationRoleId:
+      type: string
+      minLength: 1
+      description: Organization-level role identifier. Built-in role IDs include
+        `restate/OrganizationOwner` and `restate/OrganizationViewer`. The
+        `restate/*` prefix is reserved for Restate-supplied built-in roles;
+        customer-defined role IDs must use a non-reserved namespace.
+      example: restate/OrganizationOwner
+    DeleteOrganizationUserRoleBindingRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+      required:
+        - userId
+    PutOrganizationGroupRoleBindingRequest:
+      type: object
+      properties:
+        groupId:
+          type: string
+        roles:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicOrganizationRoleId"
+      required:
+        - groupId
+        - roles
+    DeleteOrganizationGroupRoleBindingRequest:
+      type: object
+      properties:
+        groupId:
+          type: string
+      required:
+        - groupId
+    ListOrganizationGroupsRequest:
+      type: object
+      properties: {}
+    ListOrganizationGroupMembersRequest:
+      type: object
+      properties:
+        groupId:
+          type: string
+      required:
+        - groupId
+    ListOrganizationRoleBindingsRequest:
+      type: object
+      properties: {}
+    CreateAccountRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+      required:
+        - name
+    DeleteAccountRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+      required:
+        - accountId
+    UpdateAccountRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+      required:
+        - accountId
+    AccountId:
+      type: string
+      description: Unique account identifier
+      example: acc_1b2DE3f40
+    DescribeAccountRequest:
+      type: object
+      properties: {}
+    CreateStripePortalSessionRequest:
+      type: object
+      properties:
+        returnUrl:
+          type: string
+    CreateEnvironmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+        region:
+          type: string
+        tierId:
+          type: string
+          enum:
+            - FREE
+            - STARTER
+            - BUSINESS
+            - PREMIUM
+            - CUSTOM
+        profileId:
+          type: string
+        payment:
+          type: object
+          properties:
+            successUrl:
+              type: string
+            cancelUrl:
+              type: string
+          required:
+            - successUrl
+            - cancelUrl
+      required:
+        - name
+    UpdateEnvironmentRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+      required:
+        - environmentId
+        - name
+    UpdateEnvironmentTierRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        tierId:
+          type: string
+          enum:
+            - FREE
+            - STARTER
+            - BUSINESS
+            - PREMIUM
+            - CUSTOM
+        payment:
+          type: object
+          properties:
+            successUrl:
+              type: string
+            cancelUrl:
+              type: string
+          required:
+            - successUrl
+            - cancelUrl
+      required:
+        - environmentId
+        - tierId
+    GetAccountLimitsRequest:
+      type: object
+      properties: {}
+    ListRegionsRequest:
+      type: object
+      properties: {}
+    ListEnvironmentsRequest:
+      type: object
+      properties: {}
+    DescribeEnvironmentRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+      required:
+        - environmentId
+    DestroyEnvironmentRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+      required:
+        - environmentId
+    CreateApiKeyRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        roleId:
+          $ref: "#/components/schemas/RoleId"
+        description:
+          type: string
+      required:
+        - environmentId
+        - roleId
+    RoleId:
+      type: string
+      enum:
+        - rst:role::FullAccess
+        - rst:role::IngressAccess
+        - rst:role::AdminAccess
+        - rst:role::CompleteAwakeableAccess
+        - rst:role::TunnelAccess
+      description: Role identifier for an environment-scoped API key.
+      example: rst:role::FullAccess
+    ListApiKeysRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+      required:
+        - environmentId
+    DescribeApiKeyRequest:
+      type: object
+      properties:
+        keyId:
+          type: string
+        environmentId:
+          type: string
+      required:
+        - keyId
+        - environmentId
+    DeleteApiKeyRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        keyId:
+          type: string
+      required:
+        - environmentId
+        - keyId
+    CreateAccountApiKeyRequest:
+      type: object
+      properties:
+        roleId:
+          $ref: "#/components/schemas/AccountApiKeyRoleId"
+        description:
+          type: string
+      required:
+        - roleId
+    AccountApiKeyRoleId:
+      type: string
+      const: rst:role::ManagementApiAccess
+      description: Role identifier for an account-scoped management API key.
+    ListAccountApiKeysRequest:
+      type: object
+      properties: {}
+    DeleteAccountApiKeyRequest:
+      type: object
+      properties:
+        keyId:
+          type: string
+      required:
+        - keyId
+    ListAccountSecondaryOwnersRequest:
+      type: object
+      properties: {}
+    AddAccountSecondaryOwnerRequest:
+      type: object
+      properties:
+        secondaryOwnerUserId:
+          type: string
+      required:
+        - secondaryOwnerUserId
+    RemoveAccountSecondaryOwnerRequest:
+      type: object
+      properties:
+        secondaryOwnerUserId:
+          type: string
+      required:
+        - secondaryOwnerUserId
+    GetAccountUsageRequest:
+      type: object
+      properties:
+        environmentIds:
+          type: array
+          items:
+            type: string
+        from:
+          type: string
+        to:
+          type: string
+        resolution:
+          type: string
+          enum:
+            - yyyy
+            - mm
+            - dd
+            - hh
+            - aggregate
+    GetUserIdentityResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        organization:
+          type: object
+          properties:
+            organizationId:
+              type: string
+            name:
+              type: string
+            roles:
+              type: array
+              items:
+                $ref: "#/components/schemas/PublicOrganizationRoleId"
+          required:
+            - organizationId
+            - name
+            - roles
+          additionalProperties: false
+      required:
+        - userId
+      additionalProperties: false
+    ClientError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    UnauthorizedError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    ServerInternalError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    ListAccountsResponse:
+      type: object
+      properties:
+        accounts:
+          type: array
+          items:
+            type: object
+            properties:
+              accountId:
+                type: string
+              name:
+                type: string
+                pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+              organizationId:
+                type: string
+              ownershipType:
+                type: string
+                enum:
+                  - OWNED
+                  - SECONDARY_OWNED
+              roles:
+                minItems: 1
+                type: array
+                items:
+                  $ref: "#/components/schemas/PublicAccountRoleId"
+            required:
+              - accountId
+              - name
+            additionalProperties: false
+      required:
+        - accounts
+      additionalProperties: false
+    GetUserLimitsResponse:
+      type: object
+      properties:
+        accounts:
+          type: object
+          properties:
+            usage:
+              type: number
+            limit:
+              type: number
+          required:
+            - usage
+            - limit
+          additionalProperties: false
+      required:
+        - accounts
+      additionalProperties: false
+    ListOrganizationUsersResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+              email:
+                type: string
+            required:
+              - userId
+            additionalProperties: false
+      required:
+        - users
+      additionalProperties: false
+    PutAccountUserRoleBindingResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicAccountRoleId"
+      required:
+        - userId
+        - roles
+      additionalProperties: false
+    DeleteAccountUserRoleBindingResponse:
+      type: object
+      properties: {}
+      additionalProperties: false
+    PutAccountGroupRoleBindingResponse:
+      type: object
+      properties:
+        groupId:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicAccountRoleId"
+      required:
+        - groupId
+        - roles
+      additionalProperties: false
+    DeleteAccountGroupRoleBindingResponse:
+      type: object
+      properties: {}
+      additionalProperties: false
+    ListAccountRoleBindingsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            oneOf:
+              - type: object
+                properties:
+                  kind:
+                    type: string
+                    const: USER
+                  userId:
+                    type: string
+                  email:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PublicAccountRoleId"
+                required:
+                  - kind
+                  - userId
+                  - roles
+                additionalProperties: false
+              - type: object
+                properties:
+                  kind:
+                    type: string
+                    const: GROUP
+                  groupId:
+                    type: string
+                  name:
+                    type: string
+                  status:
+                    $ref: "#/components/schemas/PublicGroupStatus"
+                  roles:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PublicAccountRoleId"
+                required:
+                  - kind
+                  - groupId
+                  - roles
+                additionalProperties: false
+            type: object
+      required:
+        - items
+      additionalProperties: false
+    PublicGroupStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - ARCHIVED
+      description: Lifecycle status of a directory group.
+    PutOrganizationUserRoleBindingResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicOrganizationRoleId"
+      required:
+        - userId
+        - roles
+      additionalProperties: false
+    DeleteOrganizationUserRoleBindingResponse:
+      type: object
+      properties: {}
+      additionalProperties: false
+    PutOrganizationGroupRoleBindingResponse:
+      type: object
+      properties:
+        groupId:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicOrganizationRoleId"
+      required:
+        - groupId
+        - roles
+      additionalProperties: false
+    DeleteOrganizationGroupRoleBindingResponse:
+      type: object
+      properties: {}
+      additionalProperties: false
+    ListOrganizationGroupsResponse:
+      type: object
+      properties:
+        groups:
+          type: array
+          items:
+            type: object
+            properties:
+              groupId:
+                type: string
+              name:
+                type: string
+              status:
+                $ref: "#/components/schemas/PublicGroupStatus"
+            required:
+              - groupId
+              - name
+              - status
+            additionalProperties: false
+      required:
+        - groups
+      additionalProperties: false
+    ListOrganizationGroupMembersResponse:
+      type: object
+      properties:
+        members:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+              email:
+                type: string
+            required:
+              - userId
+            additionalProperties: false
+      required:
+        - members
+      additionalProperties: false
+    ListOrganizationRoleBindingsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            oneOf:
+              - type: object
+                properties:
+                  kind:
+                    type: string
+                    const: USER
+                  userId:
+                    type: string
+                  email:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PublicOrganizationRoleId"
+                required:
+                  - kind
+                  - userId
+                  - roles
+                additionalProperties: false
+              - type: object
+                properties:
+                  kind:
+                    type: string
+                    const: GROUP
+                  groupId:
+                    type: string
+                  name:
+                    type: string
+                  status:
+                    $ref: "#/components/schemas/PublicGroupStatus"
+                  roles:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PublicOrganizationRoleId"
+                required:
+                  - kind
+                  - groupId
+                  - roles
+                additionalProperties: false
+            type: object
+      required:
+        - items
+      additionalProperties: false
+    CreateAccountResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+      required:
+        - accountId
+        - name
+      additionalProperties: false
+    DeleteAccountResponse:
+      type: object
+      properties:
+        result:
+          anyOf:
+            - type: object
+              properties:
+                ok:
+                  type: boolean
+              required:
+                - ok
+              additionalProperties: false
+            - type: string
+      additionalProperties: false
+    UpdateAccountResponse:
+      type: object
+      properties:
+        accountId:
+          type: string
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+        organizationId:
+          type: string
+        ownershipType:
+          type: string
+          enum:
+            - OWNED
+            - SECONDARY_OWNED
+        roles:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicAccountRoleId"
+      required:
+        - accountId
+        - name
+      additionalProperties: false
+    DescribeAccountResponse:
+      type: object
+      properties:
+        environments:
+          type: array
+          items:
+            type: object
+            properties:
+              environmentId:
+                type: string
+              region:
+                type: string
+              name:
+                type: string
+                pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+              tierId:
+                type: string
+                enum:
+                  - FREE
+                  - STARTER
+                  - BUSINESS
+                  - PREMIUM
+                  - CUSTOM
+            required:
+              - environmentId
+              - region
+              - name
+              - tierId
+            additionalProperties: false
+        billingMode:
+          type: string
+          enum:
+            - stripe
+            - account
+        subscription:
+          type: object
+          properties:
+            status:
+              type: string
+              enum:
+                - AWAITING_PAYMENT
+                - ACTIVE
+                - INACTIVE
+            currentPeriodStart:
+              type: number
+            currentPeriodEnd:
+              type: number
+          required:
+            - status
+            - currentPeriodStart
+            - currentPeriodEnd
+          additionalProperties: false
+      required:
+        - environments
+      additionalProperties: false
+    CreateStripePortalSessionResponse:
+      type: object
+      properties:
+        url:
+          type: string
+      required:
+        - url
+      additionalProperties: false
+    CreateEnvironmentResponse:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+        checkoutUrl:
+          type: string
+      required:
+        - environmentId
+        - name
+      additionalProperties: false
+    UpdateEnvironmentResponse:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+      required:
+        - environmentId
+        - name
+      additionalProperties: false
+    UpdateEnvironmentTierResponse:
+      type: object
+      properties:
+        checkoutUrl:
+          type: string
+      additionalProperties: false
+    GetAccountLimitsResponse:
+      type: object
+      properties:
+        freeEnvironments:
+          type: object
+          properties:
+            usage:
+              type: number
+            limit:
+              type: number
+          required:
+            - usage
+            - limit
+          additionalProperties: false
+        tierLimits:
+          type: object
+          propertyNames:
+            type: string
+          additionalProperties:
+            type: object
+            properties:
+              usage:
+                type: number
+              limit:
+                type: number
+            required:
+              - usage
+              - limit
+            additionalProperties: false
+      required:
+        - freeEnvironments
+      additionalProperties: false
+    ListRegionsResponse:
+      type: object
+      properties:
+        regions:
+          type: array
+          items:
+            type: object
+            properties:
+              regionName:
+                type: string
+              regionDisplayName:
+                type: string
+            required:
+              - regionName
+            additionalProperties: false
+      required:
+        - regions
+      additionalProperties: false
+    ListEnvironmentsResponse:
+      type: object
+      properties:
+        environments:
+          type: array
+          items:
+            type: object
+            properties:
+              environmentId:
+                type: string
+              region:
+                type: string
+              name:
+                type: string
+                pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+              tierId:
+                type: string
+                enum:
+                  - FREE
+                  - STARTER
+                  - BUSINESS
+                  - PREMIUM
+                  - CUSTOM
+            required:
+              - environmentId
+              - region
+              - name
+              - tierId
+            additionalProperties: false
+      required:
+        - environments
+      additionalProperties: false
+    DescribeEnvironmentResponse:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        region:
+          type: string
+        regionDisplayName:
+          type: string
+        name:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACTIVE
+            - FAILED
+            - DELETED
+        signingPublicKey:
+          type: string
+        apiKeys:
+          type: array
+          items:
+            type: object
+            properties:
+              keyId:
+                type: string
+              environmentId:
+                type: string
+            required:
+              - keyId
+              - environmentId
+            additionalProperties: false
+        ingressBaseUrl:
+          type: string
+        adminBaseUrl:
+          type: string
+        invocationMetricsUrl:
+          type: string
+        tunnelBaseUrl:
+          type: string
+        tunnelSrv:
+          type: string
+        proxyBaseUrl:
+          type: string
+        tierId:
+          type: string
+          enum:
+            - FREE
+            - STARTER
+            - BUSINESS
+            - PREMIUM
+            - CUSTOM
+      required:
+        - environmentId
+        - region
+        - name
+        - status
+        - signingPublicKey
+        - apiKeys
+        - ingressBaseUrl
+        - adminBaseUrl
+        - tunnelBaseUrl
+        - tunnelSrv
+        - proxyBaseUrl
+        - tierId
+      additionalProperties: false
+    DestroyEnvironmentResponse:
+      type: object
+      properties:
+        result:
+          anyOf:
+            - type: object
+              properties:
+                ok:
+                  type: boolean
+              required:
+                - ok
+              additionalProperties: false
+            - type: string
+      additionalProperties: false
+    CreateApiKeyResponse:
+      type: object
+      properties:
+        keyId:
+          type: string
+        roleId:
+          $ref: "#/components/schemas/RoleId"
+        environmentId:
+          type: string
+        accountId:
+          type: string
+        apiKey:
+          type: string
+        state:
+          type: string
+          enum:
+            - ACTIVE
+            - DELETED
+      required:
+        - keyId
+        - roleId
+        - environmentId
+        - accountId
+        - apiKey
+        - state
+      additionalProperties: false
+    ListApiKeysResponse:
+      type: object
+      properties:
+        apiKeys:
+          type: array
+          items:
+            type: object
+            properties:
+              keyId:
+                type: string
+              environmentId:
+                type: string
+            required:
+              - keyId
+              - environmentId
+            additionalProperties: false
+      required:
+        - apiKeys
+      additionalProperties: false
+    DescribeApiKeyResponse:
+      type: object
+      properties:
+        keyId:
+          type: string
+        roleId:
+          $ref: "#/components/schemas/RoleId"
+        environmentId:
+          type: string
+        accountId:
+          type: string
+        state:
+          type: string
+          enum:
+            - ACTIVE
+            - DELETED
+        description:
+          type: string
+      required:
+        - keyId
+        - roleId
+        - environmentId
+        - accountId
+        - state
+      additionalProperties: false
+    DeleteApiKeyResponse:
+      type: object
+      properties:
+        result:
+          anyOf:
+            - type: object
+              properties:
+                ok:
+                  type: boolean
+              required:
+                - ok
+              additionalProperties: false
+            - type: string
+      additionalProperties: false
+    CreateAccountApiKeyResponse:
+      type: object
+      properties:
+        keyId:
+          type: string
+        accountId:
+          type: string
+        roleId:
+          $ref: "#/components/schemas/AccountApiKeyRoleId"
+        apiKey:
+          type: string
+        description:
+          type: string
+      required:
+        - keyId
+        - accountId
+        - roleId
+        - apiKey
+      additionalProperties: false
+    ListAccountApiKeysResponse:
+      type: object
+      properties:
+        apiKeys:
+          type: array
+          items:
+            type: object
+            properties:
+              keyId:
+                type: string
+              accountId:
+                type: string
+              roleId:
+                $ref: "#/components/schemas/AccountApiKeyRoleId"
+              description:
+                type: string
+              state:
+                type: string
+                enum:
+                  - ACTIVE
+                  - DELETED
+            required:
+              - keyId
+              - accountId
+              - roleId
+              - state
+            additionalProperties: false
+      required:
+        - apiKeys
+      additionalProperties: false
+    DeleteAccountApiKeyResponse:
+      type: object
+      properties: {}
+      additionalProperties: false
+    ListAccountSecondaryOwnersResponse:
+      type: object
+      properties:
+        secondaryOwnersUserIds:
+          type: array
+          items:
+            type: string
+        secondaryOwners:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+              email:
+                type: string
+            required:
+              - userId
+            additionalProperties: false
+      required:
+        - secondaryOwnersUserIds
+        - secondaryOwners
+      additionalProperties: false
+    AddAccountSecondaryOwnerResponse:
+      type: object
+      properties:
+        secondaryOwnersUserIds:
+          type: array
+          items:
+            type: string
+      required:
+        - secondaryOwnersUserIds
+      additionalProperties: false
+    RemoveAccountSecondaryOwnerResponse:
+      type: object
+      properties:
+        secondaryOwnersUserIds:
+          type: array
+          items:
+            type: string
+      required:
+        - secondaryOwnersUserIds
+      additionalProperties: false
+    GetAccountUsageResponse:
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        usage:
+          type: array
+          items:
+            type: object
+            properties:
+              environmentId:
+                type: string
+              ts:
+                type: string
+              actions:
+                type: number
+              storage:
+                type: number
+            required:
+              - environmentId
+              - actions
+              - storage
+            additionalProperties: false
+      required:
+        - from
+        - to
+        - usage
+      additionalProperties: false
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: An access token from the Cloud user authentication service
+

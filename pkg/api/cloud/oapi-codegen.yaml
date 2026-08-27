@@ -1,0 +1,13 @@
+# Configuration for the pinned oapi-codegen generator. See pkg/api/cloud/generate.go.
+package: generated
+output: internal/generated/cloud.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  # The contract is an RPC-over-HTTP surface: every operation is reachable and the provider's
+  # facade decides which ones it exposes. Pruning would silently drop schemas the facade needs.
+  skip-prune: true
+  # The contract names its own response schemas `<Operation>Response`, which collides with the
+  # wrapper types oapi-codegen generates for `ClientWithResponses`. Suffix the wrappers instead.
+  response-type-suffix: HTTPResult
