@@ -6,10 +6,9 @@ import (
 	"strings"
 )
 
-// The types in this file are the provider's stable view of the Cloud Management API. They exist so
-// churn in the generated wire models cannot propagate into Terraform schemas or into any other
-// consumer of this package. Adding a field here is a deliberate act; a regenerated client changing
-// a field name is not.
+// The types in this file are the provider's stable view of the Cloud Management API, so churn in the
+// generated wire models cannot reach a Terraform schema. Adding a field here is a deliberate act; a
+// regenerated client renaming one is not.
 
 // Tier is a Restate Cloud environment tier.
 type Tier string
@@ -19,17 +18,11 @@ const (
 	TierStarter  Tier = "STARTER"
 	TierBusiness Tier = "BUSINESS"
 	TierPremium  Tier = "PREMIUM"
-	// TierCustom is an operator-configured tier. The provider can read it back on an existing
-	// environment, but it cannot be requested: a custom tier is selected through a profile, and the
-	// contract does not report an environment's profile, so a custom-tier environment could not be
-	// refreshed or imported without hidden drift.
+	// TierCustom is operator-configured. It is readable but not requestable: a custom tier is selected
+	// through a profile, which the contract does not report, so requesting one would produce hidden
+	// drift on every refresh.
 	TierCustom Tier = "CUSTOM"
 )
-
-// Tiers lists every tier the pinned contract defines, in ascending order of capability.
-func Tiers() []Tier {
-	return []Tier{TierFree, TierStarter, TierBusiness, TierPremium, TierCustom}
-}
 
 // RequestableTiers lists the tiers a caller may ask for. It excludes CUSTOM; see TierCustom.
 func RequestableTiers() []Tier {
@@ -37,9 +30,6 @@ func RequestableTiers() []Tier {
 }
 
 func (t Tier) String() string { return string(t) }
-
-// Valid reports whether t is a tier the pinned contract defines.
-func (t Tier) Valid() bool { return slices.Contains(Tiers(), t) }
 
 // Requestable reports whether t may be sent in a create or tier-change request.
 func (t Tier) Requestable() bool { return slices.Contains(RequestableTiers(), t) }
@@ -54,12 +44,6 @@ const (
 	StatusDeleted EnvironmentStatus = "DELETED"
 )
 
-// Terminal reports whether the status will not change without another request. Provisioning polls
-// until a status is terminal.
-func (s EnvironmentStatus) Terminal() bool {
-	return s == StatusActive || s == StatusFailed || s == StatusDeleted
-}
-
 // Role is an environment-scoped API key role.
 type Role string
 
@@ -70,9 +54,8 @@ const (
 	RoleCompleteAwakeableAccess Role = "rst:role::CompleteAwakeableAccess"
 	RoleTunnelAccess            Role = "rst:role::TunnelAccess"
 
-	// RoleManagementAccess is the account-scoped role that authenticates this provider itself. It
-	// is deliberately not an environment role: it is bootstrapped outside Terraform, and
-	// EnvironmentRoles does not include it so an environment key can never be created with it.
+	// RoleManagementAccess is the account-scoped role that authenticates the provider itself. It is
+	// deliberately absent from EnvironmentRoles, so an environment key can never be created with it.
 	RoleManagementAccess Role = "rst:role::ManagementApiAccess"
 )
 
@@ -86,9 +69,8 @@ func (r Role) String() string { return string(r) }
 // ValidEnvironmentRole reports whether r may be used for an environment-scoped API key.
 func (r Role) ValidEnvironmentRole() bool { return slices.Contains(EnvironmentRoles(), r) }
 
-// ParseEnvironmentRole validates an environment API key role. It rejects the account-scoped
-// management role explicitly, because "the management role is not an environment role" is a far
-// more useful message than "unknown role".
+// ParseEnvironmentRole validates an environment API key role, rejecting the account-scoped management
+// role explicitly: that is a far more useful message than "unknown role".
 func ParseEnvironmentRole(raw string) (Role, error) {
 	role := Role(raw)
 	if role.ValidEnvironmentRole() {
@@ -112,7 +94,7 @@ const (
 	KeyStateDeleted KeyState = "DELETED"
 )
 
-// BillingMode is how an account pays. It decides whether a tier change can complete without a
+// BillingMode is how an account pays, which decides whether a tier change can complete without a
 // browser: a stripe-billed account may be redirected to interactive checkout.
 type BillingMode string
 
@@ -130,10 +112,8 @@ const (
 	SubscriptionInactive        SubscriptionStatus = "INACTIVE"
 )
 
-// Environment is the full description of one environment.
-//
-// Every field other than ID, Name, Region and Tier is server-derived: the contract offers no
-// mutation for them, so they are read-only outputs and must never be treated as drift.
+// Environment is the full description of one environment. Every field other than ID, Name, Region and
+// Tier is server-derived: the contract offers no mutation for them.
 type Environment struct {
 	ID     string
 	Name   string
@@ -157,8 +137,8 @@ type Environment struct {
 	APIKeyIDs []string
 }
 
-// EnvironmentSummary is the subset of an environment that list operations return. It has no status
-// and no connection metadata, so a caller that needs those must describe the environment.
+// EnvironmentSummary is what list operations return: no status and no connection metadata, so a caller
+// needing those must describe the environment.
 type EnvironmentSummary struct {
 	ID     string
 	Name   string
@@ -168,19 +148,18 @@ type EnvironmentSummary struct {
 
 // CreateEnvironmentInput is a request to provision an environment.
 type CreateEnvironmentInput struct {
-	// Name is required and must match the contract's pattern: lowercase alphanumerics and hyphens,
-	// 2 to 63 characters, not starting or ending with a hyphen.
+	// Name is required: lowercase alphanumerics and hyphens, 2 to 63 characters, not starting or
+	// ending with one.
 	Name string
-	// Region is optional. When empty the API picks the account's default, which the caller should
-	// then persist from the describe response so later plans converge.
+	// Region is optional. When empty the API picks the account's default, which the caller should then
+	// persist so later plans converge.
 	Region string
 	// Tier is optional. When empty the API applies its own default.
 	Tier Tier
 }
 
-// CreatedEnvironment is what the create operation reports. It is deliberately thin: the create
-// response is an acknowledgement, not proof that provisioning finished, so a caller must describe
-// the environment and poll until its status is terminal.
+// CreatedEnvironment is what create reports. It is deliberately thin: the response is an
+// acknowledgement, not proof that provisioning finished.
 type CreatedEnvironment struct {
 	ID   string
 	Name string
@@ -192,8 +171,8 @@ type Region struct {
 	DisplayName string
 }
 
-// Account is the non-secret account state the provider can read. The provider does not manage any
-// of it; it exists for credential validation and for a read-only data source.
+// Account is the non-secret account state the provider can read. Nothing here is managed; it exists
+// for credential validation and a read-only data source.
 type Account struct {
 	ID           string
 	Environments []EnvironmentSummary
@@ -234,9 +213,8 @@ type APIKey struct {
 	// Description is empty when the key has none.
 	Description string
 
-	// Secret is the bearer token. The API returns it from create and never again -- not from
-	// describe, not from list, not from import. A zero value therefore means "not available from
-	// this operation", never "the key has no secret".
+	// Secret is the bearer token. The API returns it from create and never again, so a zero value means
+	// "not available from this operation", never "the key has no secret".
 	Secret string
 }
 
@@ -247,8 +225,8 @@ type CreateAPIKeyInput struct {
 	Description   string
 }
 
-// APIKeyRef identifies a key. A key ID is only unique within an environment, so both parts are
-// required; a bare key ID cannot address a key.
+// APIKeyRef identifies a key. A key ID is unique only within an environment, so a bare one cannot
+// address a key.
 type APIKeyRef struct {
 	EnvironmentID string
 	KeyID         string

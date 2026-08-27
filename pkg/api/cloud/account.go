@@ -11,9 +11,9 @@ import (
 
 // DescribeAccount reads the account this client is scoped to.
 //
-// This is also the credential validation probe: the Cloud Management API has no version endpoint
-// and no whoami for a machine principal, so a successful read-only account describe is the only
-// available proof that the key is valid, is account-scoped, and belongs to this account.
+// It doubles as the credential validation probe: the API has no version endpoint and no whoami for a
+// machine principal, so a successful read-only describe is the only available proof that the key is
+// valid, account-scoped, and belongs to this account.
 func (c *Client) DescribeAccount(ctx context.Context) (Account, error) {
 	response, err := api.Execute[generated.DescribeAccountResponse](ctx, c.executor, "DescribeAccount", api.RetryTransportErrors,
 		func(ctx context.Context) (*http.Response, error) {
@@ -46,12 +46,9 @@ func (c *Client) DescribeAccount(ctx context.Context) (Account, error) {
 	return account, nil
 }
 
-// ValidateCredentials proves the configured management key can perform a read-only, account-scoped
-// operation against the configured account.
-//
-// It translates the two failure modes an operator is most likely to hit into diagnostics that name
-// the actual cause, because "HTTP 403" alone does not distinguish a wrong key from a right key
-// pointed at the wrong account.
+// ValidateCredentials proves the configured key can perform a read-only, account-scoped operation
+// against the configured account. It names the two failure modes an operator is most likely to hit,
+// because "HTTP 403" does not distinguish a wrong key from a right key pointed at the wrong account.
 func (c *Client) ValidateCredentials(ctx context.Context) error {
 	_, err := c.DescribeAccount(ctx)
 	if err == nil {
@@ -62,7 +59,7 @@ func (c *Client) ValidateCredentials(ctx context.Context) error {
 	case api.IsUnauthorized(err):
 		return fmt.Errorf("the Restate Cloud management API key was rejected by %s: it is missing, malformed, or revoked: %w", c.baseURL, err)
 	case api.IsForbidden(err), api.IsNotFound(err):
-		// Both shapes mean the same thing in practice: this credential cannot see this account.
+		// In practice both mean the same thing: this credential cannot see this account.
 		return fmt.Errorf("the configured management API key cannot read account %s: check that the key is account-scoped with role %s and that it belongs to this account, not another one: %w",
 			c.accountID, RoleManagementAccess, err)
 	default:
@@ -70,8 +67,7 @@ func (c *Client) ValidateCredentials(ctx context.Context) error {
 	}
 }
 
-// GetAccountLimits reads the account's quota usage. It is read-only; the provider never manages
-// limits.
+// GetAccountLimits reads the account's quota usage.
 func (c *Client) GetAccountLimits(ctx context.Context) (AccountLimits, error) {
 	response, err := api.Execute[generated.GetAccountLimitsResponse](ctx, c.executor, "GetAccountLimits", api.RetryTransportErrors,
 		func(ctx context.Context) (*http.Response, error) {

@@ -16,29 +16,26 @@ type APIKeys struct{ client *Client }
 // APIKeys returns the API key adapter for this client's account.
 func (c *Client) APIKeys() *APIKeys { return &APIKeys{client: c} }
 
-// API keys support create, read and delete. There is deliberately no Updater: the contract has no
-// update operation, so every change — including to a key's description — must replace the key. An
-// Update method that quietly deleted and recreated a key would silently invalidate whatever is
-// authenticating with it.
+// API keys have no Updater: the contract has no update operation, so every change -- including to a
+// description -- must replace the key. An Update that quietly deleted and recreated one would
+// silently invalidate whatever is authenticating with it.
 var (
 	_ api.Creator[CreateAPIKeyInput, APIKey] = (*APIKeys)(nil)
 	_ api.Getter[APIKeyRef, APIKey]          = (*APIKeys)(nil)
 	_ api.Deleter[APIKeyRef, struct{}]       = (*APIKeys)(nil)
 )
 
-// Create mints an environment-scoped API key and returns it including its secret.
+// Create mints an environment-scoped API key. The secret is available from this response and nowhere
+// else; a caller that loses it must delete the key and mint another.
 //
-// The secret is available from this response and from nowhere else. A caller that loses it must
-// delete the key and create another.
-//
-// Retry safety is RetryThrottleOnly: a 5xx from a create may mean the key exists, and a retry would
-// mint a second credential that nothing tracks.
+// Retry safety is RetryThrottleOnly: a 5xx here may mean the key exists, and a retry would mint a
+// second credential that nothing tracks.
 func (k *APIKeys) Create(ctx context.Context, input CreateAPIKeyInput) (APIKey, error) {
 	if input.EnvironmentID == "" {
 		return APIKey{}, errors.New("an environment ID is required")
 	}
-	// Validate rather than trusting the caller: this is the boundary that must make it impossible
-	// to mint an account-scoped management key through the environment key path.
+	// This is the boundary that makes minting an account-scoped management key through the environment
+	// key path impossible, whatever a caller passes in.
 	if _, err := ParseEnvironmentRole(input.Role.String()); err != nil {
 		return APIKey{}, err
 	}
@@ -66,8 +63,8 @@ func (k *APIKeys) Create(ctx context.Context, input CreateAPIKeyInput) (APIKey, 
 		}
 	}
 	if response.ApiKey == "" {
-		// Without the secret the key is useless and unrecoverable, so this is a failure even though
-		// the key now exists. Name the key ID so it can be cleaned up.
+		// Without the secret the key is useless and unrecoverable, so this is a failure even though the
+		// key now exists. Name the ID so it can be cleaned up.
 		return APIKey{ID: response.KeyId, EnvironmentID: response.EnvironmentId}, &api.Error{
 			Service:   api.ServiceCloud,
 			Operation: "CreateApiKey",
@@ -87,11 +84,11 @@ func (k *APIKeys) Create(ctx context.Context, input CreateAPIKeyInput) (APIKey, 
 	}, nil
 }
 
-// Get describes one API key. The returned APIKey has an empty Secret: the API does not return the
-// bearer token after create, so a caller refreshing state must keep whatever secret it already has
-// rather than overwriting it with this zero value.
+// Get describes one API key. Secret is always empty -- the API does not return a bearer token after
+// create -- so a caller refreshing state must keep whatever it already holds rather than overwrite it
+// with this zero value.
 //
-// A key the API reports as DELETED is returned as-is; see GetActive.
+// A key the API reports as DELETED is returned as-is; GetActive collapses that into absence.
 func (k *APIKeys) Get(ctx context.Context, ref APIKeyRef) (APIKey, error) {
 	if ref.EnvironmentID == "" {
 		return APIKey{}, errors.New("an environment ID is required")
@@ -119,8 +116,7 @@ func (k *APIKeys) Get(ctx context.Context, ref APIKeyRef) (APIKey, error) {
 	}, nil
 }
 
-// ErrAPIKeyGone reports that an API key no longer exists, whether because the API returned
-// not-found or because it reported the key as DELETED.
+// ErrAPIKeyGone reports that an API key no longer exists, by either of the API's two ways of saying so.
 var ErrAPIKeyGone = errors.New("the API key no longer exists")
 
 // GetActive describes a key and collapses both forms of absence into ErrAPIKeyGone.
@@ -140,12 +136,9 @@ func (k *APIKeys) GetActive(ctx context.Context, ref APIKeyRef) (APIKey, error) 
 
 // ListForEnvironment enumerates the key IDs in one environment.
 //
-// The contract's list response carries only identifiers — no role, no state, no description — so
-// this returns references rather than pretending to return keys. Callers that need a key's
-// attributes must describe it.
-//
-// This is not the generic Lister capability: keys are scoped to an environment, and there is no
-// account-wide environment key listing to implement Lister against.
+// The response carries only identifiers -- no role, state or description -- so this returns references
+// rather than pretending to return keys. It is not the generic Lister capability: keys are scoped to
+// an environment, and there is no account-wide listing to implement Lister against.
 func (k *APIKeys) ListForEnvironment(ctx context.Context, environmentID string) ([]APIKeyRef, error) {
 	if environmentID == "" {
 		return nil, errors.New("an environment ID is required")
@@ -167,11 +160,11 @@ func (k *APIKeys) ListForEnvironment(ctx context.Context, environmentID string) 
 	return refs, nil
 }
 
-// Delete revokes an API key. It is idempotent: an already-absent key is success.
+// Delete revokes an API key. An already-absent key is success.
 //
-// The Options type is struct{} because the contract's delete takes no switches. Deleting a key
-// immediately invalidates whatever is authenticating with it, but that is the operation's purpose
-// rather than a destructive side effect, so it needs no separate opt-in.
+// Options is struct{} because the contract's delete takes no switches. Revoking a key invalidates
+// whatever is authenticating with it, but that is the operation's purpose rather than a side effect,
+// so it needs no separate opt-in.
 func (k *APIKeys) Delete(ctx context.Context, ref APIKeyRef, _ struct{}) error {
 	if ref.EnvironmentID == "" {
 		return errors.New("an environment ID is required")

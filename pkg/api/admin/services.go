@@ -15,9 +15,8 @@ type Services struct{ client *Client }
 // Services returns the service adapter.
 func (c *Client) Services() *Services { return &Services{client: c} }
 
-// Services support read, list and a partial update. They deliberately implement neither Creator nor
-// Deleter: a service is created and destroyed by deployment discovery, and pretending Terraform
-// could create or delete one would misrepresent who owns it.
+// Services implement neither Creator nor Deleter: a service is created and destroyed by deployment
+// discovery, and pretending Terraform could do either would misrepresent who owns it.
 var (
 	_ api.Getter[string, Service]                 = (*Services)(nil)
 	_ api.Updater[string, ModifyService, Service] = (*Services)(nil)
@@ -59,19 +58,16 @@ func (s *Services) List(ctx context.Context) ([]Service, error) {
 
 // Update applies the subset of service configuration the contract's modify request accepts.
 //
-// Every field of ModifyService is a pointer, and an unset field is omitted rather than sent as JSON
-// null. The contract does not document what null means for these fields -- whether it restores the
-// SDK-discovered value or a server default -- so this facade does not send one and does not guess.
+// An unset field is omitted rather than sent as JSON null. The contract does not document what a null
+// means -- whether it restores the SDK-discovered value or a server default -- so this does not guess.
 //
-// Retry safety is RetryServerErrors: the request sets absolute values rather than applying a delta,
-// so repeating it converges on the same state.
+// Retry safety is RetryServerErrors: the request sets absolute values rather than applying a delta.
 func (s *Services) Update(ctx context.Context, name string, input ModifyService) (Service, error) {
 	if name == "" {
 		return Service{}, errors.New("a service name is required")
 	}
 	if input.IsEmpty() {
-		// Nothing to apply. Read instead of sending an empty modify request, whose meaning the
-		// contract does not define.
+		// Nothing to apply. Read instead of sending an empty modify request, whose meaning is undefined.
 		return s.Get(ctx, name)
 	}
 

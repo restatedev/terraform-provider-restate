@@ -26,11 +26,11 @@ var (
 	_ api.Lister[KafkaCluster]                             = (*KafkaClusters)(nil)
 )
 
-// RedactionMarkers are the values the Admin API substitutes for a sensitive Kafka property on read.
+// RedactionMarkers are the values the API is known to substitute for a sensitive property on read.
 //
 // The contract documents that sensitive properties are redacted but does not specify the marker, so
-// this list is deliberately broad and is treated as a heuristic. MergeRedactedProperties therefore
-// falls back on the property's sensitivity rather than trusting the marker alone.
+// this list is a heuristic. MergeRedactedProperties therefore falls back on the property's
+// sensitivity rather than trusting the marker alone.
 var RedactionMarkers = []string{
 	"***",
 	"*****",
@@ -39,8 +39,7 @@ var RedactionMarkers = []string{
 	"redacted",
 }
 
-// IsRedactionMarker reports whether a value read back from the API looks like a redaction placeholder
-// rather than a real property value.
+// IsRedactionMarker reports whether a value looks like a placeholder rather than a real one.
 func IsRedactionMarker(value string) bool {
 	trimmed := strings.TrimSpace(value)
 	if trimmed == "" {
@@ -51,28 +50,24 @@ func IsRedactionMarker(value string) bool {
 			return true
 		}
 	}
-	// A value that is nothing but asterisks is a placeholder in every convention.
+	// A value of nothing but asterisks is a placeholder in every convention.
 	return strings.Trim(trimmed, "*") == "" && len(trimmed) >= 3
 }
 
-// MergeRedactedProperties reconciles the properties the API returned with the properties the caller
-// already knows it configured.
+// MergeRedactedProperties reconciles what the API returned with what the caller knows it configured.
 //
-// The API redacts sensitive property values on read, so a naive refresh would either overwrite a
-// real credential with a placeholder or report a permanent diff. For each property:
+// The API redacts sensitive values on read, so a naive refresh would either overwrite a real credential
+// with a placeholder or report a permanent diff. For each property:
 //
 //   - A value the API redacted, or any value of a property whose name is sensitive, keeps the
-//     configured value when there is one. The API is not a source of truth for a value it will not
-//     disclose.
-//   - Everything else takes the API's value, so genuine out-of-band changes to non-secret properties
-//     are still detected as drift.
-//   - A property the API no longer reports is dropped, because that is a real removal.
-//   - A property the API reports that the caller did not configure is added, because that is a real
-//     addition.
+//     configured value. The API is not a source of truth for a value it will not disclose.
+//   - Everything else takes the API's value, so a genuine out-of-band change to a non-secret property
+//     is still detected as drift.
+//   - A property the API no longer reports is dropped; one it reports that the caller did not configure
+//     is added. Both are real changes.
 //
-// When configured is nil -- an import, where nothing is known -- the API's values are returned
-// as-is, redaction markers included. The caller must document that a redacted property has to be
-// supplied before the next apply.
+// When configured is nil -- an import, where nothing is known -- the API's values are returned as-is,
+// redaction markers included. The caller must then tell the user to supply them.
 func MergeRedactedProperties(remote, configured map[string]string) map[string]string {
 	if remote == nil {
 		return nil
@@ -99,8 +94,8 @@ func MergeRedactedProperties(remote, configured map[string]string) map[string]st
 
 // Create registers a Kafka cluster configuration.
 //
-// Retry safety is RetryThrottleOnly: creating a cluster that already exists is a conflict, and a
-// retry after an ambiguous 5xx would report that conflict instead of the original failure.
+// Retry safety is RetryThrottleOnly: creating a cluster that already exists is a conflict, and a retry
+// after an ambiguous 5xx would report that conflict instead of the original failure.
 func (k *KafkaClusters) Create(ctx context.Context, cluster KafkaCluster) (KafkaCluster, error) {
 	if cluster.Name == "" {
 		return KafkaCluster{}, errors.New("a Kafka cluster name is required")
@@ -127,16 +122,14 @@ func (k *KafkaClusters) Create(ctx context.Context, cluster KafkaCluster) (Kafka
 	return kafkaClusterFrom(response), nil
 }
 
-// Get reads one Kafka cluster.
-//
-// Sensitive property values come back redacted. Callers reconciling state must pass the result
-// through MergeRedactedProperties along with what they configured.
+// Get reads one Kafka cluster. Sensitive property values come back redacted, so a caller reconciling
+// state passes the result through MergeRedactedProperties.
 func (k *KafkaClusters) Get(ctx context.Context, name string) (KafkaCluster, error) {
 	return k.get(ctx, name, false)
 }
 
-// GetWithSubscriptions reads one Kafka cluster along with the subscriptions that reference it, which
-// is what makes a dependency-safe delete decision possible.
+// GetWithSubscriptions also returns the subscriptions referencing the cluster, which is what makes a
+// dependency-safe delete decision possible.
 func (k *KafkaClusters) GetWithSubscriptions(ctx context.Context, name string) (KafkaCluster, error) {
 	return k.get(ctx, name, true)
 }
@@ -183,13 +176,9 @@ func (k *KafkaClusters) List(ctx context.Context) ([]KafkaCluster, error) {
 	return clusters, nil
 }
 
-// Update replaces a cluster's properties.
+// Update replaces a cluster's properties. The identity is the name, so a rename is a different cluster.
 //
-// The identity is the name, which is why Update takes a name and cannot change it: the API addresses
-// the update by name, so a rename is a different cluster.
-//
-// Retry safety is RetryServerErrors: the request replaces the whole property map with an absolute
-// value, so repeating it converges.
+// Retry safety is RetryServerErrors: the request replaces the whole map with an absolute value.
 func (k *KafkaClusters) Update(ctx context.Context, name string, properties map[string]string) (KafkaCluster, error) {
 	if name == "" {
 		return KafkaCluster{}, errors.New("a Kafka cluster name is required")
@@ -215,9 +204,9 @@ func (k *KafkaClusters) Update(ctx context.Context, name string, properties map[
 
 // Delete removes a Kafka cluster.
 //
-// The API's `force` query parameter is sent only when the caller explicitly asks for it: forced
-// deletion removes a cluster that subscriptions still reference, orphaning them. The default leaves
-// the API's own dependency check in charge.
+// The API's `force` parameter is sent only when the caller asks for it: forced deletion removes a
+// cluster that subscriptions still reference, orphaning them. The default leaves the API's own
+// dependency check in charge.
 func (k *KafkaClusters) Delete(ctx context.Context, name string, options DeleteKafkaClusterOptions) error {
 	if name == "" {
 		return errors.New("a Kafka cluster name is required")

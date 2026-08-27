@@ -16,11 +16,10 @@ type Environments struct{ client *Client }
 // Environments returns the environments adapter for this client's account.
 func (c *Client) Environments() *Environments { return &Environments{client: c} }
 
-// Environments supports create, read, list and delete. It deliberately implements no generic
-// Updater: the contract splits environment mutation across two operations with materially
-// different semantics — UpdateEnvironment renames and always succeeds non-interactively, while
-// UpdateEnvironmentTier changes billing and may demand interactive payment. Hiding that behind one
-// symmetrical Update would make the risky half invisible at the call site.
+// Environments deliberately implements no generic Updater: the contract splits mutation across two
+// operations with materially different semantics -- UpdateEnvironment renames and always succeeds
+// non-interactively, while UpdateEnvironmentTier changes billing and may demand interactive payment.
+// One symmetrical Update would make the risky half invisible at the call site.
 var (
 	_ api.Creator[CreateEnvironmentInput, CreatedEnvironment] = (*Environments)(nil)
 	_ api.Getter[string, Environment]                         = (*Environments)(nil)
@@ -28,18 +27,16 @@ var (
 	_ api.Deleter[string, DestroyOptions]                     = (*Environments)(nil)
 )
 
-// DestroyOptions has no fields today: DestroyEnvironment takes only an environment ID, and the
-// contract offers no force or cascade switch. It exists so the Deleter capability is satisfied
-// without a bare struct{} at every call site, and so a future destructive switch has an obvious,
-// opt-in home rather than being bolted onto the method signature.
+// DestroyOptions has no fields: DestroyEnvironment takes only an environment ID. It exists so the
+// Deleter capability is satisfied without a bare struct{} at every call site, and so a future
+// destructive switch has an obvious opt-in home.
 type DestroyOptions struct{}
 
-// ErrInteractiveCheckoutRequired reports that an operation cannot complete without a human
-// completing a browser payment flow. Terraform cannot do that, so the provider refuses rather than
-// reporting success over a half-applied change.
+// ErrInteractiveCheckoutRequired reports that an operation needs a human to complete a browser
+// payment flow, which Terraform cannot do.
 //
-// It carries the environment ID because the environment may already exist in a partially
-// provisioned state, and an operator needs the identifier to find and clean it up.
+// It carries the environment ID because the environment may already exist in a partially provisioned
+// state, and an operator needs the identifier to find it.
 type ErrInteractiveCheckoutRequired struct {
 	Operation     string
 	EnvironmentID string
@@ -61,14 +58,12 @@ func IsInteractiveCheckoutRequired(err error) bool {
 	return errors.As(err, &target)
 }
 
-// Create provisions an environment and returns the API's acknowledgement.
+// Create provisions an environment and returns the API's acknowledgement, which is not proof that
+// provisioning completed: the response carries an identifier and a name and nothing about readiness.
+// Callers follow with WaitUntilActive.
 //
-// The returned value is not proof that provisioning completed. The caller must poll — see
-// WaitUntilActive — because the create response reports an identifier and a name and nothing about
-// readiness.
-//
-// Retry safety is RetryThrottleOnly: a 5xx from a create may mean the environment exists, and
-// retrying could leave an orphan behind that Terraform does not know about.
+// Retry safety is RetryThrottleOnly: a 5xx here may mean the environment exists, and a retry could
+// leave an orphan nothing tracks.
 func (e *Environments) Create(ctx context.Context, input CreateEnvironmentInput) (CreatedEnvironment, error) {
 	if input.Name == "" {
 		return CreatedEnvironment{}, errors.New("an environment name is required")
@@ -85,8 +80,8 @@ func (e *Environments) Create(ctx context.Context, input CreateEnvironmentInput)
 		tier := generated.CreateEnvironmentRequestTierId(input.Tier)
 		body.TierId = &tier
 	}
-	// Payment is deliberately never populated. Supplying success and cancel URLs is how a caller
-	// opts into a browser checkout flow, which Terraform cannot complete.
+	// Payment is never populated: supplying success and cancel URLs is how a caller opts into a
+	// browser checkout flow, which Terraform cannot complete.
 
 	response, err := api.Execute[generated.CreateEnvironmentResponse](ctx, e.client.executor, "CreateEnvironment", api.RetryThrottleOnly,
 		func(ctx context.Context) (*http.Response, error) {
@@ -96,8 +91,8 @@ func (e *Environments) Create(ctx context.Context, input CreateEnvironmentInput)
 		return CreatedEnvironment{}, err
 	}
 
-	// A checkout URL means the tier was not applied and the account owes a payment. Report the
-	// environment ID regardless, because the environment may already have been created.
+	// A checkout URL means the tier was not applied. Report the ID regardless: the environment may
+	// already exist.
 	if response.CheckoutUrl != nil && *response.CheckoutUrl != "" {
 		return CreatedEnvironment{ID: response.EnvironmentId, Name: response.Name},
 			&ErrInteractiveCheckoutRequired{Operation: "CreateEnvironment", EnvironmentID: response.EnvironmentId}
@@ -113,11 +108,8 @@ func (e *Environments) Create(ctx context.Context, input CreateEnvironmentInput)
 	return CreatedEnvironment{ID: response.EnvironmentId, Name: response.Name}, nil
 }
 
-// Get describes one environment.
-//
-// A deleted environment is reported either as a not-found error or as an environment whose status
-// is DELETED, depending on how long ago it was destroyed. Callers must treat both as absence; see
-// GetExisting.
+// Get describes one environment. A deleted one is reported either as not-found or as status DELETED,
+// depending on how recently it was destroyed; GetExisting collapses both.
 func (e *Environments) Get(ctx context.Context, environmentID string) (Environment, error) {
 	if environmentID == "" {
 		return Environment{}, errors.New("an environment ID is required")
@@ -135,13 +127,12 @@ func (e *Environments) Get(ctx context.Context, environmentID string) (Environme
 	return environmentFromResponse(response), nil
 }
 
-// ErrEnvironmentGone reports that an environment no longer exists, whether because the API returned
-// not-found or because it reported the environment as DELETED. Callers remove such a resource from
-// state rather than trying to converge it.
+// ErrEnvironmentGone reports that an environment no longer exists, by either of the API's two ways of
+// saying so.
 var ErrEnvironmentGone = errors.New("the environment no longer exists")
 
-// GetExisting describes an environment and collapses both forms of absence into
-// ErrEnvironmentGone, so a refresh has a single condition to check.
+// GetExisting collapses both forms of absence into ErrEnvironmentGone, so a refresh has one condition
+// to check.
 func (e *Environments) GetExisting(ctx context.Context, environmentID string) (Environment, error) {
 	environment, err := e.Get(ctx, environmentID)
 	if err != nil {
@@ -156,8 +147,8 @@ func (e *Environments) GetExisting(ctx context.Context, environmentID string) (E
 	return environment, nil
 }
 
-// List enumerates the account's environments. The contract's list response carries no status and no
-// connection metadata, so callers that need those must describe each environment.
+// List enumerates the account's environments. The response carries no status and no connection
+// metadata, so a caller needing those must describe each one.
 func (e *Environments) List(ctx context.Context) ([]EnvironmentSummary, error) {
 	response, err := api.Execute[generated.ListEnvironmentsResponse](ctx, e.client.executor, "ListEnvironments", api.RetryTransportErrors,
 		func(ctx context.Context) (*http.Response, error) {
@@ -181,8 +172,7 @@ func (e *Environments) List(ctx context.Context) ([]EnvironmentSummary, error) {
 
 // Rename changes an environment's name.
 //
-// Retry safety is RetryServerErrors: setting a name to a value it may already hold is harmless, so
-// repeating the request cannot do damage.
+// Retry safety is RetryServerErrors: setting a name it may already hold is harmless.
 func (e *Environments) Rename(ctx context.Context, environmentID, name string) error {
 	if environmentID == "" {
 		return errors.New("an environment ID is required")
@@ -200,8 +190,8 @@ func (e *Environments) Rename(ctx context.Context, environmentID, name string) e
 		return err
 	}
 
-	// The API echoes the applied name. Disagreement means the request was accepted but not applied
-	// as asked, which would otherwise surface as unexplained drift on the next plan.
+	// The API echoes the applied name; disagreement means it was accepted but not applied, which would
+	// otherwise surface as unexplained drift on the next plan.
 	if response.Name != "" && response.Name != name {
 		return &api.Error{
 			Service:   api.ServiceCloud,
@@ -212,14 +202,10 @@ func (e *Environments) Rename(ctx context.Context, environmentID, name string) e
 	return nil
 }
 
-// SetTier changes an environment's tier.
+// SetTier changes an environment's tier. A stripe-billed account may be redirected to a browser
+// checkout, reported as ErrInteractiveCheckoutRequired rather than treated as success.
 //
-// A stripe-billed account may be redirected to a browser checkout, which is reported as
-// ErrInteractiveCheckoutRequired rather than treated as success. Callers should check the account's
-// billing mode first so a plan can warn before an apply discovers this.
-//
-// Retry safety is RetryServerErrors: the operation sets a target tier rather than applying a delta,
-// so repeating it is idempotent.
+// Retry safety is RetryServerErrors: it sets a target tier rather than applying a delta.
 func (e *Environments) SetTier(ctx context.Context, environmentID string, tier Tier) error {
 	if environmentID == "" {
 		return errors.New("an environment ID is required")
@@ -246,11 +232,10 @@ func (e *Environments) SetTier(ctx context.Context, environmentID string, tier T
 	return nil
 }
 
-// Delete destroys an environment. It is idempotent: an already-absent environment is success, which
-// is what makes a re-run of a partially failed destroy converge.
+// Delete destroys an environment. An already-absent environment is success, which is what makes a
+// re-run of a partially failed destroy converge.
 //
-// Delete returns as soon as the API accepts the request. Callers that need the environment to be
-// gone must follow with WaitUntilDeleted.
+// It returns as soon as the API accepts the request; callers follow with WaitUntilDeleted.
 func (e *Environments) Delete(ctx context.Context, environmentID string, _ DestroyOptions) error {
 	if environmentID == "" {
 		return errors.New("an environment ID is required")
@@ -267,19 +252,17 @@ func (e *Environments) Delete(ctx context.Context, environmentID string, _ Destr
 	return err
 }
 
-// WaitUntilActive polls until the environment reaches a terminal status, and reports an error
-// unless that status is ACTIVE.
-//
-// A FAILED environment fails immediately rather than at the timeout, and the error names the
-// environment ID so an operator can inspect and clean up the failed provisioning attempt.
+// WaitUntilActive polls until the environment reaches a terminal status, erroring unless it is ACTIVE.
+// FAILED fails immediately rather than at the timeout, naming the environment so the failed attempt
+// can be found.
 func (e *Environments) WaitUntilActive(ctx context.Context, environmentID string) (Environment, error) {
 	return api.PollUntil(ctx, e.client.poll,
 		func(ctx context.Context) (Environment, error) {
 			environment, err := e.Get(ctx, environmentID)
 			if err != nil {
-				// A newly created environment can briefly not be visible to describe. Treat that as
-				// "not ready yet" rather than as a failure, but keep every other error fatal so an
-				// expired credential is not reported as a timeout.
+				// A newly created environment can briefly be invisible to describe: that is "not ready
+				// yet". Every other error stays fatal, so an expired credential is not reported as a
+				// timeout.
 				if api.IsNotFound(err) {
 					return Environment{ID: environmentID, Status: StatusPending}, nil
 				}
@@ -301,8 +284,7 @@ func (e *Environments) WaitUntilActive(ctx context.Context, environmentID string
 		})
 }
 
-// WaitUntilDeleted polls until the environment is gone, treating both a not-found response and a
-// DELETED status as success.
+// WaitUntilDeleted polls until the environment is gone, by either of the API's two ways of saying so.
 func (e *Environments) WaitUntilDeleted(ctx context.Context, environmentID string) error {
 	_, err := api.PollUntil(ctx, e.client.poll,
 		func(ctx context.Context) (EnvironmentStatus, error) {
@@ -320,8 +302,7 @@ func (e *Environments) WaitUntilDeleted(ctx context.Context, environmentID strin
 				return true, nil
 			}
 			if status == StatusFailed {
-				// A destroy that ends in FAILED is not converging on its own; waiting out the
-				// timeout would only delay the diagnostic.
+				// A destroy that ends in FAILED is not converging on its own.
 				return false, fmt.Errorf("environment %s reports status FAILED while being destroyed; it must be inspected manually", environmentID)
 			}
 			return false, nil

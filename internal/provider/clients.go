@@ -6,12 +6,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
-// requireCloudClient reports a specific, actionable diagnostic when a Cloud resource or data source
-// is used by a provider instance that has no Cloud credentials.
+// requireCloudClient reports an actionable diagnostic when a Cloud resource or data source is used by a
+// provider instance with no Cloud credentials.
 //
-// The provider deliberately allows a Cloud-only, Admin-only, or combined configuration, so the
-// absence of a client is not a configuration error in itself. It becomes one only when something
-// actually needs it, and this is where that is said.
+// A Cloud-only, Admin-only, or combined configuration is all valid, so the absence of a client is not a
+// configuration error in itself. It becomes one only when something needs it.
 func requireCloudClient(data *providerData, typeName string, diags *diag.Diagnostics) bool {
 	if data != nil && data.Cloud != nil {
 		return true
@@ -44,8 +43,7 @@ func requireAdminClient(data *providerData, typeName string, diags *diag.Diagnos
 // configureProviderData extracts the shared provider data a resource or data source receives.
 //
 // A nil ProviderData means the framework has not configured the provider yet, which happens during
-// validation. Returning nil is correct there: the read or apply that follows will receive the real
-// value.
+// validation; the read or apply that follows receives the real value.
 func configureProviderData(raw any, diags *diag.Diagnostics) *providerData {
 	if raw == nil {
 		return nil

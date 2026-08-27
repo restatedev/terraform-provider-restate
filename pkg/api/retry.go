@@ -8,10 +8,9 @@ import (
 	"time"
 )
 
-// RetrySafety says how much of a failure an operation may be retried through. Retry safety is a
-// property of the operation, not of the transport, so every endpoint adapter states it explicitly.
-// The zero value is the safest choice, so an adapter that forgets to declare it cannot
-// accidentally duplicate a write.
+// RetrySafety says how much of a failure an operation may be retried through. It is a property of the
+// operation rather than of the transport, so every adapter states it explicitly -- and the zero value
+// is the safest one, so an adapter that forgets cannot accidentally duplicate a write.
 type RetrySafety int
 
 const (
@@ -24,13 +23,13 @@ const (
 	// request cannot create a second object.
 	RetryServerErrors
 
-	// RetryTransportErrors additionally retries connection failures, where the provider cannot
-	// tell whether the server saw the request at all. Only reads may use this.
+	// RetryTransportErrors additionally retries a connection failure, where the provider cannot tell
+	// whether the server saw the request at all. Reads only.
 	RetryTransportErrors
 )
 
-// retrySafetyKey carries the operation's retry safety to the retrying round tripper. It travels on
-// the context because the generated clients own request construction.
+// retrySafetyKey carries the operation's retry safety to the retrying round tripper, on the context
+// because the generated clients own request construction.
 type retrySafetyKey struct{}
 
 // WithRetrySafety returns a context that permits the given amount of retrying.
@@ -61,15 +60,15 @@ type RetryPolicy struct {
 	sleep func(ctx context.Context, d time.Duration) error
 }
 
-// DefaultRetryPolicy is a conservative policy: a handful of attempts over a few seconds, short
-// enough that a Terraform operation fails fast on a real outage rather than hanging until timeout.
+// DefaultRetryPolicy is deliberately short: a handful of attempts over a few seconds, so a real
+// outage fails fast rather than hanging until the resource timeout.
 func DefaultRetryPolicy() RetryPolicy {
 	return RetryPolicy{MaxAttempts: 4, BaseDelay: 250 * time.Millisecond, MaxDelay: 5 * time.Second}
 }
 
-// backoff returns the wait before the given attempt number, which is 1-based and counts the
-// attempt that just failed. Jitter is full-width: the delay is uniform over [0, exponential), which
-// avoids synchronising retries across parallel Terraform resource operations.
+// backoff returns the wait after the given 1-based attempt. Jitter is full-width -- uniform over
+// [0, exponential) -- so parallel resource operations that hit the same rate limit do not retry in
+// lockstep.
 func (p RetryPolicy) backoff(attempt int) time.Duration {
 	base := p.BaseDelay
 	if base <= 0 {
@@ -112,12 +111,10 @@ func (p RetryPolicy) wait(ctx context.Context, d time.Duration) error {
 
 // retryableStatus classifies a response status against what the operation permits.
 //
-// A 429 always means the request was throttled rather than acted on. A 503 with Retry-After is the
-// documented form of "come back later" and is treated the same way. Other 5xx responses may mean
-// the write partially happened, so they are retried only for operations that said so.
-//
-// 4xx responses other than 429 are never retried: a validation or authentication failure will not
-// resolve itself, and retrying it just multiplies the failed audit-log entries.
+// A 429 means the request was throttled rather than acted on, and a 503 with Retry-After is the same
+// thing said differently. Any other 5xx may mean the write partially happened, so it is retried only
+// where the operation said so. A 4xx other than 429 is never retried: a validation or authentication
+// failure will not resolve itself.
 func retryableStatus(status int, header http.Header, safety RetrySafety) bool {
 	switch {
 	case status == http.StatusTooManyRequests:
@@ -131,8 +128,8 @@ func retryableStatus(status int, header http.Header, safety RetrySafety) bool {
 	}
 }
 
-// retryAfter reads a Retry-After header in either of its documented forms. It returns false when
-// the header is absent or unparseable, leaving the caller on exponential backoff.
+// retryAfter reads a Retry-After header in either documented form, returning false when it is absent
+// or unparseable so the caller falls back to exponential backoff.
 func retryAfter(header http.Header, now time.Time) (time.Duration, bool) {
 	value := header.Get("Retry-After")
 	if value == "" {

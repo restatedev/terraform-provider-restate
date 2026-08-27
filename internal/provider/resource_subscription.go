@@ -102,9 +102,9 @@ func (r *SubscriptionResource) Create(ctx context.Context, req resource.CreateRe
 
 	source, sink := plan.Source.ValueString(), plan.Sink.ValueString()
 
-	// Warn about a URI shape this contract snapshot does not document, but send it anyway: the
-	// server is the authority on what it accepts, and a closed enum here would make the provider the
-	// reason a supported configuration cannot be expressed.
+	// Warn about a URI shape this snapshot does not document, but send it anyway: the server is the
+	// authority on what it accepts, and a closed enum here would make the provider the reason a supported
+	// configuration cannot be expressed.
 	warnings, err := admin.ValidateSubscriptionURIs(source, sink)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid subscription source or sink", err.Error())
@@ -130,9 +130,8 @@ func (r *SubscriptionResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	// Keep the planned source, sink and options: Terraform requires the value after an apply to equal
-	// what was planned, and a subscription's attributes are exactly what was just sent. The API is
-	// only consulted for the identifier it assigned, and for a discrepancy worth reporting.
+	// Keep the planned source, sink and options -- see reconcileString. The API is consulted only for the
+	// identifier it assigned, and for a discrepancy worth reporting.
 	state := plan
 	state.ID = types.StringValue(subscription.ID)
 	r.verifyCreated(&resp.Diagnostics, plan, subscription)
@@ -140,7 +139,7 @@ func (r *SubscriptionResource) Create(ctx context.Context, req resource.CreateRe
 }
 
 // verifyCreated reports a subscription the API created with different endpoints than were asked for,
-// which would otherwise surface on the next plan as an unexplained replacement.
+// which would otherwise surface as an unexplained replacement on the next plan.
 func (r *SubscriptionResource) verifyCreated(diags *diag.Diagnostics, plan subscriptionModel, created admin.Subscription) {
 	for _, field := range []struct {
 		name      string
@@ -187,8 +186,8 @@ func (r *SubscriptionResource) Read(ctx context.Context, req resource.ReadReques
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-// Update exists only to satisfy the interface: every configurable attribute requires replacement,
-// because the Admin API has no subscription update endpoint.
+// Update exists only to satisfy the interface: every configurable attribute requires replacement, so
+// Terraform never calls this.
 func (r *SubscriptionResource) Update(_ context.Context, _ resource.UpdateRequest, resp *resource.UpdateResponse) {
 	resp.Diagnostics.AddError("Subscriptions cannot be updated in place",
 		"The Restate Admin API has no update operation for subscriptions, so every change replaces the "+
@@ -221,8 +220,7 @@ func (r *SubscriptionResource) ImportState(ctx context.Context, req resource.Imp
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 }
 
-// applySubscription reconciles state with the API's report, for the refresh path only. The write path
-// keeps what was planned; see Create.
+// applySubscription reconciles state with the API's report, for the refresh path only; see Create.
 func (r *SubscriptionResource) applySubscription(ctx context.Context, model *subscriptionModel, subscription admin.Subscription) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -232,11 +230,10 @@ func (r *SubscriptionResource) applySubscription(ctx context.Context, model *sub
 
 	// Options need care in both directions.
 	//
-	// A subscription configured with no options must keep a null map rather than gaining an empty one,
-	// or it would never converge. And when options *were* configured but the API reports none, the
-	// configured value is kept rather than nulled: every subscription attribute forces replacement, so
-	// treating that as drift would replace the subscription, get the same empty response back, and
-	// replace it again forever. An unreported value is not evidence of a change.
+	// A subscription configured with none must keep a null map rather than gaining an empty one, or it
+	// would never converge. And when options were configured but the API reports none, the configured
+	// value is kept: every attribute forces replacement, so treating that as drift would replace the
+	// subscription, get the same empty response back, and replace it again forever.
 	if len(subscription.Options) == 0 {
 		if model.Options.IsUnknown() {
 			model.Options = types.MapNull(types.StringType)

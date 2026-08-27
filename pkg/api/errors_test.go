@@ -16,7 +16,6 @@ func TestErrorStringIncludesTheContextAnOperatorNeeds(t *testing.T) {
 		Code:       "403",
 		Message:    "principal is not authorized",
 		RequestID:  "req-abc123",
-		Attempts:   2,
 	}
 
 	got := err.Error()
@@ -27,7 +26,6 @@ func TestErrorStringIncludesTheContextAnOperatorNeeds(t *testing.T) {
 		"principal is not authorized",
 		"code 403",
 		"request req-abc123",
-		"2 attempts",
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("error string %q is missing %q", got, want)

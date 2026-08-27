@@ -1,13 +1,12 @@
-// Package api holds the transport, error, and generic request machinery shared by the Restate
-// Cloud Management and Admin API facades.
+// Package api holds the transport, error, and generic request machinery shared by the Restate Cloud
+// Management and Admin API facades.
 //
 // This package and its subpackages are the only place in the provider that knows either wire
-// contract. It is deliberately independent of Terraform: it returns typed domain values and typed
-// errors, never diagnostics, framework values, or resource state.
+// contract, and they are deliberately independent of Terraform: they return typed domain values and
+// typed errors, never diagnostics or framework values.
 //
-// Cloud and Admin authentication are kept separate by construction. Each facade builds its own
-// client from its own credential, so a management key cannot reach an environment Admin API and an
-// environment key cannot reach the Cloud Management API.
+// Cloud and Admin authentication are separate by construction. Each facade builds its own client from
+// its own credential, so neither key can reach the other API.
 package api
 
 import (
@@ -17,8 +16,8 @@ import (
 	"strings"
 )
 
-// Service names the API an error came from. It appears in error strings so a diagnostic makes the
-// credential and endpoint at fault unambiguous.
+// Service names the API an error came from, so a diagnostic makes the credential and endpoint at
+// fault unambiguous.
 type Service string
 
 const (
@@ -26,11 +25,11 @@ const (
 	ServiceAdmin Service = "Restate Admin API"
 )
 
-// Error is a structured API error. Every non-2xx response and every unrecoverable transport
-// failure is reported as one of these, so callers can branch on status without string matching.
+// Error is a structured API error. Every non-2xx response and every unrecoverable transport failure
+// is reported as one of these, so callers can branch on status without string matching.
 //
-// Error deliberately carries no response body and no request headers. Both can contain bearer
-// tokens, Kafka credentials, or user payloads; only the server's own message field is retained.
+// It deliberately carries no response body and no request headers: either can contain a bearer token,
+// a Kafka credential, or a user payload. Only the server's own message field is retained.
 type Error struct {
 	// Service identifies which API produced the error.
 	Service Service
@@ -44,8 +43,6 @@ type Error struct {
 	Message string
 	// RequestID is the server's correlation identifier, when it sends one.
 	RequestID string
-	// Attempts is how many times the request was sent, including the first.
-	Attempts int
 	// Retryable records whether the provider considered this failure worth retrying. A retryable
 	// error that still surfaces means the retry budget was exhausted.
 	Retryable bool
@@ -78,9 +75,6 @@ func (e *Error) Error() string {
 	if e.RequestID != "" {
 		fmt.Fprintf(&b, " [request %s]", e.RequestID)
 	}
-	if e.Attempts > 1 {
-		fmt.Fprintf(&b, " after %d attempts", e.Attempts)
-	}
 	if e.StatusCode == 0 && e.Err != nil {
 		fmt.Fprintf(&b, ": %s", e.Err)
 	}
@@ -98,16 +92,16 @@ func AsError(err error) (*Error, bool) {
 	return nil, false
 }
 
-// IsNotFound reports whether err is a 404. A 404 during refresh removes a resource from state, and
-// a 404 during delete is success, so this is the single place that decision is made.
+// IsNotFound reports whether err is a 404. A 404 during refresh removes a resource from state and a
+// 404 during delete is success, so this is where that decision is made once.
 func IsNotFound(err error) bool { return hasStatus(err, http.StatusNotFound) }
 
 // IsUnauthorized reports whether err is a 401: the credential is missing, malformed, or expired.
 func IsUnauthorized(err error) bool { return hasStatus(err, http.StatusUnauthorized) }
 
-// IsForbidden reports whether err is a 403: the credential is valid but not permitted to perform
-// the operation. For the Cloud Management API this usually means the key is not account-scoped
-// with `rst:role::ManagementApiAccess`, or belongs to a different account.
+// IsForbidden reports whether err is a 403: the credential is valid but not permitted. On the Cloud
+// Management API that usually means the key is not account-scoped with
+// `rst:role::ManagementApiAccess`, or belongs to a different account.
 func IsForbidden(err error) bool { return hasStatus(err, http.StatusForbidden) }
 
 // IsConflict reports whether err is a 409.

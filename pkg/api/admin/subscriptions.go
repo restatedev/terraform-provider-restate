@@ -17,9 +17,8 @@ type Subscriptions struct{ client *Client }
 // Subscriptions returns the subscription adapter.
 func (c *Client) Subscriptions() *Subscriptions { return &Subscriptions{client: c} }
 
-// Subscriptions deliberately implement no Updater: the pinned contract has create, get, list and
-// delete, and no update endpoint at all. Any change to a subscription's source, sink or options must
-// therefore replace it, and there is no method here that could pretend otherwise.
+// Subscriptions have no Updater: the contract has create, get, list and delete, and no update at all,
+// so every change must replace the subscription.
 var (
 	_ api.Creator[CreateSubscription, Subscription] = (*Subscriptions)(nil)
 	_ api.Getter[string, Subscription]              = (*Subscriptions)(nil)
@@ -37,18 +36,16 @@ type CreateSubscription struct {
 	Options map[string]string
 }
 
-// URIWarning describes a source or sink URI that does not match the shape this contract snapshot
-// documents. It is advisory: a newer server may accept a scheme this snapshot has never heard of,
-// and rejecting it would make the provider the reason a supported configuration cannot be expressed.
+// URIWarning describes a URI that does not match the shape this snapshot documents. It is advisory: a
+// newer server may accept a scheme this snapshot has never heard of.
 type URIWarning struct {
 	Field   string
 	Value   string
 	Message string
 }
 
-// ValidateSubscriptionURIs checks source and sink against the documented forms and returns advisory
-// warnings. It returns an error only for a URI that cannot be parsed at all, which no server could
-// accept.
+// ValidateSubscriptionURIs checks source and sink against the documented forms, returning advisory
+// warnings. It errors only for a URI that cannot be parsed at all, which no server could accept.
 func ValidateSubscriptionURIs(source, sink string) ([]URIWarning, error) {
 	var warnings []URIWarning
 
@@ -89,8 +86,8 @@ func checkURI(field, raw string, known func(string) bool, knownSchemes []string,
 		}}, nil
 	}
 
-	// A documented scheme with no host or no path cannot address anything, whatever the server
-	// version, but a server-side rejection is still the authority, so this is a warning too.
+	// A documented scheme with no host or path cannot address anything, but a server-side rejection is
+	// still the authority, so this warns too.
 	if parsed.Host == "" || parsed.Path == "" || parsed.Path == "/" {
 		return []URIWarning{{
 			Field: field, Value: raw,
@@ -103,8 +100,8 @@ func checkURI(field, raw string, known func(string) bool, knownSchemes []string,
 
 // Create creates a subscription.
 //
-// Retry safety is RetryThrottleOnly: the API assigns the identifier, so a retry after an ambiguous
-// 5xx could create a second subscription that nothing tracks.
+// Retry safety is RetryThrottleOnly: the API assigns the identifier, so a retry after an ambiguous 5xx
+// could create a second subscription that nothing tracks.
 func (s *Subscriptions) Create(ctx context.Context, input CreateSubscription) (Subscription, error) {
 	if _, err := ValidateSubscriptionURIs(input.Source, input.Sink); err != nil {
 		return Subscription{}, err
@@ -154,8 +151,8 @@ func (s *Subscriptions) List(ctx context.Context) ([]Subscription, error) {
 	return s.list(ctx, nil)
 }
 
-// ListFiltered enumerates subscriptions matching a source and/or sink. An empty filter value is
-// omitted rather than sent as an empty query parameter.
+// ListFiltered enumerates subscriptions matching a source and/or sink. An empty filter is omitted rather
+// than sent, which the server could read as "match the empty value".
 func (s *Subscriptions) ListFiltered(ctx context.Context, source, sink string) ([]Subscription, error) {
 	params := &generated.ListSubscriptionsParams{
 		Source: stringPointer(source),
@@ -184,7 +181,7 @@ func (s *Subscriptions) list(ctx context.Context, params *generated.ListSubscrip
 	return subscriptions, nil
 }
 
-// Delete removes a subscription. It is idempotent: an already-absent subscription is success.
+// Delete removes a subscription. An already-absent subscription is success.
 func (s *Subscriptions) Delete(ctx context.Context, subscriptionID string, _ struct{}) error {
 	if subscriptionID == "" {
 		return errors.New("a subscription ID is required")
