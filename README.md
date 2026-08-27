@@ -57,10 +57,69 @@ go generate ./pkg/api/...   # regenerates both API clients; CI fails on a diff
 
 ## Security
 
-Terraform state contains every secret this provider reads back, including environment API keys and
-Kafka connection properties. Encrypt and access-control your remote state. Report vulnerabilities
-as described in [SECURITY.md](SECURITY.md).
+Terraform state contains every secret this provider stores, including environment API keys, Kafka
+connection properties, and deployment headers. Encrypt and access-control your remote state; see
+`templates/guides/state-and-secrets.md` for exactly which values go where, and
+`templates/guides/destructive-operations.md` for every operation that can lose data and the guard
+around it. Report vulnerabilities as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Status by phase
+
+| Phase | Scope | State |
+| --- | --- | --- |
+| 0 | Contract survey, vendored snapshots, generator, domain types | Complete except live lifecycle probes |
+| 1 | Generated clients, API facades, provider configuration, `restate_server_info` | Complete |
+| 2 | `restate_cloud_environment`, `restate_cloud_api_key`, Cloud data sources, bootstrap guide | Complete except live acceptance runs |
+| 3 | `restate_deployment` | Complete except live acceptance runs |
+| 4 | `restate_kafka_cluster`, `restate_subscription` | Complete except live acceptance runs |
+| 5 | Service lookups and `restate_service_configuration` | Complete; `restate_service_configuration` ships as an explicitly partial-management resource |
+| 6 | Release readiness | CI, docs, examples, and signed releases in place; version matrix and prerelease outstanding |
+
+Every unresolved question is recorded under "Decisions still requiring validation" in
+[AGENTS.md](AGENTS.md). Nothing there has been silently guessed at: where live behaviour is unknown,
+the provider either refuses the operation with an explanation or holds the attribute back.
+
+## Testing
+
+Three layers, in increasing cost:
+
+```sh
+go test ./pkg/...       # client contract tests against httptest fixtures
+go test ./internal/...  # Terraform protocol tests; downloads Terraform on first run
+```
+
+Documentation under `docs/` is generated from the schema descriptions and the runnable
+configurations in `examples/`. Handwritten guides live in `templates/guides/`.
+
+```sh
+go generate ./pkg/api/...   # regenerates both API clients
+go generate ./tools/...     # regenerates docs/
+```
+
+On macOS use a short `TMPDIR` for docs generation (`TMPDIR=/tmp/tfdocs go generate ./tools/...`):
+generation launches the provider over a Unix domain socket, and macOS caps a socket path at 104
+bytes.
+
+Acceptance tests run against real APIs and are gated so they never run implicitly:
+
+```sh
+# Cloud Management API, in a designated test account only.
+TF_ACC=1 \
+RESTATE_CLOUD_ACCOUNT_ID=acc_... \
+RESTATE_CLOUD_MANAGEMENT_API_KEY=... \
+go test ./internal/provider/ -run TestAcc -v -timeout 60m
+
+# Admin API, against a designated test environment.
+TF_ACC=1 \
+RESTATE_ADMIN_URL=https://....restate.cloud:9070 \
+RESTATE_AUTH_TOKEN=... \
+go test ./internal/provider/ -run TestAcc -v -timeout 60m
+```
+
+Acceptance tests create environments and delete deployments, so they are gated twice: the
+credentials must be present, **and** `RESTATE_ACC_ALLOW_DESTRUCTIVE=1` must be set for anything that
+creates or deletes a real object. Never point them at an account or environment you care about.

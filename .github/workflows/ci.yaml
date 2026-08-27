@@ -73,6 +73,37 @@ jobs:
             exit 1
           fi
 
+  docs:
+    name: Documentation is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      # docs/ is generated from the provider's schema descriptions and the runnable configurations
+      # under examples/. A diff means a schema or an example changed without the docs being
+      # regenerated, which would ship a reference that contradicts the provider.
+      - name: Regenerate documentation
+        run: go generate ./tools/...
+
+      - name: Fail on a documentation diff
+        run: |
+          if ! git diff --exit-code -- docs/; then
+            echo "::error::Documentation is out of date. Run 'go generate ./tools/...' and commit the result."
+            exit 1
+          fi
+
+      # The examples are embedded verbatim into the generated docs, so unformatted HCL ships as
+      # unformatted HCL on the registry.
+      - name: Check example formatting
+        run: terraform fmt -check -recursive examples/
+
   vulncheck:
     name: Vulnerability scan
     runs-on: ubuntu-latest

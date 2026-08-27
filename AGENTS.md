@@ -225,7 +225,7 @@ Initialize the project with the conventional provider layout:
 - Keep transport, API models, Terraform schema/state conversion, and resource lifecycle logic separate.
 - Centralize duration normalization, URI validation, redaction-aware map merging, not-found detection, and diagnostics.
 - Use framework validators and plan modifiers. Do not use diff suppression to hide unexplained drift.
-- Add `terraform-plugin-docs` generation from schema descriptions and runnable examples. Generated docs must not replace the hand-written security and lifecycle guide.
+- Add `terraform-plugin-docs` generation from schema descriptions and runnable examples. Generated docs must not replace the hand-written security and lifecycle guide. `docs/` is generated in its entirety, so handwritten pages live in `templates/guides/` and are copied through; anything placed directly in `docs/` is deleted by the next generation.
 - Add standard licensing, contribution, security reporting, changelog/release automation, and Terraform Registry metadata before publication.
 
 ### Generic API operations
@@ -305,35 +305,35 @@ type Deleter[ID comparable, Options any] interface {
 
 ### Phase 0 - contract and UX proof
 
-- [ ] Initialize Git, Go module, license, contribution/security files, and basic CI.
-- [ ] Save and checksum both surveyed OpenAPI contracts under `pkg/api`; record their provenance, pin a generator, and add deterministic `go generate` and generated-diff checks.
-- [ ] Document the provider's Cloud Management API compatibility and upgrade policy.
-- [ ] Define the public Cloud/Admin domain types and shared generic capability interfaces; keep generated types internal.
-- [ ] Record the supported Admin API range and decide the provider/version compatibility policy.
-- [ ] Build read-only Cloud probes for management-key authentication, account matching, region listing, actual error bodies, and configurable base URLs.
-- [ ] Build disposable lifecycle probes for asynchronous environment create/update/tier/destroy, environment API-key secret/read/delete semantics, deployment CRUD, Kafka secret redaction, subscription replacement, and service-config null/reset behavior.
-- [ ] Finalize resource schemas from those results and capture decisions in this file.
+- [x] Initialize Git, Go module, license, contribution/security files, and basic CI.
+- [x] Save and checksum both surveyed OpenAPI contracts under `pkg/api`; record their provenance, pin a generator, and add deterministic `go generate` and generated-diff checks.
+- [x] Document the provider's Cloud Management API compatibility and upgrade policy (`pkg/api/cloud/PROVENANCE.md`).
+- [x] Define the public Cloud/Admin domain types and shared generic capability interfaces; keep generated types internal.
+- [x] Record the supported Admin API range and decide the provider/version compatibility policy (`pkg/api/admin/version.go`).
+- [x] Build read-only Cloud probes for management-key authentication, account matching, region listing, error bodies, and configurable base URLs. Exercised against `httptest` fixtures; live probing is pending credentialled access.
+- [ ] Build disposable **live** lifecycle probes for asynchronous environment create/update/tier/destroy, environment API-key secret/read/delete semantics, deployment CRUD, Kafka secret redaction, subscription replacement, and service-config null/reset behavior. Contract-level behaviour is modelled and tested against fixtures; the open items are recorded under "Decisions still requiring validation".
+- [x] Finalize Tier 1 resource schemas from the pinned contracts, and capture the decisions in this file. Schemas that depend on unresolved live behaviour are held back rather than guessed at.
 
 Exit criteria: all Tier 1 fields have known lifecycle/authentication semantics, the provider relies only on the pinned Cloud and Admin contracts, and unresolved behavior is explicitly deferred.
 
 ### Phase 1 - generated clients and generic API foundation
 
-- [ ] Generate typed Cloud and Admin clients/models from their pinned specifications.
-- [ ] Implement Terraform-independent Cloud/Admin facades, typed errors, generic request helpers, and endpoint capability adapters.
-- [ ] Add compile-time capability assertions and generated/facade contract tests.
-- [ ] Implement dual provider configuration, strict credential separation, environment variables, URL normalization, timeout/retry policy, redaction, Cloud account validation, and Admin version negotiation.
-- [ ] Add client unit tests and Terraform provider configuration tests.
-- [ ] Implement `restate_server_info`.
+- [x] Generate typed Cloud and Admin clients/models from their pinned specifications.
+- [x] Implement Terraform-independent Cloud/Admin facades, typed errors, generic request helpers, and endpoint capability adapters.
+- [x] Add compile-time capability assertions and generated/facade contract tests.
+- [x] Implement dual provider configuration, strict credential separation, environment variables, URL normalization, timeout/retry policy, redaction, Cloud account validation, and Admin version negotiation.
+- [x] Add client unit tests and Terraform provider configuration tests.
+- [x] Implement `restate_server_info`.
 
 Exit criteria: Cloud-only, Admin-only, and combined configurations have passing read-only acceptance tests, and wrong account/key pairs, invalid credentials, or Admin version mismatches yield safe diagnostics.
 
 ### Phase 2 - required Cloud environment and key MVP
 
-- [ ] Implement `restate_cloud_environment` with create polling, computed connection metadata, name/tier updates, replacement rules, import, deletion protection, and terminal deletion polling.
-- [ ] Implement `restate_cloud_api_key` with role validation, create-only sensitive secret preservation, import limitations, out-of-band deletion, and destroy.
-- [ ] Implement Cloud environment, regions, and account lookup data sources.
-- [ ] Add a two-stage bootstrap guide and examples that transfer credentials only through an access-controlled secret store.
-- [ ] Test account-billed tier transitions and reject interactive checkout flows deterministically.
+- [x] Implement `restate_cloud_environment` with create polling, computed connection metadata, name/tier updates, replacement rules, import, deletion protection, and terminal deletion polling.
+- [x] Implement `restate_cloud_api_key` with role validation, create-only sensitive secret preservation, import limitations, out-of-band deletion, and destroy.
+- [x] Implement Cloud environment, regions, and account lookup data sources.
+- [x] Add a two-stage bootstrap guide and examples that transfer credentials only through an access-controlled secret store, plus guides on state/secret handling and every destructive operation.
+- [ ] Test account-billed tier transitions against the **live** API. Interactive checkout is rejected deterministically and is covered by protocol tests; which transitions are non-interactive for each billing mode remains unresolved (decision 9).
 
 Exit criteria: environment and key resources converge across apply/refresh/import/destroy in a designated account, create failure leaves an actionable identifier, secrets never appear in logs, and the documented bootstrap does not imply same-apply provider reconfiguration.
 
@@ -341,40 +341,40 @@ Release gate: do not publish the provider's first usable release until `restate_
 
 ### Phase 3 - deployments MVP
 
-- [ ] Implement `restate_deployment` for HTTP endpoints.
-- [ ] Add Lambda endpoint support and supported authentication/compression fields.
-- [ ] Implement refresh, update, import, out-of-band deletion, timeouts, and guarded forced destroy.
-- [ ] Export computed discovery metadata without taking ownership of it.
-- [ ] Generate documentation and HTTP/Lambda examples.
+- [x] Implement `restate_deployment` for HTTP endpoints.
+- [x] Add Lambda endpoint support and the authentication field. Compression is **read-only**: the pinned contract reports it but accepts it on neither register nor update, so it cannot be configured.
+- [x] Implement refresh, update, import, out-of-band deletion, timeouts, and guarded forced destroy.
+- [x] Export computed discovery metadata without taking ownership of it.
+- [x] Generate documentation and HTTP/Lambda examples.
 
 Exit criteria: repeated plan after apply and import is empty; HTTP and Lambda acceptance cases pass; no secret appears in test output.
 
 ### Phase 4 - Kafka and subscriptions
 
-- [ ] Implement `restate_kafka_cluster` with proven redaction-aware state behavior.
-- [ ] Implement `restate_subscription` with replacement semantics.
-- [ ] Implement focused lookup data sources for both.
-- [ ] Test dependency ordering and protected versus forced Kafka deletion.
+- [x] Implement `restate_kafka_cluster` with redaction-aware state behaviour, proven against fixtures: a redacted or sensitively-named property keeps its configured value, non-secret drift is still reported, and the merge is idempotent so refresh cannot oscillate. The redaction marker itself is a heuristic pending live confirmation (decision 4).
+- [x] Implement `restate_subscription` with replacement semantics.
+- [x] Implement focused lookup data sources for both.
+- [x] Test dependency ordering and protected versus forced Kafka deletion.
 
 Exit criteria: a live Kafka cluster/subscription configuration converges across refresh and import, or the Kafka resource is explicitly held back if the API cannot safely reconcile secrets.
 
 ### Phase 5 - services
 
-- [ ] Implement service and handler lookup data sources.
-- [ ] Resolve reset/rediscovery semantics and, only if safe, implement `restate_service_configuration`.
-- [ ] Add duration canonicalization and service-type validation.
-- [ ] Document ownership interaction between SDK discovery and Terraform overrides.
+- [x] Implement service and handler lookup data sources.
+- [x] Implement `restate_service_configuration` as an **explicitly partial-management** resource, which is the option this plan permits when reset behaviour cannot be established. It sends only the attributes that are set and never a JSON null; destroy and attribute removal stop management and warn that the applied value was left in place. Reset semantics remain unresolved (decision 5) and the resource does not pretend otherwise.
+- [x] Add duration canonicalization and service-type validation. Durations use a semantic-equality attribute type so `1 day`, `24h` and `P1D` compare equal; a calendar duration such as `P1M` has no fixed length and falls back to exact comparison rather than being declared equal to something it is not.
+- [x] Document ownership interaction between SDK discovery and Terraform overrides.
 
 Exit criteria: an apply/refresh cycle remains stable after deployment rediscovery and resource removal has defined, tested behavior.
 
 ### Phase 6 - release readiness
 
-- [ ] Add lint, formatting, unit, generated-file consistency, vulnerability, protocol, and acceptance workflows.
-- [ ] Add complete examples, import instructions, state-security guidance, upgrade notes, and troubleshooting.
-- [ ] Document both API sources, pinned revisions, known contract gaps, and the provider's compatibility policy.
-- [ ] Test with a clean checkout on all supported Go/Terraform/Restate versions.
-- [ ] Configure reproducible signed releases and Terraform Registry publishing.
-- [ ] Publish a prerelease, collect schema/lifecycle feedback, then declare `v1.0.0` compatibility guarantees.
+- [x] Add formatting, vet, race-enabled unit and protocol, module-tidiness, generated-file, documentation-diff, example-formatting, whitespace, and vulnerability CI jobs, plus a manually triggered acceptance workflow.
+- [x] Add examples and import instructions for every resource and data source, plus state-security and destructive-operation guidance. Upgrade notes await a first release to upgrade from.
+- [x] Document both API sources, pinned revisions, known contract gaps, and the compatibility policy, in each contract's `PROVENANCE.md`.
+- [ ] Test with a clean checkout on all supported Go/Terraform/Restate versions. A CI matrix over Terraform and Restate versions is still needed, and the supported Restate range must not be advertised beyond what has been tested (decision 1).
+- [x] Configure reproducible signed releases and Terraform Registry publishing: trimmed static builds, a checksum manifest, a detached GPG signature, and a registry protocol manifest. Releases are drafted for review rather than published straight to the registry.
+- [ ] Publish a prerelease, collect schema/lifecycle feedback, then declare `v1.0.0` compatibility guarantees. Blocked on the live acceptance run, which is the documented release gate for `restate_cloud_environment`.
 
 Exit criteria: CI and designated Cloud acceptance tests pass, generated docs match schemas, release artifacts are verifiable, and every advertised resource has an import path and lifecycle coverage.
 
@@ -391,19 +391,63 @@ Exit criteria: CI and designated Cloud acceptance tests pass, generated docs mat
 
 Do not silently choose answers to these during implementation; resolve them with the pinned contract plus live API tests and update this section:
 
-1. Exact Admin API version negotiation rules and the oldest Restate version supported by the first provider release.
-2. Whether deployment registration `force`, `breaking`, and update `overwrite` can be represented without non-persistent configuration causing plan churn.
-3. Whether a newer API makes deployment metadata or HTTP authentication updateable; in the surveyed contract, changes must replace the deployment because the update request exposes neither field.
-4. Exact response shape and stable redaction markers for Kafka properties, including behavior after import.
-5. Whether service-configuration `null` restores the SDK-discovered value or a server default, and how resource destroy should behave.
-6. Whether Cloud Management rate limits return `Retry-After`, whether create operations have idempotency guarantees, and which writes are safe to retry after an ambiguous transport failure.
-7. The Cloud Management API's canonical base URL, versioning strategy, and forward/backward compatibility guarantees.
-8. Exact asynchronous state transitions and timeout/cleanup behavior for Cloud environment creation, failed provisioning, tier changes, and destruction.
-9. Which tier transitions are non-interactive for each billing mode and how the provider should handle an unexpected `checkoutUrl` without orphaning partially managed state.
-10. Whether Cloud API-key description can be updated or must force replacement, and the precise import UX for a secret that cannot be recovered.
-11. Whether the Cloud API will expose an environment's `profileId` on describe/list so custom-profile environments can be refreshed and imported safely.
-12. Whether either contract gains pagination, ETags, request IDs, idempotency keys, or new authentication schemes in a newer snapshot.
-13. Which pinned OpenAPI generator best preserves both contracts' unions and nullability without requiring edits to generated files; record the decision and generator version before Phase 1.
+1. **Partly resolved.** The provider declares support for Admin API versions 2 to 4 and requires the server's advertised range to overlap it; overlap below version 4 -- the version the pinned contract documents -- is a warning rather than an error, and a disjoint range fails provider configuration. The bounds come from Restate's own `MIN_ADMIN_API_VERSION`/`MAX_ADMIN_API_VERSION` (V2..V4 as of the surveyed 1.7.6 contract), and version 4 was introduced in Restate 1.7.0. The contract exposes no per-request version selector, so this is a compatibility gate, not a negotiation that downgrades request shapes.
+
+    **Still open:** which Restate versions the release actually claims. The provider's request and response shapes come from the 1.7.6 contract, so compatibility with a server whose maximum is 2 or 3 is asserted by range arithmetic, not by testing. Do not advertise a minimum supported Restate version below 1.7.0 until it has been tested against a real server.
+2. **Resolved for the pinned contract.** `force`, `breaking` and `overwrite` are plain optional booleans defaulting to false. They are configuration-only: the API neither accepts them on the operations they do not apply to nor reports them, so they are never read back and cannot drift. A saved plan is stable because the value comes from configuration rather than from the API.
+
+    The remaining risk was silently ignoring a change, and that is handled explicitly rather than suppressed: changing `force` or `breaking` on an existing deployment emits a warning saying the value applies only when the resource is next created. `RequiresReplace` was rejected as the alternative — destroying a working deployment because someone flipped a create-time flag is worse than a warning. Protocol tests cover the empty plan and the warning.
+
+    **Still open:** none for this contract. Revisit only if a snapshot starts reporting these fields, in which case they become readable state and should be reconciled.
+3. Whether a newer API makes deployment metadata or HTTP authentication updateable. In the pinned contract neither is in the update request, so both carry `RequiresReplace`, and `UpdateHTTPDeployment`/`UpdateLambdaDeployment` deliberately have no field for them — there is nothing an update could silently drop. Re-check on the next snapshot; making either updateable would be a schema-compatible improvement.
+
+    Related and also unresolved: `use_http_11` cannot be read back. The API reports the negotiated `http_version`, and ALPN can produce HTTP/2 for a deployment registered with `use_http_11`, so the two are not the same fact. The provider keeps the configured value and exports `http_version` separately. Confirm against a live server whether any field reports the requested setting.
+4. **Handled, not resolved.** The contract says sensitive Kafka properties are redacted on read but does not specify the marker. `MergeRedactedProperties` therefore does not rely on recognising one: it keeps the configured value for any property whose value looks like a placeholder **or** whose name marks its value as secret, and takes the API's value otherwise. That converges whichever marker the server uses, still reports non-secret drift, and is idempotent so refresh cannot oscillate. Import has no configured value to fall back on, so state holds the API's placeholders and the provider warns.
+
+    **Still open:** the actual marker. Capture it from a live cluster and add it to `RedactionMarkers`; the substring-based name matching is the safety net until then.
+5. **Handled, not resolved.** The contract does not define what a JSON `null` means for a service-configuration field, and there is no reset operation. `restate_service_configuration` therefore never sends a null, sends only the attributes that are set, and is documented as an explicitly partial-management resource: destroy and attribute removal stop management, leave the applied value in place, and warn. An entirely empty resource is rejected at validation rather than applying as a silent no-op.
+
+    **Still open:** whether a null restores the SDK-discovered value or a server default. If it restores the discovered value, destroy could become a real reset, which would be a behaviour change worth a major release.
+6. **Partly resolved.** Retry safety is a per-operation property, not a transport setting, and the zero value is the safest: retry only responses that prove the request was not acted on (429, and 503 with `Retry-After`). Creates use that level; idempotent writes additionally retry retryable 5xx; only reads retry transport errors, where the provider cannot tell whether the server saw the request. `Retry-After` is honoured but clamped, so a broken server cannot park an apply.
+
+    **Still open:** whether the Cloud API actually sends `Retry-After`, and whether any create has an idempotency guarantee. Until it does, no create is retried through an ambiguous 5xx — which is why a failed create records the object's ID in state so Terraform can destroy it rather than leaving an orphan.
+7. **Partly resolved.** The pinned `v1` snapshot **is** the compatibility boundary; the API has no version endpoint to negotiate against. The policy is recorded in `pkg/api/cloud/PROVENANCE.md`: send only what the snapshot defines, ignore unknown response fields, fail with an actionable diagnostic when a required field is missing, and treat a refreshed snapshot that changes a field the provider reads as a breaking provider change.
+
+    **Still open:** the canonical base URL for realms other than `api.us.restate.cloud`, and whether upstream will commit to a compatibility guarantee.
+8. **Partly resolved.** The provider treats create and destroy as asynchronous and polls to a terminal state; `FAILED` fails immediately rather than at the timeout, and both a 404 and a `DELETED` status count as absence. A create that fails after the API assigned an ID records that ID in state so it can be destroyed.
+
+    **Still open:** the real transition timings, and whether a `FAILED` environment is ever cleaned up server-side. The default create and delete timeouts (30 minutes) are guesses and should be revised from live data.
+9. Which tier transitions are non-interactive for each billing mode. A `checkoutUrl` in a create or tier-change response is refused as an error rather than reported as success, the single-use payment link is never echoed into the diagnostic, and a partially applied update is re-read so state reflects what was applied rather than what was planned. `restate_cloud_account.billing_mode` is exposed so a configuration can check before planning a change. The mapping from billing mode to non-interactive transitions still needs live confirmation.
+10. **Resolved.** The contract has no key update operation at all, so `description` forces replacement along with everything else, and `restate_cloud_api_key` implements no `Updater` — its `Update` method is unreachable and says so. Import populates every attribute except `api_key`, which is null with a warning explaining that the secret cannot be recovered and that replacing the key is the only way to obtain a new one. The first plan after import is empty.
+11. Whether the Cloud API will expose an environment's `profileId` on describe/list. Until it does, `CUSTOM` is readable but not requestable, and `profileId` is never sent — a write-only placement choice that cannot be refreshed or imported would produce permanent hidden drift.
+12. Whether either contract gains pagination, ETags, request IDs, idempotency keys, or new authentication schemes in a newer snapshot. Note that the provider already reads a correlation ID from several response headers and preserves it in every error, so a server that starts sending one needs no change.
+13. ~~Which pinned OpenAPI generator best preserves both contracts' unions and nullability without requiring edits to generated files.~~ **Resolved:** `oapi-codegen` v2.8.0, pinned as a Go tool dependency. `ogen` v1.24.0 was evaluated first and rejected: it cannot generate the Admin API's untagged deployment `oneOf` ("discriminator inference is not implemented") without skipping the deployment registration operation entirely, and it rejects the Cloud contract outright. `oapi-codegen` renders each union as a raw JSON envelope with typed accessors, which the handwritten facades resolve explicitly. Two generator settings are load-bearing and documented in each `oapi-codegen.yaml`: `skip-prune`, because both contracts cross-reference schemas the retained operations need, and `response-type-suffix`, because the Cloud contract's own `<Operation>Response` schemas would otherwise collide with the generated response wrappers.
+
+    A separate finding: the vendored Cloud contract is **invalid** as published. It templates `{accountId}` into account-scoped paths without declaring the path parameter, which every conforming generator either rejects or silently mis-handles. `tools/cmd/normalizecloudspec` injects the missing declaration as a deterministic, diff-checked `go generate` step so the pristine snapshot keeps its provenance and checksum. This should be fixed upstream; when it is, the normalizer's own guard fails the build (it errors when it finds nothing to inject) and it can be removed.
+
+## Known gaps at the time of writing
+
+These are things a reader should not have to discover by reading the code.
+
+- **No live validation has been performed.** Every behaviour in this provider is derived from the two
+  pinned contracts and tested against fixtures and a stateful fake. The acceptance tests exist and are
+  gated, but they have not been run: no credentials were available. The release gate in Phase 2 --
+  `restate_cloud_environment` passing a live lifecycle -- is therefore **not met**, and the provider
+  must not be published until it is.
+- **The default timeouts are estimates.** 30 minutes for environment create and delete, 10 minutes for
+  deployment registration. They are deliberately generous rather than measured, and should be revised
+  from live data.
+- **The Kafka redaction marker is a heuristic.** The provider does not depend on recognising it -- see
+  decision 4 -- but the marker list should be corrected from a live cluster.
+- **Self-hosted Restate is untested and unadvertised.** The Admin API client is built against the
+  published contract rather than against Cloud-only URL assumptions, so it should work, but "should"
+  is not a compatibility claim. Do not advertise one until Phase 7's explicit self-hosted mode is
+  tested.
+- **No CI matrix over Terraform or Restate versions.** CI runs one Go and one Terraform version, and
+  the Restate version is whatever a fixture says. Phase 6 is not complete without a matrix.
+- **`restate_service_configuration` cannot revert.** This is a documented consequence of the contract,
+  not an oversight, but it is the most surprising behaviour in the provider and is called out in the
+  destructive-operations guide as well as on the resource itself.
 
 ## Working rules for contributors and agents
 

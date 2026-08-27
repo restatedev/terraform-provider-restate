@@ -23,3 +23,6 @@ terraform.rc
 # Local secrets — never commit credentials
 *.env
 .envrc
+
+# Documentation generation working directories
+/.terraform.d/

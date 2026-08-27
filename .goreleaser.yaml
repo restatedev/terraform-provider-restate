@@ -1,0 +1,74 @@
+# Release configuration for the Terraform Registry.
+#
+# The registry requires a specific artifact layout: one zip per platform named
+# terraform-provider-<name>_<version>_<os>_<arch>.zip, a SHA256SUMS manifest, a detached GPG
+# signature over that manifest, and a manifest.json declaring the supported protocol versions.
+version: 2
+
+before:
+  hooks:
+    # A release must not ship a stale generated client or a stale go.sum.
+    - go mod download
+    - go generate ./pkg/api/...
+    - git diff --exit-code
+
+builds:
+  - env:
+      # The registry serves the provider to arbitrary machines, so it must be statically linked.
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      # Stamped into the provider's user agent, which is how a request in a server-side log is traced
+      # back to a specific release.
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
+    goos:
+      - linux
+      - darwin
+      - windows
+      - freebsd
+    goarch:
+      - amd64
+      - arm64
+      - arm
+      - '386'
+    ignore:
+      # Combinations the registry does not serve and nobody runs Terraform on.
+      - goos: darwin
+        goarch: '386'
+      - goos: darwin
+        goarch: arm
+      - goos: windows
+        goarch: arm
+      - goos: windows
+        goarch: arm64
+    binary: '{{ .ProjectName }}_v{{ .Version }}'
+
+archives:
+  - formats: [zip]
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+
+checksum:
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
+  algorithm: sha256
+
+signs:
+  - artifacts: checksum
+    args:
+      # GPG_FINGERPRINT selects the signing key; the private key is provided to the workflow through
+      # a secret and imported before this runs.
+      - '--batch'
+      - '--local-user'
+      - '{{ .Env.GPG_FINGERPRINT }}'
+      - '--output'
+      - '${signature}'
+      - '--detach-sign'
+      - '${artifact}'
+
+release:
+  # A release is published as a draft so the changelog and artifacts can be reviewed before anyone
+  # can consume them: the registry picks up a release as soon as it is public.
+  draft: true
+
+changelog:
+  disable: true

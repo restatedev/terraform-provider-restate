@@ -1,0 +1,47 @@
+name: Acceptance tests
+
+# Acceptance tests create and destroy real infrastructure and cost money, so they never run on a
+# push or a pull request. They are triggered deliberately, and only for the designated test account.
+on:
+  workflow_dispatch:
+    inputs:
+      destructive:
+        description: 'Run the destructive tests, which create and destroy real environments'
+        type: boolean
+        default: false
+  schedule:
+    # Weekly, to catch an API change before a release does. Read-only by default: the destructive
+    # tests need the input above.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    name: Acceptance tests
+    runs-on: ubuntu-latest
+    # A designated test account, configured as a GitHub environment so its secrets and any required
+    # reviewers are managed separately from the repository's.
+    environment: acceptance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run acceptance tests
+        env:
+          TF_ACC: '1'
+          RESTATE_CLOUD_API_URL: ${{ vars.RESTATE_CLOUD_API_URL }}
+          RESTATE_CLOUD_ACCOUNT_ID: ${{ vars.RESTATE_CLOUD_ACCOUNT_ID }}
+          RESTATE_CLOUD_MANAGEMENT_API_KEY: ${{ secrets.RESTATE_CLOUD_MANAGEMENT_API_KEY }}
+          RESTATE_ADMIN_URL: ${{ vars.RESTATE_ADMIN_URL }}
+          RESTATE_AUTH_TOKEN: ${{ secrets.RESTATE_AUTH_TOKEN }}
+          RESTATE_ACC_DEPLOYMENT_URI: ${{ vars.RESTATE_ACC_DEPLOYMENT_URI }}
+          # Each destructive test also checks this, so a scheduled run stays read-only.
+          RESTATE_ACC_ALLOW_DESTRUCTIVE: ${{ inputs.destructive && '1' || '0' }}
+        # A generous timeout: environment provisioning and teardown are server-side operations whose
+        # duration the provider does not control.
+        run: go test ./internal/provider/ -run TestAcc -v -timeout 90m
