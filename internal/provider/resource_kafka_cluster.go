@@ -130,8 +130,8 @@ func (r *KafkaClusterResource) Create(ctx context.Context, req resource.CreateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// Validate locally: "properties must set bootstrap.servers" is a better message than whatever
-	// the server returns, and it costs nothing.
+	// Validate locally: "properties must set bootstrap.servers" beats whatever the server returns, and
+	// costs no round trip.
 	if err := admin.ValidateKafkaProperties(properties); err != nil {
 		resp.Diagnostics.AddAttributeError(path.Root("properties"), "Invalid Kafka cluster properties", err.Error())
 		return
@@ -166,8 +166,8 @@ func (r *KafkaClusterResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	// The configured properties are the only source of truth for values the API will not disclose,
-	// so they must be captured before the response overwrites anything.
+	// Capture the configured properties before the response overwrites anything: they are the only source
+	// of truth for a value the API will not disclose.
 	configured, diags := stringMap(ctx, state.Properties)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -267,13 +267,13 @@ func (r *KafkaClusterResource) ImportState(ctx context.Context, req resource.Imp
 // applyRead reconciles state with the API's report, for the refresh path.
 //
 // The API is not a source of truth for a value it will not disclose, so the merge keeps the configured
-// value for anything redacted or sensitively named, and takes the API's value otherwise. That is what
-// makes refresh converge instead of either erasing a credential or showing a permanent diff, while
-// still reporting a genuine out-of-band change to a non-secret property.
+// value for anything redacted or sensitively named. That is what makes refresh converge instead of
+// either erasing a credential or showing a permanent diff, while still reporting a genuine out-of-band
+// change to a non-secret property.
 func (r *KafkaClusterResource) applyRead(ctx context.Context, model *kafkaClusterModel, cluster admin.KafkaCluster, configured map[string]string) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	r.applyComputed(model, cluster)
+	r.applyComputed(model, cluster, applyRead, &diags)
 	merged := admin.MergeRedactedProperties(cluster.Properties, configured)
 	model.Properties = stringMapValue(ctx, merged, &diags)
 
@@ -282,16 +282,12 @@ func (r *KafkaClusterResource) applyRead(ctx context.Context, model *kafkaCluste
 
 // applyWrite reconciles state after a create or update.
 //
-// It keeps the planned properties rather than adopting the API's report, because Terraform requires
-// the value after an apply to equal what was planned. Adopting the response would fail Terraform's
-// consistency check with a message blaming the provider for what is actually a server that did not
-// apply the change -- so the discrepancy is reported directly instead.
-//
-// Only non-secret properties can be checked: a redacted value tells us nothing about what was stored.
+// It keeps the planned properties rather than adopting the API's report; see reconcileString. Only
+// non-secret properties can be checked, because a redacted value says nothing about what was stored.
 func (r *KafkaClusterResource) applyWrite(model *kafkaClusterModel, cluster admin.KafkaCluster, requested map[string]string) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	r.applyComputed(model, cluster)
+	r.applyComputed(model, cluster, applyWrite, &diags)
 
 	for name, want := range requested {
 		if api.IsSensitivePropertyName(name) {
@@ -312,10 +308,11 @@ func (r *KafkaClusterResource) applyWrite(model *kafkaClusterModel, cluster admi
 	return diags
 }
 
-func (r *KafkaClusterResource) applyComputed(model *kafkaClusterModel, cluster admin.KafkaCluster) {
+func (r *KafkaClusterResource) applyComputed(model *kafkaClusterModel, cluster admin.KafkaCluster, mode applyMode, diags *diag.Diagnostics) {
 	model.ID = types.StringValue(cluster.Name)
-	model.Name = types.StringValue(cluster.Name)
 	model.CreatedAt = types.StringValue(cluster.CreatedAt)
+	model.Name = reconcileString(mode, model.Name, cluster.Name,
+		path.Root("name"), fmt.Sprintf("Kafka cluster %s", cluster.Name), diags)
 }
 
 func appendKafkaNotices(diags *diag.Diagnostics, notices []admin.Notice) {

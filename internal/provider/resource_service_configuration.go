@@ -20,18 +20,16 @@ import (
 
 // ServiceConfigurationResource manages the mutable subset of a service's configuration.
 //
-// This is deliberately a **partial-management** resource, and that shapes its whole design.
+// This is deliberately a partial-management resource, and that shapes its whole design. The Admin API
+// has no operation that resets a service setting to the value discovery gave it, and the contract does
+// not document what a JSON null means for these fields. Rather than guess:
 //
-// The Admin API has no operation that resets a service setting to the value discovery gave it, and
-// the pinned contract does not document what a JSON null means for these fields -- whether it
-// restores the SDK-discovered value, applies a server default, or is rejected. Rather than guess:
-//
-//   - The provider only ever sends the fields the configuration sets, never a null.
-//   - Removing the resource, or removing an attribute from it, stops Terraform managing that setting
-//     and leaves whatever value is in place. It does not revert anything.
+//   - Only the fields the configuration sets are sent, never a null.
+//   - Removing the resource, or an attribute from it, stops managing that setting and leaves whatever
+//     value is in place. Nothing is reverted.
 //   - Destroy is therefore a state-only operation, and says so.
 //
-// That is the honest behaviour given the contract. It is documented on the resource so nobody
+// That is the honest behaviour given the contract, and it is documented on the resource so nobody
 // discovers it by finding a setting still applied after a destroy.
 type ServiceConfigurationResource struct {
 	data *providerData
@@ -162,8 +160,8 @@ func (r *ServiceConfigurationResource) Configure(_ context.Context, req resource
 	r.data = configureProviderData(req.ProviderData, &resp.Diagnostics)
 }
 
-// ValidateConfig rejects a configuration that manages nothing, which would otherwise apply cleanly
-// and silently do nothing at all.
+// ValidateConfig rejects a configuration that manages nothing, which would otherwise apply cleanly and
+// do nothing at all.
 func (r *ServiceConfigurationResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var config serviceConfigurationModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -171,13 +169,74 @@ func (r *ServiceConfigurationResource) ValidateConfig(ctx context.Context, req r
 		return
 	}
 
-	if r.modifyRequest(config).IsEmpty() {
+	r.warnAboutUnparseableDurations(config, &resp.Diagnostics)
+
+	if !r.managesAnything(config) {
 		resp.Diagnostics.AddError("This restate_service_configuration manages nothing",
 			"At least one of `public`, `idempotency_retention`, `journal_retention`, "+
 				"`workflow_completion_retention`, `inactivity_timeout` or `abort_timeout` must be set.\n\n"+
 				"This resource only sends the attributes you set -- it never sends a null -- so a resource with "+
 				"none of them set would apply successfully and change nothing.")
 	}
+}
+
+// managesAnything reports whether the configuration sets any manageable attribute.
+//
+// It counts an unknown value as set, unlike modifyRequest, which must not send one. The questions are
+// different: validation asks whether the user wrote anything, and at validate time an attribute
+// derived from another resource is unknown rather than null. Reusing modifyRequest here would reject a
+// perfectly valid configuration.
+// warnAboutUnparseableDurations reports a duration this provider cannot reduce to a length of time.
+//
+// It warns rather than rejects, for the same reason subscription URI schemes do: the server is the
+// authority on what it accepts, and a calendar duration such as `P1M` is legitimate but has no fixed
+// length. The consequence is worth saying out loud, though -- comparison falls back to exact string
+// matching, so the server echoing the value back in another spelling shows as a permanent diff.
+func (r *ServiceConfigurationResource) warnAboutUnparseableDurations(config serviceConfigurationModel, diags *diag.Diagnostics) {
+	for _, field := range []struct {
+		name  string
+		value durationValue
+	}{
+		{"idempotency_retention", config.IdempotencyRetention},
+		{"journal_retention", config.JournalRetention},
+		{"workflow_completion_retention", config.WorkflowCompletionRetention},
+		{"inactivity_timeout", config.InactivityTimeout},
+		{"abort_timeout", config.AbortTimeout},
+	} {
+		if field.value.IsNull() || field.value.IsUnknown() {
+			continue
+		}
+		_, err := ParseDuration(field.value.ValueString())
+		if err == nil {
+			continue
+		}
+		diags.AddAttributeWarning(path.Root(field.name),
+			fmt.Sprintf("`%s` is not a duration this provider can compare", field.name),
+			fmt.Sprintf("%s\n\n"+
+				"The value is sent to Restate unchanged -- the server is the authority on what it accepts -- but "+
+				"this provider cannot reduce it to a length of time, so it compares the configured and reported "+
+				"values as exact strings. If Restate echoes it back in a different spelling, every plan will show "+
+				"a diff.\n\n"+
+				"Use a fixed-length form such as `30 days` or `P30D` to avoid that.", err.Error()))
+	}
+}
+
+func (r *ServiceConfigurationResource) managesAnything(config serviceConfigurationModel) bool {
+	if !config.Public.IsNull() {
+		return true
+	}
+	for _, value := range []durationValue{
+		config.IdempotencyRetention,
+		config.JournalRetention,
+		config.WorkflowCompletionRetention,
+		config.InactivityTimeout,
+		config.AbortTimeout,
+	} {
+		if !value.IsNull() {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *ServiceConfigurationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -209,9 +268,8 @@ func (r *ServiceConfigurationResource) Read(ctx context.Context, req resource.Re
 	service, err := r.data.Admin.Services().Get(ctx, state.ServiceName.ValueString())
 	if err != nil {
 		if api.IsNotFound(err) {
-			// The service is gone, which means the deployment exposing it is gone. There is nothing
-			// to configure, so drop the resource; the next plan recreates it once the deployment is
-			// back.
+			// The service is gone, so the deployment exposing it is gone. Drop the resource; the next plan
+			// recreates it once the deployment is back.
 			resp.State.RemoveResource(ctx)
 			return
 		}
@@ -235,8 +293,7 @@ func (r *ServiceConfigurationResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	// An attribute dropped from the configuration cannot be reverted, and pretending otherwise would
-	// leave state claiming a value that is still applied on the server.
+	// An attribute dropped from the configuration cannot be reverted.
 	r.warnAboutAbandonedSettings(&resp.Diagnostics, plan, state)
 
 	r.apply(ctx, plan, &resp.Diagnostics, func(updated *serviceConfigurationModel) {
@@ -246,9 +303,8 @@ func (r *ServiceConfigurationResource) Update(ctx context.Context, req resource.
 
 // Delete removes the resource from state without changing the service.
 //
-// This is the partial-management contract made explicit: the Admin API cannot reset a setting to its
-// discovered value, so there is nothing safe to send here. Silently doing nothing would be
-// misleading, so it warns.
+// This is the partial-management contract made explicit: there is nothing safe to send, and silently
+// doing nothing would be misleading, so it warns.
 func (r *ServiceConfigurationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state serviceConfigurationModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -274,9 +330,8 @@ func (r *ServiceConfigurationResource) ImportState(ctx context.Context, req reso
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("service_name"), req.ID)...)
 
-	// Import records the identity and nothing else. Adopting the service's current settings would be
-	// wrong: they include values that came from SDK discovery rather than from anyone's Terraform
-	// configuration, and this resource only manages what the configuration names.
+	// Import records the identity and nothing else. Adopting the service's current settings would be wrong:
+	// they include values that came from discovery rather than from anyone's configuration.
 	resp.Diagnostics.AddWarning("An imported service configuration manages nothing until you configure it",
 		fmt.Sprintf("Service %q has been imported, but no settings have been adopted: this resource manages only "+
 			"the attributes your configuration sets, and the service's current values include whatever its SDK "+
@@ -286,14 +341,13 @@ func (r *ServiceConfigurationResource) ImportState(ctx context.Context, req reso
 			"start from them.", req.ID))
 }
 
-// apply sends the modify request and writes the result into state through the supplied setter, so
-// create and update share one implementation without pretending their responses differ.
+// apply sends the modify request and writes the result through the supplied setter, so create and update
+// share one implementation.
 func (r *ServiceConfigurationResource) apply(ctx context.Context, plan serviceConfigurationModel, diags *diag.Diagnostics, set func(*serviceConfigurationModel)) {
 	serviceName := plan.ServiceName.ValueString()
 
-	// Read first, to check the service exists and to learn its type. Sending
-	// workflow_completion_retention to a non-workflow service would be rejected by the server with a
-	// far less specific message.
+	// Read first, to check the service exists and to learn its type: sending
+	// workflow_completion_retention to a non-workflow service earns a far less specific server error.
 	service, err := r.data.Admin.Services().Get(ctx, serviceName)
 	if err != nil {
 		if api.IsNotFound(err) {
@@ -322,14 +376,8 @@ func (r *ServiceConfigurationResource) apply(ctx context.Context, plan serviceCo
 		return
 	}
 
-	// Terraform requires the value after an apply to match what was planned. So the write path keeps
-	// the planned values and *verifies* the API agrees, rather than adopting whatever the API
-	// reported: adopting a different value would fail Terraform's consistency check with a "this is a
-	// bug in the provider" message that says nothing about the actual problem, which is a server that
-	// did not apply the change.
-	//
-	// Durations compare semantically, so the API echoing `P7D` back for a configured `7 days` is
-	// agreement, not a discrepancy.
+	// Keep the planned values and verify the API agrees; see reconcileString. Durations compare
+	// semantically, so the API echoing `P7D` back for a configured `7 days` is agreement.
 	state := plan
 	r.applyComputed(&state, updated)
 	r.verifyApplied(diags, serviceName, plan, updated)
@@ -359,7 +407,7 @@ func (r *ServiceConfigurationResource) verifyApplied(diags *diag.Diagnostics, se
 		if field.requested.IsNull() || field.requested.IsUnknown() {
 			continue
 		}
-		// An unreported value is not evidence of a discrepancy; only a value that differs is.
+		// An unreported value is not evidence of a discrepancy.
 		if field.reported == "" || sameDuration(field.requested.ValueString(), field.reported) {
 			continue
 		}
@@ -383,6 +431,8 @@ func sameDuration(left, right string) bool {
 // applyComputed copies only the server-derived fields, leaving the managed attributes as planned.
 func (r *ServiceConfigurationResource) applyComputed(model *serviceConfigurationModel, service admin.Service) {
 	model.ID = types.StringValue(service.Name)
+	// service_name is Required and requires replacement, so it can only ever equal what was planned;
+	// it is set from the response rather than reconciled because an import has no plan to keep.
 	model.ServiceName = types.StringValue(service.Name)
 	model.ServiceType = types.StringValue(string(service.Type))
 	model.Revision = types.Int64Value(int64(service.Revision))
@@ -417,13 +467,10 @@ func (r *ServiceConfigurationResource) modifyRequest(plan serviceConfigurationMo
 	return request
 }
 
-// applyService copies the API's report of the service into the model, for the refresh path.
+// applyService copies the API's report into the model, for the refresh path.
 //
-// Managed attributes are overwritten from the API so a change made outside Terraform shows as drift.
-// Attributes the configuration does not manage are left null rather than set to the API's value, which
-// is what keeps an unmanaged setting out of the plan.
-//
-// This is deliberately not used after a write; see apply for why.
+// Managed attributes are overwritten so an out-of-band change shows as drift. Unmanaged ones are left
+// null rather than set to the API's value, which is what keeps them out of the plan.
 func (r *ServiceConfigurationResource) applyService(model *serviceConfigurationModel, service admin.Service) {
 	r.applyComputed(model, service)
 
@@ -447,8 +494,8 @@ func (r *ServiceConfigurationResource) applyService(model *serviceConfigurationM
 	}
 }
 
-// warnAboutAbandonedSettings reports an attribute that was removed from the configuration, because
-// removing it stops management without reverting the applied value.
+// warnAboutAbandonedSettings reports an attribute removed from the configuration, because that stops
+// management without reverting the applied value.
 func (r *ServiceConfigurationResource) warnAboutAbandonedSettings(diags *diag.Diagnostics, plan, state serviceConfigurationModel) {
 	abandoned := []struct {
 		name             string

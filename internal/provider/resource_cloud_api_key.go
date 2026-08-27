@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -157,7 +158,10 @@ func (r *CloudAPIKeyResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	state := plan
-	r.applyKey(&state, key)
+	r.applyKey(&state, key, applyWrite, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	// The secret comes from this response and nowhere else.
 	state.APIKey = types.StringValue(key.Secret)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -191,7 +195,7 @@ func (r *CloudAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest
 	// Describe never returns the secret, so the value already in state is kept. Overwriting it with
 	// the response's empty value would destroy the only copy of a live credential.
 	secret := state.APIKey
-	r.applyKey(&state, key)
+	r.applyKey(&state, key, applyRead, &resp.Diagnostics)
 	state.APIKey = secret
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -264,19 +268,27 @@ func (r *CloudAPIKeyResource) ImportState(ctx context.Context, req resource.Impo
 			"`terraform apply -replace=<address>` to mint a new one -- which revokes this one.", keyID))
 }
 
-func (r *CloudAPIKeyResource) applyKey(model *cloudAPIKeyModel, key cloud.APIKey) {
+// applyKey copies API state into the model. See reconcileString for why a write and a refresh treat
+// the configured attributes differently.
+func (r *CloudAPIKeyResource) applyKey(model *cloudAPIKeyModel, key cloud.APIKey, mode applyMode, diags *diag.Diagnostics) {
+	subject := fmt.Sprintf("API key %s", key.ID)
+
 	model.ID = types.StringValue(key.ID)
 	model.AccountID = types.StringValue(key.AccountID)
-	model.EnvironmentID = types.StringValue(key.EnvironmentID)
-	model.RoleID = types.StringValue(key.Role.String())
 	model.State = types.StringValue(string(key.State))
 
+	model.EnvironmentID = reconcileString(mode, model.EnvironmentID, key.EnvironmentID, path.Root("environment_id"), subject, diags)
+	model.RoleID = reconcileString(mode, model.RoleID, key.Role.String(), path.Root("role_id"), subject, diags)
+
 	// An absent description must stay null rather than becoming "", or a resource with no configured
-	// description would show a permanent diff.
-	if key.Description == "" {
-		model.Description = types.StringNull()
-	} else {
-		model.Description = types.StringValue(key.Description)
+	// description would show a permanent diff. reconcileString is not used here because it cannot
+	// express that: null and "" are the same value to the API but different to Terraform.
+	if mode == applyRead {
+		if key.Description == "" {
+			model.Description = types.StringNull()
+		} else {
+			model.Description = types.StringValue(key.Description)
+		}
 	}
 }
 
