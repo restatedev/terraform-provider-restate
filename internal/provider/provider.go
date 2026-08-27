@@ -403,6 +403,8 @@ func (p *RestateProvider) Resources(context.Context) []func() resource.Resource 
 		NewCloudEnvironmentResource,
 		NewCloudAPIKeyResource,
 		NewDeploymentResource,
+		NewKafkaClusterResource,
+		NewSubscriptionResource,
 	}
 }
 
@@ -411,6 +413,9 @@ func (p *RestateProvider) DataSources(context.Context) []func() datasource.DataS
 		NewCloudAccountDataSource,
 		NewCloudEnvironmentDataSource,
 		NewCloudRegionsDataSource,
+		NewDeploymentDataSource,
+		NewKafkaClusterDataSource,
 		NewServerInfoDataSource,
+		NewSubscriptionDataSource,
 	}
 }
