@@ -40,8 +40,8 @@ func TestServerInfoDataSource(t *testing.T) {
 // contract's.
 func TestServerInfoReportsANegotiatedDowngrade(t *testing.T) {
 	clearProviderEnvironment(t)
-	admin := testutil.NewAPIServer(t)
-	admin.Replace("version", testutil.JSON(`{"version":"1.5.0","min_admin_api_version":2,"max_admin_api_version":3,"features":{}}`))
+	admin := adminServer(t)
+	admin.Replace("/version", testutil.JSON(`{"version":"1.5.0","min_admin_api_version":2,"max_admin_api_version":3,"features":{}}`))
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: protocolProviders(),
@@ -61,8 +61,8 @@ func TestServerInfoReportsANegotiatedDowngrade(t *testing.T) {
 // knowing, so the attribute must be an empty map rather than null.
 func TestServerInfoReportsAnEmptyFeatureMapRatherThanNull(t *testing.T) {
 	clearProviderEnvironment(t)
-	admin := testutil.NewAPIServer(t)
-	admin.Replace("version", testutil.JSON(`{"version":"1.7.6","min_admin_api_version":2,"max_admin_api_version":4,"features":{}}`))
+	admin := adminServer(t)
+	admin.Replace("/version", testutil.JSON(`{"version":"1.7.6","min_admin_api_version":2,"max_admin_api_version":4,"features":{}}`))
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: protocolProviders(),

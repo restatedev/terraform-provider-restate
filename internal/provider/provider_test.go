@@ -54,7 +54,10 @@ func cloudServer(t *testing.T) *testutil.APIServer {
 func adminServer(t *testing.T) *testutil.APIServer {
 	t.Helper()
 	server := testutil.NewAPIServer(t)
-	server.On("version", testutil.JSON(`{
+	// The Admin API is REST-shaped, so routes are matched on the whole path: /deployments and
+	// /deployments/<id> are different operations and must stay distinguishable.
+	server.UseFullPath = true
+	server.On("/version", testutil.JSON(`{
 	  "version":"1.7.6","min_admin_api_version":2,"max_admin_api_version":4,
 	  "ingress_endpoint":"https://env_1.env.us.restate.cloud","features":{"vqueues":false}
 	}`))
@@ -92,7 +95,7 @@ func TestConfigureAcceptsACloudOnlyConfiguration(t *testing.T) {
 	if count := cloud.CallCount("DescribeAccount"); count == 0 {
 		t.Error("the Cloud credential validation probe was not sent")
 	}
-	if count := admin.CallCount("version"); count != 0 {
+	if count := admin.CallCount("/version"); count != 0 {
 		t.Errorf("the Admin API was probed %d times by a Cloud-only configuration", count)
 	}
 }
@@ -114,7 +117,7 @@ func TestConfigureAcceptsAnAdminOnlyConfiguration(t *testing.T) {
 		}},
 	})
 
-	if count := admin.CallCount("version"); count == 0 {
+	if count := admin.CallCount("/version"); count == 0 {
 		t.Error("the Admin API version probe was not sent")
 	}
 	if count := cloud.CallCount("DescribeAccount"); count != 0 {
@@ -140,7 +143,7 @@ func TestConfigureAcceptsACombinedConfiguration(t *testing.T) {
 		}},
 	})
 
-	if cloud.CallCount("DescribeAccount") == 0 || admin.CallCount("version") == 0 {
+	if cloud.CallCount("DescribeAccount") == 0 || admin.CallCount("/version") == 0 {
 		t.Error("a combined configuration did not probe both APIs")
 	}
 }
@@ -248,7 +251,7 @@ func TestConfigureReadsEnvironmentVariables(t *testing.T) {
 	if auth := cloud.LastRequest().Authorization; auth != "Bearer key_from_env" {
 		t.Errorf("Authorization = %q, want the key from the environment", auth)
 	}
-	if admin.CallCount("version") == 0 {
+	if admin.CallCount("/version") == 0 {
 		t.Error("the Admin API was not configured from environment variables")
 	}
 }
@@ -325,8 +328,8 @@ func TestConfigureReportsAnUnauthorizedCloudCredential(t *testing.T) {
 // the first decode of a field that no longer exists.
 func TestConfigureRejectsAnIncompatibleAdminAPIVersion(t *testing.T) {
 	clearProviderEnvironment(t)
-	admin := testutil.NewAPIServer(t)
-	admin.On("version", testutil.JSON(`{"version":"1.0.0","min_admin_api_version":0,"max_admin_api_version":1,"features":{}}`))
+	admin := adminServer(t)
+	admin.Replace("/version", testutil.JSON(`{"version":"1.0.0","min_admin_api_version":0,"max_admin_api_version":1,"features":{}}`))
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: protocolProviders(),
@@ -344,8 +347,8 @@ func TestConfigureRejectsAnIncompatibleAdminAPIVersion(t *testing.T) {
 // diagnostic must say what to check rather than reporting a bare decode failure.
 func TestConfigureReportsAnUnreachableAdminAPI(t *testing.T) {
 	clearProviderEnvironment(t)
-	admin := testutil.NewAPIServer(t)
-	admin.On("version", testutil.Response{Status: 200, Body: `<html>not restate</html>`})
+	admin := adminServer(t)
+	admin.Replace("/version", testutil.Response{Status: 200, Body: `<html>not restate</html>`})
 
 	resource.UnitTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: protocolProviders(),

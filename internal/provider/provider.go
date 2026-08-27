@@ -399,12 +399,16 @@ func firstNonEmpty(values ...string) string {
 }
 
 func (p *RestateProvider) Resources(context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		NewCloudEnvironmentResource,
+		NewCloudAPIKeyResource,
+	}
 }
 
 func (p *RestateProvider) DataSources(context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewCloudAccountDataSource,
+		NewCloudEnvironmentDataSource,
 		NewCloudRegionsDataSource,
 		NewServerInfoDataSource,
 	}
