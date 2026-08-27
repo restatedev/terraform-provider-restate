@@ -66,6 +66,7 @@ type APIServer struct {
 
 	mu       sync.Mutex
 	routes   map[string][]Response
+	handlers map[string]Handler
 	requests []Request
 
 	// UseFullPath matches routes on the request's full path rather than its last segment.
@@ -73,6 +74,9 @@ type APIServer struct {
 	// NotFoundResponse answers an unrouted request. It defaults to a 404 carrying an explanatory
 	// body, so an unexpected call fails the test loudly rather than hanging.
 	NotFoundResponse *Response
+	// Fallback answers an unrouted request when set, in preference to NotFoundResponse. It exists for
+	// a REST-shaped API whose paths embed identifiers, where the route key cannot be a fixed string.
+	Fallback Handler
 
 	t *testing.T
 }
@@ -93,6 +97,23 @@ func (s *APIServer) On(operation string, responses ...Response) *APIServer {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.routes[operation] = append(s.routes[operation], responses...)
+	return s
+}
+
+// Handler computes a response from the request, for an operation whose answer depends on what has
+// happened so far. A fixed queue cannot model a lifecycle where, for example, describing an object
+// must start reporting it deleted once a destroy has been accepted.
+type Handler func(Request) Response
+
+// OnFunc registers a handler for an operation. It takes precedence over any queued responses for the
+// same operation.
+func (s *APIServer) OnFunc(operation string, handler Handler) *APIServer {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.handlers == nil {
+		s.handlers = map[string]Handler{}
+	}
+	s.handlers[operation] = handler
 	return s
 }
 
@@ -152,7 +173,22 @@ func (s *APIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	})
 
 	key := s.key(r.URL.Path)
+	recorded := s.requests[len(s.requests)-1]
+	if handler, ok := s.handlers[key]; ok {
+		response := handler(recorded)
+		s.mu.Unlock()
+		s.write(w, response)
+		return
+	}
+
 	queued, ok := s.routes[key]
+	if !ok && s.Fallback != nil {
+		fallback := s.Fallback
+		s.mu.Unlock()
+		s.write(w, fallback(recorded))
+		return
+	}
+
 	var response Response
 	switch {
 	case !ok && s.NotFoundResponse != nil:
@@ -171,6 +207,10 @@ func (s *APIServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	s.mu.Unlock()
 
+	s.write(w, response)
+}
+
+func (s *APIServer) write(w http.ResponseWriter, response Response) {
 	for name, value := range response.Header {
 		w.Header().Set(name, value)
 	}
