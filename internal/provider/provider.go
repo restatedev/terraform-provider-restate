@@ -405,6 +405,7 @@ func (p *RestateProvider) Resources(context.Context) []func() resource.Resource 
 		NewDeploymentResource,
 		NewKafkaClusterResource,
 		NewSubscriptionResource,
+		NewServiceConfigurationResource,
 	}
 }
 
@@ -416,6 +417,8 @@ func (p *RestateProvider) DataSources(context.Context) []func() datasource.DataS
 		NewDeploymentDataSource,
 		NewKafkaClusterDataSource,
 		NewServerInfoDataSource,
+		NewServiceDataSource,
+		NewServiceHandlerDataSource,
 		NewSubscriptionDataSource,
 	}
 }
