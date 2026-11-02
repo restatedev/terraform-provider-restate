@@ -15,8 +15,7 @@ workflows:
         - 'actions/setup-go@v5.6.0'
         - 'crazy-max/ghaction-import-gpg@v6.3.0'
         - 'goreleaser/goreleaser-action@v6.4.0'
-    '.github/workflows/verify-lockfile.yml':
-        - 'actions/checkout@v4.4.0'
+    '.github/workflows/verify-lockfile.yml': []
 dependencies:
     'actions/checkout@v4.4.0':
         ref: 'v4.4.0'
