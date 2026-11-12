@@ -52,6 +52,56 @@ type CloudFake struct {
 	// PendingPolls is how many times an environment reports PENDING before becoming ACTIVE, so a
 	// test can exercise the create poll loop.
 	PendingPolls int
+
+	grantCounter  int
+	regionCounter int
+	grants        map[string]*FakeRegionGrant
+	regions       map[string]*FakeByocRegion
+
+	// OrganizationKey makes the key an organization's region grant key, which cannot describe the
+	// account.
+	OrganizationKey bool
+	// OrganizationID owns the account's ORGANIZATION grants.
+	OrganizationID string
+	// ConfirmFailure makes the background sign-in end in CONFIRMATION_FAILED with this message.
+	ConfirmFailure string
+	// RegionPendingPolls is how many describes a new region answers PENDING before it is ACTIVE, and
+	// RegionDeletingPolls how many deletes answer 409 while the teardown runs.
+	RegionPendingPolls  int
+	RegionDeletingPolls int
+}
+
+// FakeRegionGrant is one region grant's state.
+type FakeRegionGrant struct {
+	ID           string
+	Owner        string
+	OwnerID      string
+	DisplayName  string
+	Cloud        string
+	CloudAccount string
+	Status       string
+	Output       map[string]string
+	// confirming is set while the background sign-in runs, and failure once it has given up.
+	confirming bool
+	failure    string
+}
+
+// FakeByocRegion is one BYOC region's state.
+type FakeByocRegion struct {
+	ID           string
+	Name         string
+	DisplayName  string
+	GrantID      string
+	Cloud        string
+	CloudRegion  string
+	CloudAccount string
+	MachineType  string
+	Status       string
+	// Environments is how many environments the region holds; a delete is refused while it is not 0.
+	Environments int
+
+	pendingPolls  int
+	deletingPolls int
 }
 
 // FakeEnvironment is one environment's state.
@@ -81,12 +131,15 @@ func NewCloudFake(t *testing.T, accountID string) *CloudFake {
 	t.Helper()
 
 	fake := &CloudFake{
-		APIServer:    NewAPIServer(t),
-		accountID:    accountID,
-		environments: map[string]*FakeEnvironment{},
-		keys:         map[string]*FakeAPIKey{},
-		BillingMode:  "account",
-		Regions:      []string{"us-east-1", "eu-central-1"},
+		APIServer:      NewAPIServer(t),
+		accountID:      accountID,
+		environments:   map[string]*FakeEnvironment{},
+		keys:           map[string]*FakeAPIKey{},
+		BillingMode:    "account",
+		grants:         map[string]*FakeRegionGrant{},
+		regions:        map[string]*FakeByocRegion{},
+		OrganizationID: "org_1",
+		Regions:        []string{"us-east-1", "eu-central-1"},
 	}
 	fake.register()
 	return fake
@@ -134,10 +187,27 @@ func (f *CloudFake) KeyCount() int {
 	return count
 }
 
+// Grant returns a region grant's state so a test can inspect or mutate it directly.
+func (f *CloudFake) Grant(id string) *FakeRegionGrant {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.grants[id]
+}
+
+// ByocRegion returns a BYOC region's state.
+func (f *CloudFake) ByocRegion(id string) *FakeByocRegion {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.regions[id]
+}
+
 func (f *CloudFake) register() {
 	f.OnFunc("DescribeAccount", func(Request) Response {
 		f.mu.Lock()
 		defer f.mu.Unlock()
+		if f.OrganizationKey {
+			return clientError(http.StatusUnauthorized, "not an account key")
+		}
 
 		summaries := make([]map[string]any, 0, len(f.environments))
 		for _, environment := range f.environments {
@@ -196,6 +266,15 @@ func (f *CloudFake) register() {
 	f.OnFunc("UpdateEnvironment", f.updateEnvironment)
 	f.OnFunc("UpdateEnvironmentTier", f.updateEnvironmentTier)
 	f.OnFunc("DestroyEnvironment", f.destroyEnvironment)
+
+	f.OnFunc("CreateRegionGrant", f.createRegionGrant)
+	f.OnFunc("ConfirmRegionGrant", f.confirmRegionGrant)
+	f.OnFunc("DescribeRegionGrant", f.describeRegionGrant)
+	f.OnFunc("ListRegionGrants", f.listRegionGrants)
+	f.OnFunc("DeleteRegionGrant", f.deleteRegionGrant)
+	f.OnFunc("CreateRegion", f.createRegion)
+	f.OnFunc("DescribeRegion", f.describeRegion)
+	f.OnFunc("DeleteRegion", f.deleteRegion)
 
 	f.OnFunc("CreateApiKey", f.createAPIKey)
 	f.OnFunc("DescribeApiKey", f.describeAPIKey)
@@ -491,6 +570,359 @@ func (f *CloudFake) environmentIDFrom(request Request) (string, *Response) {
 		return "", &response
 	}
 	return body.EnvironmentID, nil
+}
+
+func (f *CloudFake) createRegionGrant(request Request) Response {
+	var body struct {
+		Owner       string            `json:"owner"`
+		DisplayName string            `json:"displayName"`
+		Cloud       string            `json:"cloud"`
+		AWS         map[string]string `json:"aws"`
+		GCP         map[string]string `json:"gcp"`
+		Azure       map[string]string `json:"azure"`
+	}
+	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
+		return clientError(http.StatusBadRequest, "malformed request body")
+	}
+	if body.Owner == "" {
+		body.Owner = "ACCOUNT"
+	}
+	account := body.AWS["accountId"] + body.GCP["projectId"] + body.Azure["subscriptionId"]
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if (body.Owner == "ACCOUNT") == f.OrganizationKey {
+		return clientError(http.StatusForbidden, "the key cannot manage this owner's grants")
+	}
+
+	ownerID := f.accountID
+	if body.Owner == "ORGANIZATION" {
+		ownerID = f.OrganizationID
+	}
+	for _, grant := range f.grants {
+		if grant.OwnerID == ownerID && grant.CloudAccount == account && (grant.Status == "PENDING" || grant.Status == "READY") {
+			if body.DisplayName != "" && body.DisplayName != grant.DisplayName {
+				return clientError(http.StatusConflict, "the owner has a grant for this cloud account under another display name")
+			}
+			return jsonResponse(http.StatusOK, f.grantJSON(grant))
+		}
+	}
+
+	f.grantCounter++
+	grant := &FakeRegionGrant{
+		ID:           fmt.Sprintf("rgr_%d", f.grantCounter),
+		Owner:        body.Owner,
+		OwnerID:      ownerID,
+		DisplayName:  body.DisplayName,
+		Cloud:        body.Cloud,
+		CloudAccount: account,
+		Status:       "PENDING",
+	}
+	if grant.DisplayName == "" {
+		grant.DisplayName = body.Cloud + " " + account
+	}
+	f.grants[grant.ID] = grant
+	return jsonResponse(http.StatusOK, f.grantJSON(grant))
+}
+
+func (f *CloudFake) confirmRegionGrant(request Request) Response {
+	var body struct {
+		GrantID string            `json:"grantId"`
+		Grant   map[string]string `json:"grant"`
+	}
+	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
+		return clientError(http.StatusBadRequest, "malformed request body")
+	}
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	grant, ok := f.grants[body.GrantID]
+	if !ok {
+		return clientError(http.StatusNotFound, "region grant not found")
+	}
+	switch grant.Status {
+	case "EXPIRED", "DELETED":
+		return clientError(http.StatusGone, "region grant is "+grant.Status)
+	case "READY":
+		if fmt.Sprint(grant.Output) != fmt.Sprint(body.Grant) {
+			return clientError(http.StatusConflict, "the grant was confirmed with another output")
+		}
+		return jsonResponse(http.StatusOK, f.grantJSON(grant))
+	}
+	// Restate signs in through the output in the background: the grant is CONFIRMING now, and the
+	// next describe finds it READY or failed.
+	grant.Output = body.Grant
+	grant.confirming = true
+	grant.failure = ""
+	return jsonResponse(http.StatusOK, f.grantJSON(grant))
+}
+
+func (f *CloudFake) describeRegionGrant(request Request) Response {
+	var body struct {
+		GrantID string `json:"grantId"`
+	}
+	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
+		return clientError(http.StatusBadRequest, "malformed request body")
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	grant, ok := f.grants[body.GrantID]
+	if !ok {
+		return clientError(http.StatusNotFound, "region grant not found")
+	}
+	if grant.confirming {
+		grant.confirming = false
+		if f.ConfirmFailure != "" {
+			grant.failure = f.ConfirmFailure
+		} else {
+			grant.Status = "READY"
+		}
+	}
+	return jsonResponse(http.StatusOK, f.grantJSON(grant))
+}
+
+func (f *CloudFake) listRegionGrants(request Request) Response {
+	var body struct {
+		Owner string `json:"owner"`
+	}
+	_ = json.Unmarshal([]byte(request.Body), &body)
+	if body.Owner == "" {
+		body.Owner = "ACCOUNT"
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if (body.Owner == "ACCOUNT") == f.OrganizationKey {
+		return clientError(http.StatusForbidden, "the key cannot list this owner's grants")
+	}
+	grants := make([]map[string]any, 0)
+	for _, grant := range f.grants {
+		if grant.Owner == body.Owner && (grant.Status == "PENDING" || grant.Status == "READY") {
+			grants = append(grants, f.grantJSON(grant))
+		}
+	}
+	return jsonResponse(http.StatusOK, map[string]any{"grants": grants})
+}
+
+func (f *CloudFake) deleteRegionGrant(request Request) Response {
+	var body struct {
+		GrantID string `json:"grantId"`
+	}
+	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
+		return clientError(http.StatusBadRequest, "malformed request body")
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	grant, ok := f.grants[body.GrantID]
+	if !ok {
+		return clientError(http.StatusNotFound, "region grant not found")
+	}
+	if len(f.regionIDsOf(grant.ID)) > 0 {
+		return clientError(http.StatusConflict, "a region still uses the grant")
+	}
+	grant.Status = "DELETED"
+	return jsonResponse(http.StatusOK, f.grantJSON(grant))
+}
+
+// grantJSON renders a grant as the API describes it. The caller must hold the lock.
+func (f *CloudFake) grantJSON(grant *FakeRegionGrant) map[string]any {
+	described := map[string]any{
+		"grantId":     grant.ID,
+		"owner":       grant.Owner,
+		"ownerId":     grant.OwnerID,
+		"displayName": grant.DisplayName,
+		"cloud":       grant.Cloud,
+		"status":      grant.Status,
+		"regionIds":   f.regionIDsOf(grant.ID),
+		"createdAt":   "2026-11-12T00:00:00.000Z",
+	}
+	switch grant.Cloud {
+	case "aws":
+		described["aws"] = map[string]any{"accountId": grant.CloudAccount}
+	case "gcp":
+		described["gcp"] = map[string]any{"projectId": grant.CloudAccount}
+	case "azure":
+		described["azure"] = map[string]any{"subscriptionId": grant.CloudAccount}
+	}
+	switch grant.Status {
+	case "PENDING":
+		described["expiresAt"] = "2026-11-19T00:00:00.000Z"
+		switch {
+		case grant.failure != "":
+			described["statusReason"] = "CONFIRMATION_FAILED"
+			described["statusMessage"] = grant.failure
+		case grant.confirming:
+			described["statusReason"] = "CONFIRMING"
+		default:
+			described["statusReason"] = "AWAITING_CONFIRMATION"
+		}
+	case "READY":
+		described["confirmedAt"] = "2026-11-12T00:01:00.000Z"
+	}
+	if grant.Status == "PENDING" || grant.Status == "READY" {
+		described["grantInputs"] = map[string]any{
+			"restateIssuer":  "https://issuer.restate.cloud",
+			"grantSubject":   "grant:" + grant.ID,
+			"tokenAudience":  "sts.amazonaws.com",
+			"resourcePrefix": "rgr-" + grant.ID[len("rgr_"):] + "-",
+		}
+	}
+	return described
+}
+
+// regionIDsOf lists the regions built with a grant that are not deleted yet. The caller must hold the
+// lock.
+func (f *CloudFake) regionIDsOf(grantID string) []string {
+	ids := make([]string, 0)
+	for _, region := range f.regions {
+		if region.GrantID == grantID && region.Status != "DELETED" {
+			ids = append(ids, region.ID)
+		}
+	}
+	return ids
+}
+
+func (f *CloudFake) createRegion(request Request) Response {
+	var body struct {
+		Name           string            `json:"name"`
+		DisplayName    string            `json:"displayName"`
+		Setup          string            `json:"setup"`
+		Cloud          string            `json:"cloud"`
+		CloudRegion    string            `json:"cloudRegion"`
+		AWS            map[string]string `json:"aws"`
+		GCP            map[string]string `json:"gcp"`
+		Azure          map[string]string `json:"azure"`
+		GrantID        string            `json:"grantId"`
+		Infrastructure map[string]string `json:"infrastructure"`
+	}
+	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
+		return clientError(http.StatusBadRequest, "malformed request body")
+	}
+	account := body.AWS["accountId"] + body.GCP["projectId"] + body.Azure["subscriptionId"]
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	grant, ok := f.grants[body.GrantID]
+	if !ok {
+		return clientError(http.StatusNotFound, "region grant not found")
+	}
+	if grant.Status != "READY" {
+		return clientError(http.StatusConflict, "region grant is "+grant.Status+", not READY")
+	}
+	if grant.Cloud != body.Cloud || grant.CloudAccount != account {
+		return clientError(http.StatusBadRequest, "region grant builds regions in another cloud account")
+	}
+	for _, region := range f.regions {
+		if region.Name == body.Name && region.Status != "DELETED" {
+			return jsonResponse(http.StatusOK, regionJSON(region))
+		}
+	}
+
+	f.regionCounter++
+	region := &FakeByocRegion{
+		ID:           fmt.Sprintf("rgn_%d", f.regionCounter),
+		Name:         body.Name,
+		DisplayName:  body.DisplayName,
+		GrantID:      body.GrantID,
+		Cloud:        body.Cloud,
+		CloudRegion:  body.CloudRegion,
+		CloudAccount: account,
+		MachineType:  body.Infrastructure["machineType"],
+		Status:       "PENDING",
+		pendingPolls: f.RegionPendingPolls,
+	}
+	if region.DisplayName == "" {
+		region.DisplayName = region.Name
+	}
+	if region.MachineType == "" && region.Cloud != "aws" {
+		region.MachineType = "e2-standard-4"
+	}
+	if region.pendingPolls == 0 {
+		region.Status = "ACTIVE"
+	}
+	f.regions[region.ID] = region
+	return jsonResponse(http.StatusOK, regionJSON(region))
+}
+
+func (f *CloudFake) describeRegion(request Request) Response {
+	var body struct {
+		RegionID string `json:"regionId"`
+	}
+	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
+		return clientError(http.StatusBadRequest, "malformed request body")
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	region, ok := f.regions[body.RegionID]
+	if !ok {
+		return clientError(http.StatusNotFound, "region not found")
+	}
+	if region.Status == "PENDING" && region.pendingPolls > 0 {
+		region.pendingPolls--
+		if region.pendingPolls == 0 {
+			region.Status = "ACTIVE"
+		}
+	}
+	return jsonResponse(http.StatusOK, regionJSON(region))
+}
+
+func (f *CloudFake) deleteRegion(request Request) Response {
+	var body struct {
+		RegionID string `json:"regionId"`
+	}
+	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
+		return clientError(http.StatusBadRequest, "malformed request body")
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	region, ok := f.regions[body.RegionID]
+	if !ok {
+		return clientError(http.StatusNotFound, "region not found")
+	}
+	switch {
+	case region.Status == "DELETED":
+		return jsonResponse(http.StatusOK, regionJSON(region))
+	case region.Environments > 0:
+		return clientError(http.StatusConflict, "the region still has environments")
+	case region.Status != "DELETING":
+		region.Status = "DELETING"
+		region.deletingPolls = f.RegionDeletingPolls
+	}
+	if region.deletingPolls > 0 {
+		region.deletingPolls--
+		return clientError(http.StatusConflict, region.ID+" is being deleted")
+	}
+	region.Status = "DELETED"
+	return jsonResponse(http.StatusOK, regionJSON(region))
+}
+
+func regionJSON(region *FakeByocRegion) map[string]any {
+	described := map[string]any{
+		"regionId":       region.ID,
+		"name":           region.Name,
+		"displayName":    region.DisplayName,
+		"setup":          "GRANT",
+		"cloud":          region.Cloud,
+		"cloudRegion":    region.CloudRegion,
+		"infrastructure": map[string]any{},
+		"grantId":        region.GrantID,
+		"status":         region.Status,
+		"createdAt":      "2026-11-12T00:02:00.000Z",
+	}
+	if region.MachineType != "" {
+		described["infrastructure"] = map[string]any{"machineType": region.MachineType}
+	}
+	switch region.Cloud {
+	case "aws":
+		described["aws"] = map[string]any{"accountId": region.CloudAccount}
+	case "gcp":
+		described["gcp"] = map[string]any{"projectId": region.CloudAccount}
+	case "azure":
+		described["azure"] = map[string]any{"subscriptionId": region.CloudAccount}
+	}
+	if region.Status == "PENDING" {
+		described["statusReason"] = "CREATING_INFRASTRUCTURE"
+	}
+	return described
 }
 
 func jsonResponse(status int, body map[string]any) Response {

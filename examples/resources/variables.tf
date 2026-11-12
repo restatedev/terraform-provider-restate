@@ -13,3 +13,8 @@ variable "kafka_password" {
   type        = string
   sensitive   = true
 }
+
+variable "aws_grant" {
+  description = "The `grant` output of the grant module in modules/byoc: roleArn and permissionsBoundary."
+  type        = map(string)
+}

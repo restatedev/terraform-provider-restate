@@ -3,13 +3,13 @@
 page_title: "restate_cloud_regions Data Source - Restate"
 subcategory: ""
 description: |-
-  Regions the configured Restate Cloud account may place environments in.
+  Regions the configured Restate Cloud account may place environments in, including the account's BYOC regions.
   Use it to validate a region before an apply, or to pick one without hard-coding it. An environment's region cannot be changed after creation, so getting it wrong means replacing the environment.
 ---
 
 # restate_cloud_regions (Data Source)
 
-Regions the configured Restate Cloud account may place environments in.
+Regions the configured Restate Cloud account may place environments in, including the account's BYOC regions.
 
 Use it to validate a region before an apply, or to pick one without hard-coding it. An environment's region cannot be changed after creation, so getting it wrong means replacing the environment.
 
@@ -52,3 +52,4 @@ Read-Only:
 
 - `display_name` (String) Human-readable region label. Empty when the API reports none.
 - `name` (String) Region name, as used in `restate_cloud_environment.region`.
+- `status` (String) For a BYOC region of the account: `PENDING`, `ACTIVE`, `FAILED` or `DELETING`. Only an `ACTIVE` one takes environments. Empty for a region Restate hosts.

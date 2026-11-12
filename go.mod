@@ -1,6 +1,6 @@
 module github.com/restatedev/terraform-provider-restate
 
-go 1.26.10
+go 1.26.11
 
 tool (
 	github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
@@ -14,7 +14,6 @@ require (
 	github.com/hashicorp/terraform-plugin-go v0.31.0
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/oapi-codegen/runtime v1.7.0
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -103,4 +102,5 @@ require (
 	google.golang.org/grpc v1.83.2 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

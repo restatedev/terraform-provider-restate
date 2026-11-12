@@ -13,6 +13,37 @@ the change compatible.
 
 ### Added
 
+Managed BYOC, from the Cloud Management API snapshot of 2026-11-12:
+
+- `restate_cloud_region_grant` creates a region grant for one AWS account, GCP project or Azure
+  subscription, owned by the account or by its organization (`owner = "ORGANIZATION"`). It exports
+  the values the grant module in `modules/byoc` builds the cloud side from. A
+  refresh that finds the grant expired or deleted removes it, so the next apply creates a new one.
+- `restate_cloud_region_grant_confirmation` hands the module's `grant` output to Restate and waits
+  until the grant is `READY`. Restate Cloud confirms a grant in the background, so the resource
+  describes the grant until it is `READY` or reports `CONFIRMATION_FAILED`, and a timeout reports the
+  cloud's last answer. The grant resource and data source export `status_reason`. Its destroy
+  deletes the grant at Restate, which Terraform runs before it removes the cloud side, and which
+  Restate refuses while a region still uses the grant. A changed output confirms the grant again in
+  place instead of replacing it, because a replacement would delete the grant.
+- `restate_cloud_byoc_region` builds a region with a `READY` grant, in the grant's cloud account, and
+  polls until it is `ACTIVE`. Its destroy repeats `DeleteRegion` until the teardown has finished.
+  `deletion_protection` guards a destroy.
+- The `restate_cloud_region_grant` data source, for configurations that build regions with an
+  organization's grant that another configuration manages.
+- The Managed BYOC grant modules moved here from `restatedev/terraform-restate-byoc`, as
+  `modules/byoc/aws` (with `aws/oidc-provider`), `modules/byoc/gcp` and `modules/byoc/azure`. Their
+  region-grant mode now uses the resources above through the caller's `restate` provider instead of
+  `restapi`, takes `region_grant = { owner, display_name, regions }`, and no longer takes
+  `account_id`, `api_url`, `restate_api_key` or `restate_access_token` in that mode. The confirmation
+  waits for Restate's background sign-in, instead of a fixed sleep. CI tests every module,
+  its examples and the call-order harness against the provider built from the same commit.
+  Region-scoped mode (`restate`) still uses `restapi`, because the provider has no resource for
+  `SetRegionGrant` yet.
+- `management_api_key` may be an organization API key with role
+  `rst:role::OrganizationRegionGrantAccess`. The provider recognises it at configure time and gives
+  an explicit error when it is used for anything other than region grants and BYOC regions.
+
 Resources:
 
 - `restate_cloud_environment` — create, rename, resize, import and destroy Restate Cloud
@@ -58,6 +89,13 @@ Documentation:
   data source. The examples all describe one order-processing application, so the snippets across
   the reference fit together, and a complete applyable version of it lives in
   `examples/two-stage-bootstrap/`.
+
+### Changed
+
+- The Cloud Management API snapshot was refreshed to `restatedev/restate-cloud` revision `ea764f52`.
+  The operations and fields that existing resources read are unchanged. Upstream now declares the
+  `accountId` path parameter, so the `normalizecloudspec` step that injected it was removed and the
+  client is generated from the pristine snapshot.
 
 ### Correctness notes
 

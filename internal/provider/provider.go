@@ -107,8 +107,12 @@ func (p *RestateProvider) Schema(_ context.Context, _ provider.SchemaRequest, re
 					"Account-scoped API key with role `%s`. Defaults to the `%s` environment variable. It is sent "+
 						"only to `cloud_api_url`, is never written to resource state, and must belong to "+
 						"`account_id`. It is a different credential from an environment-scoped API key and cannot be "+
-						"created by this provider; mint it outside Terraform.",
-					cloud.RoleManagementAccess, envManagementAPIKey),
+						"created by this provider; mint it outside Terraform. "+
+						"For an organization's region grants and the BYOC regions built with them, it may instead be "+
+						"an organization API key with role `%s`, with `account_id` set to any account of the "+
+						"organization. Such a key reaches nothing else, so environments and API keys need a provider "+
+						"alias with an account key.",
+					cloud.RoleManagementAccess, envManagementAPIKey, cloud.RoleOrganizationRegionGrantAccess),
 				Validators: []validator.String{stringvalidator.LengthAtLeast(1)},
 			},
 			"admin_url": schema.StringAttribute{
@@ -153,7 +157,9 @@ func (p *RestateProvider) Schema(_ context.Context, _ provider.SchemaRequest, re
 // Admin-only configuration is valid, and the resource that needs a missing client reports it.
 type providerData struct {
 	Cloud *cloud.Client
-	Admin *admin.Client
+	// CloudCredential says what the Cloud client's key may reach. It is set whenever Cloud is.
+	CloudCredential cloud.CredentialKind
+	Admin           *admin.Client
 }
 
 func (p *RestateProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
@@ -186,7 +192,7 @@ func (p *RestateProvider) Configure(ctx context.Context, req provider.ConfigureR
 	allowInsecure := config.AllowInsecureHTTP.ValueBool()
 	userAgent := p.userAgent(req.TerraformVersion)
 	data := &providerData{}
-	data.Cloud = p.configureCloud(ctx, config, userAgent, timeout, allowInsecure, resp)
+	data.Cloud, data.CloudCredential = p.configureCloud(ctx, config, userAgent, timeout, allowInsecure, resp)
 	data.Admin = p.configureAdmin(ctx, config, userAgent, timeout, allowInsecure, resp)
 	if resp.Diagnostics.HasError() {
 		return
@@ -205,7 +211,7 @@ func (p *RestateProvider) configureCloud(
 	timeout time.Duration,
 	allowInsecure bool,
 	resp *provider.ConfigureResponse,
-) *cloud.Client {
+) (*cloud.Client, cloud.CredentialKind) {
 	baseURL := firstNonEmpty(config.CloudAPIURL.ValueString(), os.Getenv(envCloudAPIURL), cloud.DefaultBaseURL)
 	accountID := firstNonEmpty(config.AccountID.ValueString(), os.Getenv(envCloudAccountID))
 	apiKey := firstNonEmpty(config.ManagementAPIKey.ValueString(), os.Getenv(envManagementAPIKey))
@@ -214,21 +220,21 @@ func (p *RestateProvider) configureCloud(
 	// the first environment resource with a confusing "not configured" message.
 	switch {
 	case accountID == "" && apiKey == "":
-		return nil
+		return nil, ""
 	case accountID == "":
 		resp.Diagnostics.AddAttributeError(path.Root("account_id"),
 			"Incomplete Restate Cloud configuration",
 			fmt.Sprintf("A management API key was configured without an account ID. Set `account_id` or the `%s` "+
 				"environment variable, or remove `management_api_key` if this provider instance should not manage "+
 				"Cloud resources.", envCloudAccountID))
-		return nil
+		return nil, ""
 	case apiKey == "":
 		resp.Diagnostics.AddAttributeError(path.Root("management_api_key"),
 			"Incomplete Restate Cloud configuration",
 			fmt.Sprintf("An account ID was configured without a management API key. Set `management_api_key` or "+
 				"the `%s` environment variable, or remove `account_id` if this provider instance should not manage "+
 				"Cloud resources.", envManagementAPIKey))
-		return nil
+		return nil, ""
 	}
 
 	client, err := cloud.New(cloud.Config{
@@ -243,16 +249,17 @@ func (p *RestateProvider) configureCloud(
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Restate Cloud configuration", err.Error())
-		return nil
+		return nil, ""
 	}
 
 	// The API has no version endpoint, so a read-only account describe is the only available proof that the
 	// credential works and is pointed at the right account.
-	if err := client.ValidateCredentials(ctx); err != nil {
+	kind, err := client.ValidateCredentials(ctx)
+	if err != nil {
 		resp.Diagnostics.AddError("Could not authenticate to the Restate Cloud Management API", err.Error())
-		return nil
+		return nil, ""
 	}
-	return client
+	return client, kind
 }
 
 func (p *RestateProvider) configureAdmin(
@@ -392,6 +399,9 @@ func (p *RestateProvider) Resources(context.Context) []func() resource.Resource 
 	return []func() resource.Resource{
 		NewCloudEnvironmentResource,
 		NewCloudAPIKeyResource,
+		NewCloudRegionGrantResource,
+		NewCloudRegionGrantConfirmationResource,
+		NewCloudByocRegionResource,
 		NewDeploymentResource,
 		NewKafkaClusterResource,
 		NewSubscriptionResource,
@@ -403,6 +413,7 @@ func (p *RestateProvider) DataSources(context.Context) []func() datasource.DataS
 	return []func() datasource.DataSource{
 		NewCloudAccountDataSource,
 		NewCloudEnvironmentDataSource,
+		NewCloudRegionGrantDataSource,
 		NewCloudRegionsDataSource,
 		NewDeploymentDataSource,
 		NewKafkaClusterDataSource,
