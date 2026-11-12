@@ -34,11 +34,13 @@ type cloudRegionsModel struct {
 var regionAttributes = map[string]attr.Type{
 	"name":         types.StringType,
 	"display_name": types.StringType,
+	"status":       types.StringType,
 }
 
 func (d *CloudRegionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Regions the configured Restate Cloud account may place environments in.\n\n" +
+		MarkdownDescription: "Regions the configured Restate Cloud account may place environments in, including " +
+			"the account's BYOC regions.\n\n" +
 			"Use it to validate a region before an apply, or to pick one without hard-coding it. An " +
 			"environment's region cannot be changed after creation, so getting it wrong means replacing the " +
 			"environment.",
@@ -60,6 +62,11 @@ func (d *CloudRegionsDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 						"display_name": schema.StringAttribute{
 							Computed:            true,
 							MarkdownDescription: "Human-readable region label. Empty when the API reports none.",
+						},
+						"status": schema.StringAttribute{
+							Computed: true,
+							MarkdownDescription: "For a BYOC region of the account: `PENDING`, `ACTIVE`, `FAILED` or " +
+								"`DELETING`. Only an `ACTIVE` one takes environments. Empty for a region Restate hosts.",
 						},
 					},
 				},
@@ -90,6 +97,7 @@ func (d *CloudRegionsDataSource) Read(ctx context.Context, _ datasource.ReadRequ
 		object, diags := types.ObjectValue(regionAttributes, map[string]attr.Value{
 			"name":         types.StringValue(region.Name),
 			"display_name": types.StringValue(region.DisplayName),
+			"status":       types.StringValue(region.Status),
 		})
 		resp.Diagnostics.Append(diags...)
 		objects = append(objects, object)

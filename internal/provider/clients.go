@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+
+	"github.com/restatedev/terraform-provider-restate/pkg/api/cloud"
 )
 
 // requireCloudClient reports an actionable diagnostic when a Cloud resource or data source is used by a
@@ -12,6 +14,24 @@ import (
 // A Cloud-only, Admin-only, or combined configuration is all valid, so the absence of a client is not a
 // configuration error in itself. It becomes one only when something needs it.
 func requireCloudClient(data *providerData, typeName string, diags *diag.Diagnostics) bool {
+	if !requireRegionGrantClient(data, typeName, diags) {
+		return false
+	}
+	if data.CloudCredential != cloud.CredentialOrganizationRegionGrants {
+		return true
+	}
+	diags.AddError(
+		fmt.Sprintf("%s needs an account's management API key", typeName),
+		fmt.Sprintf("This provider instance authenticates with an organization API key with role `%s`, which "+
+			"reaches only the organization's region grants and the regions built with them. Use a provider alias "+
+			"configured with an account-scoped key with role `%s` for %s.",
+			cloud.RoleOrganizationRegionGrantAccess, cloud.RoleManagementAccess, typeName))
+	return false
+}
+
+// requireRegionGrantClient is requireCloudClient for the region grant and BYOC region resources, which
+// an organization's region grant key may also manage.
+func requireRegionGrantClient(data *providerData, typeName string, diags *diag.Diagnostics) bool {
 	if data != nil && data.Cloud != nil {
 		return true
 	}

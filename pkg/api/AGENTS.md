@@ -61,10 +61,6 @@ the risky half.
 - Both snapshots are committed pristine and are never edited. Each has a `PROVENANCE.md` recording
   source, revision, advertised version, checksum, and refresh procedure, and
   `pkg/api/contracts/contracts_test.go` fails if a snapshot changes without its record being updated.
-- The Cloud contract is invalid as published: it templates `{accountId}` into paths without declaring
-  the parameter. `tools/cmd/normalizecloudspec` injects the declaration as a deterministic, committed,
-  diff-checked step. It errors if it finds nothing to inject, so when upstream fixes this the build
-  will say so.
 - Regenerate with `go generate ./pkg/api/...`. CI fails on a diff.
 
 ## Testing

@@ -1,2 +1,1 @@
 pkg/api/*/internal/generated/*.gen.go linguist-generated=true
-pkg/api/cloud/openapi.normalized.yaml linguist-generated=true

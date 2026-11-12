@@ -107,6 +107,16 @@ func IsForbidden(err error) bool { return hasStatus(err, http.StatusForbidden) }
 // IsConflict reports whether err is a 409.
 func IsConflict(err error) bool { return hasStatus(err, http.StatusConflict) }
 
+// IsGone reports whether err is a 410: the object existed and has ended, for example an expired or
+// deleted region grant.
+func IsGone(err error) bool { return hasStatus(err, http.StatusGone) }
+
+// IsBadRequest reports whether err is a 400.
+func IsBadRequest(err error) bool { return hasStatus(err, http.StatusBadRequest) }
+
+// IsServiceUnavailable reports whether err is a 503.
+func IsServiceUnavailable(err error) bool { return hasStatus(err, http.StatusServiceUnavailable) }
+
 func hasStatus(err error, status int) bool {
 	apiErr, ok := AsError(err)
 	return ok && apiErr.StatusCode == status

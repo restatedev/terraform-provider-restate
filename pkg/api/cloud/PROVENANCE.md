@@ -4,28 +4,14 @@
 | --- | --- |
 | File | `openapi.yaml` |
 | Source | `generated/schema/openapi.yaml` in the `restatedev/restate-cloud` repository |
-| Upstream revision | `d9886ea57b88a40edd468bf48a9ffe0a294dee54` |
-| Retrieved | 2026-08-27 |
+| Upstream revision | `ea764f52897028cb6b6f2763e092f23c90e990f0` |
+| Retrieved | 2026-11-12 |
 | Advertised `info.version` | `v1` |
 | OpenAPI version | 3.1.0 |
-| SHA-256 | `5440b3ff73d889f28466cd117e00c922d7a63f69dc7d9d913d4e6e69e8e0f09f` |
+| SHA-256 | `6e190d62ada89dde740918cc7a1443cd27a5c11b3645f9e8a6431982e70c3e59` |
 | License | Proprietary; vendored with permission as the contract this provider is built against. |
 
 The snapshot is committed pristine and is never edited.
-
-## Normalization
-
-The upstream contract templates `{accountId}` into account-scoped paths but never declares the
-corresponding path parameter, which makes the document invalid — code generators either reject it
-or silently drop the parameter. `tools/cmd/normalizecloudspec` injects the missing declaration and
-writes `openapi.normalized.yaml`. That file is generated, committed, and diff-checked; the
-generator consumes it instead of the pristine snapshot so the snapshot keeps its provenance and
-checksum.
-
-The normalization is mechanical and narrow: it only adds an `accountId` path parameter to an
-operation whose path template contains `{accountId}` and which does not already declare one. Any
-other difference between the two documents is a bug in the tool, and
-`tools/cmd/normalizecloudspec/main_test.go` asserts as much.
 
 ## Generator
 
@@ -61,6 +47,5 @@ even when the API itself considers the change compatible.
 1. Copy the reviewed upstream `generated/schema/openapi.yaml` over `openapi.yaml`.
 2. Update the upstream revision, retrieval date, advertised version, and SHA-256 above.
 3. Run `go generate ./pkg/api/...` and `go test ./...`.
-4. Diff the normalized document to confirm the normalization is still needed and still narrow.
-5. Record schema-affecting changes in `CHANGELOG.md`, and update the survey date and unresolved
+4. Record schema-affecting changes in `CHANGELOG.md`, and update the survey date and unresolved
    decisions in `AGENTS.md`.

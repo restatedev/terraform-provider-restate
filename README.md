@@ -13,12 +13,19 @@ Cloud Management API and configures them through the per-environment
 | --- | --- | --- |
 | `restate_cloud_environment` | Cloud Management API | Create, rename, resize, import and destroy environments |
 | `restate_cloud_api_key` | Cloud Management API | Environment-scoped API keys |
+| `restate_cloud_region_grant` | Cloud Management API | Managed BYOC region grants of an account or an organization |
+| `restate_cloud_region_grant_confirmation` | Cloud Management API | Confirming a region grant with the cloud side the grant module creates |
+| `restate_cloud_byoc_region` | Cloud Management API | Managed BYOC regions built with a region grant |
 | `restate_deployment` | Admin API | Register HTTP and AWS Lambda service deployments |
 | `restate_kafka_cluster` | Admin API | Kafka cluster connection configuration |
 | `restate_subscription` | Admin API | Kafka-to-handler subscriptions |
 | `restate_service_configuration` | Admin API | Stable per-service configuration overrides |
 
-Data sources cover environment, region and account lookups on the Cloud side, and server info,
+The grant modules for Managed BYOC live in [`modules/byoc`](modules/byoc), one for each cloud. They create the cloud
+side of a region grant and use this provider's resources for the Restate side, so one configuration creates the grant,
+confirms it and builds its regions.
+
+Data sources cover environment, region, region grant and account lookups on the Cloud side, and server info,
 service, handler, deployment, Kafka cluster and subscription lookups on the Admin side.
 
 The provider does **not** manage Restate Cloud accounts, account-scoped management API keys,

@@ -57,6 +57,10 @@ const (
 	// RoleManagementAccess is the account-scoped role that authenticates the provider itself. It is
 	// deliberately absent from EnvironmentRoles, so an environment key can never be created with it.
 	RoleManagementAccess Role = "rst:role::ManagementApiAccess"
+
+	// RoleOrganizationRegionGrantAccess is the organization-scoped role that manages an
+	// organization's region grants and builds regions with them in any of its accounts.
+	RoleOrganizationRegionGrantAccess Role = "rst:role::OrganizationRegionGrantAccess"
 )
 
 // EnvironmentRoles lists the roles an environment-scoped API key may hold.
@@ -169,6 +173,8 @@ type CreatedEnvironment struct {
 type Region struct {
 	Name        string
 	DisplayName string
+	// Status is set only for the account's own BYOC regions, which are listed while they are built.
+	Status string
 }
 
 // Account is the non-secret account state the provider can read. Nothing here is managed; it exists
@@ -234,4 +240,142 @@ type APIKeyRef struct {
 
 func (r APIKeyRef) String() string {
 	return r.EnvironmentID + "/" + r.KeyID
+}
+
+// CloudProvider is the cloud a BYOC region or a region grant lives in.
+type CloudProvider string
+
+const (
+	CloudAWS   CloudProvider = "aws"
+	CloudAzure CloudProvider = "azure"
+	CloudGCP   CloudProvider = "gcp"
+)
+
+// CloudProviders lists the clouds the API accepts.
+func CloudProviders() []CloudProvider { return []CloudProvider{CloudAWS, CloudAzure, CloudGCP} }
+
+// CloudAccount names the one AWS account, GCP project or Azure subscription a region grant or a BYOC
+// region lives in. Exactly one field is set, the one for its cloud.
+type CloudAccount struct {
+	AWSAccountID        string
+	GCPProjectID        string
+	AzureSubscriptionID string
+}
+
+// ID returns whichever identifier is set.
+func (a CloudAccount) ID() string {
+	switch {
+	case a.AWSAccountID != "":
+		return a.AWSAccountID
+	case a.GCPProjectID != "":
+		return a.GCPProjectID
+	default:
+		return a.AzureSubscriptionID
+	}
+}
+
+// RegionGrantOwner says whether an account or its organization owns a region grant.
+type RegionGrantOwner string
+
+const (
+	RegionGrantOwnerAccount      RegionGrantOwner = "ACCOUNT"
+	RegionGrantOwnerOrganization RegionGrantOwner = "ORGANIZATION"
+)
+
+// RegionGrantStatus is the lifecycle state of a region grant.
+type RegionGrantStatus string
+
+const (
+	RegionGrantPending RegionGrantStatus = "PENDING"
+	RegionGrantReady   RegionGrantStatus = "READY"
+	RegionGrantExpired RegionGrantStatus = "EXPIRED"
+	RegionGrantDeleted RegionGrantStatus = "DELETED"
+)
+
+// Ended reports whether the grant can never become usable again.
+func (s RegionGrantStatus) Ended() bool { return s == RegionGrantExpired || s == RegionGrantDeleted }
+
+// RegionGrantInputs are the values the cloud-side grant module is built from. They never change after
+// the grant is created.
+type RegionGrantInputs struct {
+	RestateIssuer  string
+	GrantSubject   string
+	TokenAudience  string
+	ResourcePrefix string
+}
+
+// RegionGrant is a grant in one cloud account, owned by an account or an organization, that builds
+// any number of BYOC regions there.
+type RegionGrant struct {
+	ID          string
+	Owner       RegionGrantOwner
+	OwnerID     string
+	DisplayName string
+	Cloud       CloudProvider
+	Account     CloudAccount
+	Status      RegionGrantStatus
+	// StatusReason and StatusMessage say why a PENDING grant is not READY yet.
+	StatusReason  string
+	StatusMessage string
+	// Inputs is nil once the grant has ended.
+	Inputs    *RegionGrantInputs
+	RegionIDs []string
+	CreatedAt string
+	// ConfirmedAt is empty until the grant is confirmed.
+	ConfirmedAt string
+	// ExpiresAt is set only while the grant is PENDING.
+	ExpiresAt string
+}
+
+// CreateRegionGrantInput is a request to create a region grant.
+type CreateRegionGrantInput struct {
+	// Owner is empty for the API's default, ACCOUNT.
+	Owner RegionGrantOwner
+	// DisplayName is empty for the API's default.
+	DisplayName string
+	Cloud       CloudProvider
+	Account     CloudAccount
+}
+
+// RegionStatus is the lifecycle state of a BYOC region.
+type RegionStatus string
+
+const (
+	RegionPending  RegionStatus = "PENDING"
+	RegionActive   RegionStatus = "ACTIVE"
+	RegionFailed   RegionStatus = "FAILED"
+	RegionDeleting RegionStatus = "DELETING"
+	RegionDeleted  RegionStatus = "DELETED"
+)
+
+// ByocRegion is a BYOC region in a customer's cloud account. It is unrelated to Region, which is a
+// place an environment may be created in.
+type ByocRegion struct {
+	ID          string
+	Name        string
+	DisplayName string
+	Cloud       CloudProvider
+	CloudRegion string
+	Account     CloudAccount
+	// MachineType is empty when the API reports none.
+	MachineType string
+	// GrantID is empty for a region built with a grant of its own.
+	GrantID string
+	Status  RegionStatus
+	// StatusReason is empty when the API reports none. New values may appear, so callers act on Status.
+	StatusReason string
+	CreatedAt    string
+}
+
+// CreateRegionInput is a request to build a BYOC region with a READY region grant.
+type CreateRegionInput struct {
+	Name string
+	// DisplayName is empty for the API's default, the name.
+	DisplayName string
+	GrantID     string
+	Cloud       CloudProvider
+	CloudRegion string
+	Account     CloudAccount
+	// MachineType is empty for the API's default. AWS takes none.
+	MachineType string
 }

@@ -18,3 +18,8 @@ variable "region" {
   type        = string
   default     = "us-east-2"
 }
+
+variable "region_grant_id" {
+  description = "Region grant to look up, for example rgr_x5z2y4qjmt."
+  type        = string
+}

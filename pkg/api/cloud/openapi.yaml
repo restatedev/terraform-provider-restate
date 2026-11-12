@@ -45,6 +45,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServerInternalError"
+  /CheckPermission:
+    post:
+      operationId: CheckPermission
+      summary: Check whether the current user is authorized for an action
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckPermissionRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckPermissionResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
   /ListAccounts:
     post:
       operationId: ListAccounts
@@ -160,6 +197,13 @@ paths:
     post:
       operationId: PutAccountUserRoleBinding
       summary: Set the role binding for a user on an organization account
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
       requestBody:
         required: true
         content:
@@ -197,6 +241,13 @@ paths:
     post:
       operationId: DeleteAccountUserRoleBinding
       summary: Remove the role binding for a user on an organization account
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
       requestBody:
         required: true
         content:
@@ -230,10 +281,119 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/PutDefaultOrganizationMembersRoleBinding:
+    post:
+      operationId: PutDefaultOrganizationMembersRoleBinding
+      summary: Set the default account roles for organization members
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutDefaultOrganizationMembersRoleBindingRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PutDefaultOrganizationMembersRoleBindingResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "409":
+          description: The request conflicts with the current state of the resource. The
+            default binding or its organization changed; reload and retry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DeleteDefaultOrganizationMembersRoleBinding:
+    post:
+      operationId: DeleteDefaultOrganizationMembersRoleBinding
+      summary: Remove the default account roles for organization members
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteDefaultOrganizationMembersRoleBindingRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteDefaultOrganizationMembersRoleBindingResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "409":
+          description: The request conflicts with the current state of the resource. The
+            default binding or its organization changed; reload and retry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
   /{accountId}/PutAccountGroupRoleBinding:
     post:
       operationId: PutAccountGroupRoleBinding
       summary: Set the role binding for a directory group on an organization account
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
       requestBody:
         required: true
         content:
@@ -271,6 +431,13 @@ paths:
     post:
       operationId: DeleteAccountGroupRoleBinding
       summary: Remove the role binding for a directory group on an organization account
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
       requestBody:
         required: true
         content:
@@ -308,6 +475,13 @@ paths:
     post:
       operationId: ListAccountRoleBindings
       summary: List all role bindings (users and groups) on this organization account
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
       requestBody:
         required: false
         content:
@@ -580,6 +754,117 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ListOrganizationRoleBindingsResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /CreateOrganizationApiKey:
+    post:
+      operationId: CreateOrganizationApiKey
+      summary: Create an organization-scoped account-creation API key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrganizationApiKeyRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateOrganizationApiKeyResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /ListOrganizationApiKeys:
+    post:
+      operationId: ListOrganizationApiKeys
+      summary: List organization-scoped API keys
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListOrganizationApiKeysRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListOrganizationApiKeysResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /DeleteOrganizationApiKey:
+    post:
+      operationId: DeleteOrganizationApiKey
+      summary: Delete an organization-scoped API key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteOrganizationApiKeyRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteOrganizationApiKeyResponse"
         "400":
           description: Client error
           content:
@@ -1019,6 +1304,783 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DescribeByocAuthorization:
+    post:
+      operationId: DescribeByocAuthorization
+      summary: Check whether an account may register BYOC regions
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DescribeByocAuthorizationRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DescribeByocAuthorizationResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/ReserveByocRegion:
+    post:
+      operationId: ReserveByocRegion
+      summary: Reserve a BYOC region and its image pull key before its cluster exists
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReserveByocRegionRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReserveByocRegionResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/RegisterByocRegion:
+    post:
+      operationId: RegisterByocRegion
+      summary: Register a BYOC region built with restate-byoc
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterByocRegionRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterByocRegionResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DeregisterByocRegion:
+    post:
+      operationId: DeregisterByocRegion
+      summary: Remove a BYOC region from Restate. Refused while the account has
+        environments in it
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeregisterByocRegionRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeregisterByocRegionResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/CreateRegion:
+    post:
+      operationId: CreateRegion
+      summary: Create a BYOC region in your own cloud account
+      description: With a grantId, the region is built with that region grant. The
+        request answers 400 when its cloud or cloud account differs from the
+        grant's.
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRegionRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateRegionResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: The principal is not allowed to make this request. The account has
+            no BYOC grant, or the key's role cannot create regions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: "The resource does not exist, or belongs to another account. With a
+            grantId: the region grant does not exist or belongs to another
+            account or organization. An organization's grant answers the same to
+            a caller without UseOrganizationRegionGrant."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "409":
+          description: "The request conflicts with the current state of the resource. The
+            account has a region with this name and other settings, or with
+            another identity. With a grantId: the region grant is not READY."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "412":
+          description: A precondition for the request is not met yet. The account does not
+            use account billing.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+        "501":
+          description: The operation is not available in this Restate Cloud region. This
+            stage does not build BYOC regions, or does not take requests for a
+            region identity yet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
+  /{accountId}/SetRegionGrant:
+    post:
+      operationId: SetRegionGrant
+      summary: Hand over a GRANT region's grant, which starts building the region
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetRegionGrantRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetRegionGrantResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: The principal is not allowed to make this request. The key's role
+            cannot create regions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            account has no such region.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "409":
+          description: The request conflicts with the current state of the resource. The
+            region is set up with an installer, or was built with another grant.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "410":
+          description: The resource has been deleted. The region has been deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoneError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DeleteRegion:
+    post:
+      operationId: DeleteRegion
+      summary: Delete a GRANT region. Call again until it answers; remove its own
+        grant only after that, and a region grant once no region uses it
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteRegionRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteRegionResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: The principal is not allowed to make this request. The key's role
+            cannot delete regions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            account has no such region.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "409":
+          description: The request conflicts with the current state of the resource. The
+            region is being deleted or created, still has environments, or is
+            set up with an installer.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DescribeRegion:
+    post:
+      operationId: DescribeRegion
+      summary: Retrieve a BYOC region's status and what it waits for
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DescribeRegionRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DescribeRegionResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: The principal is not allowed to make this request. The key's role
+            cannot read regions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            account has no such region.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/CreateRegionGrant:
+    post:
+      operationId: CreateRegionGrant
+      summary: Create a region grant, which builds GRANT regions in one cloud account
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRegionGrantRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateRegionGrantResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: The principal is not allowed to make this request. The owner has no
+            BYOC grant, or the caller cannot manage the owner's grants.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "409":
+          description: The request conflicts with the current state of the resource. The
+            owner has a grant for this cloud account under another display name,
+            or already has 20 grants.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "410":
+          description: The resource has been deleted. The owner's grant for this cloud
+            account has expired or been deleted; try again.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoneError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+        "501":
+          description: The operation is not available in this Restate Cloud region. This
+            Restate Cloud region has no region identity issuer, so it takes no
+            region grants.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
+  /{accountId}/ConfirmRegionGrant:
+    post:
+      operationId: ConfirmRegionGrant
+      summary: Confirm a region grant with the grant module's output, after Restate
+        has signed in through it
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmRegionGrantRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfirmRegionGrantResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: The principal is not allowed to make this request. The grant
+            belongs to the account, and the key's role cannot manage its region
+            grants.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            account and its organization have no such grant.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "409":
+          description: The request conflicts with the current state of the resource. The
+            cloud account has another confirmed grant, or this grant was
+            confirmed with another output.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "410":
+          description: The resource has been deleted. The grant expired or was deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoneError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+        "503":
+          description: A service the operation needs is not available in this Restate
+            Cloud region yet; try again later. The grant checker is not deployed
+            in this Restate Cloud region yet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceUnavailableError"
+  /{accountId}/DescribeRegionGrant:
+    post:
+      operationId: DescribeRegionGrant
+      summary: Retrieve a region grant and the regions built with it
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DescribeRegionGrantRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DescribeRegionGrantResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            account and its organization have no such grant.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/ListRegionGrants:
+    post:
+      operationId: ListRegionGrants
+      summary: List the live region grants of the account or of its organization
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListRegionGrantsRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListRegionGrantsResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DeleteRegionGrant:
+    post:
+      operationId: DeleteRegionGrant
+      summary: Delete a region grant that no region uses. Remove it from your cloud
+        only after this answers
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteRegionGrantRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteRegionGrantResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: The principal is not allowed to make this request. The grant
+            belongs to the account, and the key's role cannot manage its region
+            grants.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            account and its organization have no such grant.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "409":
+          description: The request conflicts with the current state of the resource. A
+            region still uses the grant.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
   /{accountId}/ListEnvironments:
     post:
       operationId: ListEnvironments
@@ -1320,6 +2382,249 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/CreateWebhook:
+    post:
+      operationId: CreateWebhook
+      summary: Create an incoming webhook that sends requests to one handler of an
+        environment
+      description: "Creates a webhook and returns metadata only. Call DescribeWebhook
+        with the returned webhookId to retrieve its URL. The mode sets how the
+        webhook delivers requests: async (the default) answers 202 as soon as
+        Restate accepts the invocation and never returns the handler's result;
+        sync waits for the handler, like a call to the environment's ingress,
+        and returns its response to the sender; it answers 504 if the handler
+        has not finished within 60 seconds (the invocation keeps running); most
+        senders stop waiting much sooner, so sync handlers should answer within
+        a few seconds. Sync mode is available only in regions where it is
+        enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be
+        changed after creation. Creating a webhook makes the configured handler
+        publicly callable by anyone with its URL. The URL is a unique invocation
+        address, not a secret credential or proof of sender identity. Handlers
+        that require trusted senders must validate signatures or other
+        application-level authentication. The optional idempotency-key header
+        deduplicates retries while the invocation is running and for at least 60
+        seconds after completion; Restate prunes the result later, so the window
+        can be longer. Use a cryptographically random key with at least 128 bits
+        of entropy for each new request and reuse it only for retries of that
+        identical request. Keys are scoped to the operation, not the caller or
+        account, so keep them secret: another authenticated caller using the
+        same key can receive the original metadata response. After that, a retry
+        may still return the original response, or may create another webhook.
+        If creation has an uncertain outcome, a principal with viewer access can
+        use ListWebhooks to recover the webhookId, then an authorized
+        administrator can use DescribeWebhook to retrieve its URL. Management
+        API keys cannot list webhooks, so recovery may require another
+        principal. The completed invocation journal is not retained."
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWebhookRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateWebhookResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            environment does not exist or belongs to another account.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/ListWebhooks:
+    post:
+      operationId: ListWebhooks
+      summary: List an environment's incoming webhooks, without any of their URLs
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListWebhooksRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListWebhooksResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            environment does not exist or belongs to another account.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DescribeWebhook:
+    post:
+      operationId: DescribeWebhook
+      summary: Retrieve one incoming webhook, including the URL its sender posts to
+      description: Returns the full webhook URL to an authorized administrator. Anyone
+        with the URL can invoke its configured handler; the URL is not a secret
+        credential or proof of sender identity. The public gateway ignores the
+        idempotency-key header for this operation so every request runs
+        authorization. Completed responses and journals are not retained. Retry
+        DescribeWebhook directly when needed; it does not create or change the
+        webhook.
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DescribeWebhookRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DescribeWebhookResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            environment or webhook does not exist, or belongs to another account
+            or environment.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DeleteWebhook:
+    post:
+      operationId: DeleteWebhook
+      summary: Delete an incoming webhook. Its URL stops accepting deliveries within
+        30 seconds
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteWebhookRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteWebhookResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            environment or webhook does not exist, or belongs to another account
+            or environment.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "500":
           description: Indicates a failure on the service-side. Generally this type of
             error is retryable.
@@ -1640,6 +2945,17 @@ components:
     GetUserIdentityRequest:
       type: object
       properties: {}
+    CheckPermissionRequest:
+      oneOf:
+        - type: object
+          properties:
+            action:
+              type: string
+              const: CreateAccount
+          required:
+            - action
+          additionalProperties: false
+      type: object
     ListAccountsRequest:
       type: object
       properties: {}
@@ -1649,6 +2965,10 @@ components:
     ListOrganizationUsersRequest:
       type: object
       properties: {}
+    AccountId:
+      type: string
+      description: Unique account identifier
+      example: acc_1b2DE3f40
     PutAccountUserRoleBindingRequest:
       type: object
       properties:
@@ -1677,6 +2997,31 @@ components:
           type: string
       required:
         - userId
+    PutDefaultOrganizationMembersRoleBindingRequest:
+      type: object
+      properties:
+        roles:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicAccountRoleId"
+        expectedRevision:
+          description: Opaque revision from ListAccountRoleBindings. A stale revision is
+            rejected with 409; omit only for legacy unconditional writes.
+          type: string
+          minLength: 1
+      required:
+        - roles
+      additionalProperties: false
+    DeleteDefaultOrganizationMembersRoleBindingRequest:
+      type: object
+      properties:
+        expectedRevision:
+          description: Opaque revision from ListAccountRoleBindings. A stale revision is
+            rejected with 409; omit only for legacy unconditional writes.
+          type: string
+          minLength: 1
+      additionalProperties: false
     PutAccountGroupRoleBindingRequest:
       type: object
       properties:
@@ -1761,6 +3106,34 @@ components:
     ListOrganizationRoleBindingsRequest:
       type: object
       properties: {}
+    CreateOrganizationApiKeyRequest:
+      type: object
+      properties:
+        roleId:
+          $ref: "#/components/schemas/OrganizationApiKeyRoleId"
+        description:
+          type: string
+      required:
+        - roleId
+    OrganizationApiKeyRoleId:
+      type: string
+      enum:
+        - rst:role::OrganizationAccountCreatorAccess
+        - rst:role::OrganizationRegionGrantAccess
+      description: Role of an organization-scoped API key.
+        OrganizationAccountCreatorAccess creates accounts in the organization.
+        OrganizationRegionGrantAccess manages the organization's region grants
+        and builds regions with them in its accounts.
+    ListOrganizationApiKeysRequest:
+      type: object
+      properties: {}
+    DeleteOrganizationApiKeyRequest:
+      type: object
+      properties:
+        keyId:
+          type: string
+      required:
+        - keyId
     CreateAccountRequest:
       type: object
       properties:
@@ -1786,10 +3159,6 @@ components:
           pattern: ^[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$
       required:
         - accountId
-    AccountId:
-      type: string
-      description: Unique account identifier
-      example: acc_1b2DE3f40
     DescribeAccountRequest:
       type: object
       properties: {}
@@ -1871,6 +3240,446 @@ components:
     ListRegionsRequest:
       type: object
       properties: {}
+    DescribeByocAuthorizationRequest:
+      type: object
+      properties: {}
+    ReserveByocRegionRequest:
+      type: object
+      properties:
+        region:
+          type: string
+          pattern: ^[a-z0-9]([-a-z0-9]{0,40}[a-z0-9])?$
+          description: A short name for the region, unique across registrations.
+            Identifies this registration so that repeating it is safe; the
+            region's domain and Kubernetes objects are named after the generated
+            region id instead.
+          example: my-region
+        cloud:
+          type: string
+          enum:
+            - aws
+            - azure
+            - gcp
+          description: Cloud the region's cluster will run on.
+        accountId:
+          description: Restate account the region is reserved for. Defaults to the account
+            the call addresses.
+          example: acc_1a2b3c
+          type: string
+          pattern: ^acc_[A-Za-z0-9]+$
+        providerRegion:
+          type: string
+          minLength: 1
+          description: The cloud's own name for where the region will run, as
+            `RegisterByocRegion` takes it. On Azure the lowercase ARM location
+            name.
+          example: westeurope
+      required:
+        - region
+        - cloud
+        - providerRegion
+      additionalProperties: false
+    RegisterByocRegionRequest:
+      type: object
+      properties:
+        releasePackage:
+          description: Initial region release Function package, pinned by digest. Later
+            targets are owned by the region virtual object.
+          type: string
+          pattern: ^[a-zA-Z0-9][a-zA-Z0-9._:/-]*@sha256:[a-f0-9]{64}$
+        region:
+          type: string
+          pattern: ^[a-z0-9]([-a-z0-9]{0,40}[a-z0-9])?$
+          description: A short name for the region, unique across registrations.
+            Identifies this registration so that repeating it is safe; the
+            region's domain and Kubernetes objects are named after the generated
+            region id instead.
+          example: my-region
+        cloud:
+          type: string
+          enum:
+            - aws
+            - azure
+            - gcp
+          description: Cloud the region's cluster runs on.
+        accountId:
+          description: Optional. When present it must be the account in the path.
+          type: string
+          pattern: ^acc_[A-Za-z0-9]+$
+          example: acc_1a2b3c
+        ipv4:
+          description: Public IPv4 address the region's ingress answers on. With
+            `ipv4Addresses` it must be that list's first entry. One of the two
+            is required.
+          example: 20.31.44.7
+          type: string
+          pattern: ^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$
+        ipv4Addresses:
+          description: Every public IPv4 address the region answers on, in zone order; the
+            region's DNS records carry all of them. AWS regions have one per
+            zone. A region with one address may send `ipv4` alone.
+          example:
+            - 203.0.113.10
+            - 203.0.113.11
+            - 203.0.113.12
+          minItems: 1
+          maxItems: 9
+          type: array
+          items:
+            type: string
+            pattern: ^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$
+        kubeEndpoint:
+          type: string
+          format: uri
+          description: API server URL of the region's cluster.
+        kubeCa:
+          type: string
+          minLength: 1
+          description: PEM CA bundle for that API server.
+        kubeToken:
+          type: string
+          minLength: 1
+          description: Bearer token the control plane reaches the region with.
+        kubeconfig:
+          type: string
+          minLength: 1
+          description: Full kubeconfig for the region's cluster. Stored as a Secret on the
+            cluster that issues the region's identity, which is how Crossplane
+            delivers the certificate and pull credential.
+        regionDisplayName:
+          description: What a customer sees when picking this region. Defaults to the
+            region name, cloud and provider region with the id after it; the
+            console shows the raw id when nothing is set.
+          example: frankfurt-azure-westeurope (rgn_1a2b3c)
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        providerRegion:
+          type: string
+          minLength: 1
+          description: The cloud's own name for where the region runs, e.g. `westeurope`.
+            The region's CR carries it, so a registration without one reconciles
+            into a failure rather than a clear refusal here. On Azure it must be
+            the lowercase ARM location name (`westeurope`), which AKS zone
+            labels are built from; `WestEurope` or `West Europe` is rejected
+            with 400 rather than lowercased.
+          example: westeurope
+        egressNetworkName:
+          description: Linkerd EgressNetwork in the region, which the tunnel's TLSRoute
+            attaches to. Without it the tunnel component stays off, because a
+            region with no linkerd has nothing for that route to attach to.
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        availabilityZones:
+          description: The region's availability zones, comma separated, as its nodes'
+            `topology.kubernetes.io/zone` labels name them. On Azure each entry
+            is either a bare zone number (`1`) or the AKS label form
+            `<providerRegion>-<n>` (`westeurope-1`); bare numbers are normalised
+            to the label form and anything else is rejected with 400. The tunnel
+            runs one instance per zone and refuses fewer than three, so a region
+            registered with fewer comes up with no tunnel.
+          example: westeurope-1,westeurope-2,westeurope-3
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        storageBucket:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        storageAccountName:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        storageContainerName:
+          description: Azure. The container the region's composition created for
+            snapshots. Checked against the container environments actually write
+            to, and rejected if they differ.
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        podIdentityRoleArn:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+        restateGcpSaEmail:
+          anyOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+      required:
+        - region
+        - cloud
+        - kubeEndpoint
+        - kubeCa
+        - kubeToken
+        - kubeconfig
+        - providerRegion
+      additionalProperties: false
+    DeregisterByocRegionRequest:
+      type: object
+      properties:
+        region:
+          type: string
+          pattern: ^[a-z0-9]([-a-z0-9]{0,40}[a-z0-9])?$
+          description: A short name for the region, unique across registrations.
+            Identifies this registration so that repeating it is safe; the
+            region's domain and Kubernetes objects are named after the generated
+            region id instead.
+          example: my-region
+      required:
+        - region
+      additionalProperties: false
+    CreateRegionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: ^[a-z][a-z0-9-]{1,38}[a-z0-9]$
+          description: "Your name for the region, unique within the account: 3 to 40
+            lower-case letters, digits and hyphens. It is the region's key:
+            creating a region again with the same name and settings returns the
+            same region, so a create can be retried safely. It cannot be
+            changed."
+          example: prod-eu
+        displayName:
+          description: Defaults to the name.
+          type: string
+          minLength: 1
+          maxLength: 100
+        setup:
+          $ref: "#/components/schemas/RegionSetup"
+        cloud:
+          type: string
+          enum:
+            - aws
+            - azure
+            - gcp
+        cloudRegion:
+          type: string
+          description: The AWS region, Azure location or GCP region the cluster runs in.
+          example: europe-west2
+        aws:
+          type: object
+          properties:
+            accountId:
+              type: string
+              description: The AWS account the region runs in.
+              example: "123456789012"
+          required:
+            - accountId
+        azure:
+          type: object
+          properties:
+            subscriptionId:
+              type: string
+              description: The Azure subscription the region runs in.
+              example: 00000000-0000-0000-0000-000000000000
+          required:
+            - subscriptionId
+        gcp:
+          type: object
+          properties:
+            projectId:
+              type: string
+              description: The GCP project the region runs in. The region is tied to it.
+              example: acme-restate-prod
+          required:
+            - projectId
+        infrastructure:
+          type: object
+          properties:
+            machineType:
+              description: The node type of the cluster's node pool (GCP) or system nodes
+                (Azure); not available on AWS.
+              type: string
+        identity:
+          description: Ask for a region that signs in to your cloud with a short-lived
+            token of its own from Restate's issuer. Your grant then trusts the
+            issuer and the region's subject, and no value Restate chose for you.
+            Without it, Restate decides when the region is created. The region
+            keeps that identity for its whole life, so a repeat of the create
+            that asks for another one is refused. A stage that has no issuer, or
+            does not take this request yet, refuses it too.
+          type: string
+          enum:
+            - region
+        grantId:
+          description: "GRANT: build the region with this READY region grant of the
+            account or of its organization, instead of a grant of its own. The
+            region starts building at once, keeps the grant for its whole life,
+            and signs in with the grant's token, so identity is not taken with
+            it. Its cloud and cloud account must be the grant's."
+          $ref: "#/components/schemas/RegionGrantId"
+      required:
+        - name
+        - cloud
+        - cloudRegion
+      additionalProperties: false
+    RegionSetup:
+      type: string
+      enum:
+        - INSTALLER
+        - GRANT
+      description: "How Restate reaches your cloud. GRANT (the default): you grant
+        Restate access with a Terraform module, and Restate builds and operates
+        the region from outside your account. INSTALLER: a region set up with an
+        installer in your project; new ones can no longer be created."
+    RegionGrantId:
+      type: string
+      pattern: ^rgr_[a-z0-9]+$
+      example: rgr_x5z2y4qjmt
+    SetRegionGrantRequest:
+      type: object
+      properties:
+        regionId:
+          $ref: "#/components/schemas/RegionId"
+        grant:
+          type: object
+          propertyNames:
+            type: string
+          additionalProperties:
+            type: string
+          description: "The grant module's `grant` output, unchanged: roleArn and
+            permissionsBoundary (AWS); workloadIdentityProvider, serviceAccount
+            and identityProject (GCP); tenantId, clientId and resourceGroup
+            (Azure)."
+      required:
+        - regionId
+        - grant
+      additionalProperties: false
+    RegionId:
+      type: string
+      pattern: ^rgn_[a-z0-9]+$
+      example: rgn_a1b2c3d4e5
+    DeleteRegionRequest:
+      type: object
+      properties:
+        regionId:
+          $ref: "#/components/schemas/RegionId"
+        name:
+          description: The region's name, in place of its id.
+          type: string
+      additionalProperties: false
+    DescribeRegionRequest:
+      type: object
+      properties:
+        regionId:
+          $ref: "#/components/schemas/RegionId"
+        name:
+          description: The region's name, in place of its id.
+          type: string
+    CreateRegionGrantRequest:
+      type: object
+      properties:
+        owner:
+          description: Defaults to ACCOUNT.
+          $ref: "#/components/schemas/RegionGrantOwner"
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        cloud:
+          type: string
+          enum:
+            - aws
+            - azure
+            - gcp
+        aws:
+          type: object
+          properties:
+            accountId:
+              type: string
+              pattern: ^[0-9]{12}$
+              description: The AWS account the grant is in.
+              example: "123456789012"
+          required:
+            - accountId
+          additionalProperties: false
+        azure:
+          type: object
+          properties:
+            subscriptionId:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$
+              description: The Azure subscription the grant is in.
+              example: 00000000-0000-0000-0000-000000000000
+          required:
+            - subscriptionId
+          additionalProperties: false
+        gcp:
+          type: object
+          properties:
+            projectId:
+              type: string
+              pattern: ^[a-z][a-z0-9-]{4,28}[a-z0-9]$
+              description: The GCP project the grant is in.
+              example: acme-restate-prod
+          required:
+            - projectId
+          additionalProperties: false
+      required:
+        - cloud
+      additionalProperties: false
+    RegionGrantOwner:
+      type: string
+      enum:
+        - ACCOUNT
+        - ORGANIZATION
+      description: "Who owns the grant. ACCOUNT: the account in the path, whose
+        administrators and management keys manage it and build regions with it.
+        ORGANIZATION: the organization of the account in the path, whose
+        administrators manage it and build regions with it in any of its
+        accounts."
+    ConfirmRegionGrantRequest:
+      type: object
+      properties:
+        grantId:
+          $ref: "#/components/schemas/RegionGrantId"
+        grant:
+          type: object
+          propertyNames:
+            type: string
+          additionalProperties:
+            type: string
+          description: "The grant module's `grant` output, unchanged: roleArn and
+            permissionsBoundary (AWS); workloadIdentityProvider, serviceAccount
+            and identityProject (GCP); tenantId and clientId (Azure)."
+      required:
+        - grantId
+        - grant
+      additionalProperties: false
+    DescribeRegionGrantRequest:
+      type: object
+      properties:
+        grantId:
+          $ref: "#/components/schemas/RegionGrantId"
+      required:
+        - grantId
+      additionalProperties: false
+    ListRegionGrantsRequest:
+      type: object
+      properties:
+        owner:
+          description: Defaults to ACCOUNT.
+          $ref: "#/components/schemas/RegionGrantOwner"
+      additionalProperties: false
+    DeleteRegionGrantRequest:
+      type: object
+      properties:
+        grantId:
+          $ref: "#/components/schemas/RegionGrantId"
+      required:
+        - grantId
+      additionalProperties: false
     ListEnvironmentsRequest:
       type: object
       properties: {}
@@ -1937,6 +3746,64 @@ components:
       required:
         - environmentId
         - keyId
+    CreateWebhookRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        serviceName:
+          type: string
+        handlerName:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        mode:
+          description: Defaults to async.
+          $ref: "#/components/schemas/WebhookMode"
+      required:
+        - environmentId
+        - serviceName
+        - handlerName
+    WebhookMode:
+      type: string
+      enum:
+        - async
+        - sync
+      description: "How the webhook delivers a request to its handler, fixed at
+        creation. async: the sender gets 202 as soon as Restate accepts the
+        invocation, and never sees the handler's result. sync: the request waits
+        for the handler, for up to 30 seconds, and the sender gets the handler's
+        response (504 if it takes longer)."
+      example: async
+    ListWebhooksRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+      required:
+        - environmentId
+    DescribeWebhookRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        webhookId:
+          type: string
+      required:
+        - environmentId
+        - webhookId
+    DeleteWebhookRequest:
+      type: object
+      properties:
+        environmentId:
+          type: string
+        webhookId:
+          type: string
+      required:
+        - environmentId
+        - webhookId
     CreateAccountApiKeyRequest:
       type: object
       properties:
@@ -2059,6 +3926,16 @@ components:
         - code
         - message
       additionalProperties: false
+    CheckPermissionResponse:
+      type: object
+      properties:
+        allowed:
+          type: boolean
+          description: Whether the caller is authorized. Other checks may still prevent
+            the operation.
+      required:
+        - allowed
+      additionalProperties: false
     ListAccountsResponse:
       type: object
       properties:
@@ -2143,6 +4020,25 @@ components:
       type: object
       properties: {}
       additionalProperties: false
+    PutDefaultOrganizationMembersRoleBindingResponse:
+      type: object
+      properties: {}
+      additionalProperties: false
+    ConflictError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    DeleteDefaultOrganizationMembersRoleBindingResponse:
+      type: object
+      properties: {}
+      additionalProperties: false
     PutAccountGroupRoleBindingResponse:
       type: object
       properties:
@@ -2206,6 +4102,14 @@ components:
                   - roles
                 additionalProperties: false
             type: object
+        defaultOrganizationMembersRoles:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicAccountRoleId"
+        defaultOrganizationMembersRevision:
+          description: Opaque revision for conditional updates of the default
+            organization-members binding.
+          type: string
       required:
         - items
       additionalProperties: false
@@ -2337,6 +4241,76 @@ components:
             type: object
       required:
         - items
+      additionalProperties: false
+    CreateOrganizationApiKeyResponse:
+      type: object
+      properties:
+        keyId:
+          type: string
+        organizationId:
+          type: string
+        roleId:
+          $ref: "#/components/schemas/OrganizationApiKeyRoleId"
+        apiKey:
+          type: string
+        description:
+          type: string
+      required:
+        - keyId
+        - organizationId
+        - roleId
+        - apiKey
+      additionalProperties: false
+    ListOrganizationApiKeysResponse:
+      type: object
+      properties:
+        apiKeys:
+          type: array
+          items:
+            oneOf:
+              - type: object
+                properties:
+                  indexStatus:
+                    type: string
+                    const: VALID
+                  keyId:
+                    type: string
+                  organizationId:
+                    type: string
+                  roleId:
+                    $ref: "#/components/schemas/OrganizationApiKeyRoleId"
+                  description:
+                    type: string
+                  state:
+                    type: string
+                    enum:
+                      - ACTIVE
+                      - DELETED
+                required:
+                  - indexStatus
+                  - keyId
+                  - organizationId
+                  - roleId
+                  - state
+                additionalProperties: false
+              - type: object
+                properties:
+                  indexStatus:
+                    type: string
+                    const: DRIFTED
+                  keyId:
+                    type: string
+                required:
+                  - indexStatus
+                  - keyId
+                additionalProperties: false
+            type: object
+      required:
+        - apiKeys
+      additionalProperties: false
+    DeleteOrganizationApiKeyResponse:
+      type: object
+      properties: {}
       additionalProperties: false
     CreateAccountResponse:
       type: object
@@ -2527,12 +4501,551 @@ components:
                 type: string
               regionDisplayName:
                 type: string
+              name:
+                description: "BYOC regions you created: the name you gave the region."
+                type: string
+              status:
+                description: BYOC regions you created, including ones still being set up.
+                $ref: "#/components/schemas/RegionStatus"
+              statusReason:
+                type: string
+                description: "Why the region has its status: PREPARING, AWAITING_SETUP,
+                  AWAITING_GRANT, CREATING_INFRASTRUCTURE, DEPLOYING,
+                  NEEDS_RESTATE_ATTENTION, SETUP_EXPIRED, REJECTED or ABORTED.
+                  More may be added: treat one you do not know by its status."
             required:
               - regionName
             additionalProperties: false
       required:
         - regions
       additionalProperties: false
+    RegionStatus:
+      type: string
+      enum:
+        - PENDING
+        - ACTIVE
+        - FAILED
+        - DELETING
+        - DELETED
+      description: PENDING while the region is being set up; DELETING and DELETED once
+        its deletion starts.
+    DescribeByocAuthorizationResponse:
+      type: object
+      properties:
+        authorized:
+          type: boolean
+          description: Whether this account may register BYOC regions.
+        grantedBy:
+          description: "Which grant allows it: the account's own, or its organization's."
+          type: string
+          enum:
+            - account
+            - organization
+      required:
+        - authorized
+      additionalProperties: false
+    ReserveByocRegionResponse:
+      type: object
+      properties:
+        regionId:
+          type: string
+          description: The region's key. `RegisterByocRegion` for the same name completes
+            this region.
+          example: rgn_1a2b3c
+        domainName:
+          description: "The domain registration gives the region. A region can configure
+            its cluster with it before it registers: `RegisterByocRegion`
+            refuses a `baseDomain` that would give the region another one.
+            Absent on a stage with no BYOC domain."
+          example: 1a2b3c.byoc.dev.restate.cloud
+          type: string
+        imagePull:
+          description: "What a region with no cluster yet pulls its node-local registry
+            with: a Restate API key for the registry proxy. Shown once. Absent
+            when the region is already registered, since it holds the credential
+            registration delivered. Calling again for the same account while the
+            region is unregistered revokes the previous key and returns a new
+            one. Registration replaces this key when it hands the region over,
+            and keeps it working for 24 hours so the cluster can switch to the
+            replacement. An unregistered reservation expires after 7 days, which
+            revokes this key."
+          type: object
+          properties:
+            registry:
+              type: string
+            username:
+              type: string
+            password:
+              type: string
+            repositoryPrefix:
+              type: string
+              description: "What a repository name is appended to: the registry host and this
+                stage's prefix. `restate-byoc-components`,
+                `restate-byoc-bundle-registry`, `restate-byoc-registry-front`
+                and `restate-byoc-registry-agent` all live under it."
+              example: registry.dev.restate.cloud/dev-
+          required:
+            - registry
+            - username
+            - password
+            - repositoryPrefix
+          additionalProperties: false
+      required:
+        - regionId
+      additionalProperties: false
+    RegisterByocRegionResponse:
+      type: object
+      properties:
+        regionId:
+          type: string
+          description: The region's key, generated on first registration and stable across
+            repeats. The name in the request is what the region's domain and its
+            Kubernetes objects are named after.
+          example: rgn_1a2b3c
+        type:
+          type: string
+          enum:
+            - xp-aws
+            - xp-azure
+            - xp-gcp
+          description: "Region type derived from `cloud`. Always an `xp-` type: a region
+            registered here was provisioned by Restate's own Crossplane
+            compositions, which is also what makes it control-plane-authored."
+        domainName:
+          type: string
+          description: The region's public domain, built from the generated region id.
+          example: 1a2b3c4d5e.byoc.restate.cloud
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACTIVE
+        created:
+          type: boolean
+          description: False when the region already existed, so a repeated registration
+            reads as a repeat.
+        apiKey:
+          description: The region's access key, returned only when this call created the
+            region. There is no way to read it back afterwards.
+          type: string
+        imagePull:
+          description: "What the region pulls Restate's images with: a Restate API key for
+            the registry proxy, not a cloud credential. Shown once, on the
+            registration that minted it; a repeat returns nothing here because
+            the key cannot be read back."
+          type: object
+          properties:
+            registry:
+              type: string
+            username:
+              type: string
+            password:
+              type: string
+          required:
+            - registry
+            - username
+            - password
+          additionalProperties: false
+        missingFields:
+          description: Per-cloud facts the region still needs before it can leave PENDING.
+            Present means the identity was issued and the region exists, but is
+            not yet active.
+          type: array
+          items:
+            type: string
+      required:
+        - regionId
+        - type
+        - domainName
+        - status
+        - created
+      additionalProperties: false
+    DeregisterByocRegionResponse:
+      type: object
+      properties:
+        regionId:
+          description: The region that was removed. Absent when the account holds no
+            region of that name.
+          example: rgn_1a2b3c
+          type: string
+        deregistered:
+          type: boolean
+          description: False when the account holds no region of that name, which is also
+            the answer once a removal has finished.
+        identityPending:
+          type: boolean
+          description: The region's DNS records and certificate are still being removed.
+            Call again to check. The removal needs nothing from the region's
+            cluster.
+      required:
+        - deregistered
+        - identityPending
+      additionalProperties: false
+    CreateRegionResponse:
+      $ref: "#/components/schemas/RegionDescription"
+    RegionGrantInputs:
+      type: object
+      properties:
+        regionName:
+          type: string
+          description: "region_name: the prefix of the region's resource names."
+        externalId:
+          description: "external_id (AWS): what the role's trust policy requires."
+          type: string
+        regionTag:
+          description: "region_tag (GCP, Azure): the label on your project, or the tag on
+            the resource group."
+          type: string
+        restatePrincipals:
+          description: "restate_principals (AWS): the roles that may assume the grant."
+          type: array
+          items:
+            type: string
+        compositionIssuer:
+          description: "composition_issuer (GCP, Azure): the identity issuer the grant
+            trusts."
+          type: string
+        restateIssuer:
+          description: "restate_issuer: Restate's OIDC issuer, which signs the region's
+            own token. Set for a region with an identity of its own, which is
+            fixed when the region is created. externalId, regionTag,
+            restatePrincipals and compositionIssuer are then absent."
+          type: string
+        regionSubject:
+          description: "region_subject: the subject of the region's token, `region:<region
+            id>`."
+          type: string
+        tokenAudience:
+          description: "token_audience: the audience of the region's token, which the
+            grant requires."
+          type: string
+      required:
+        - regionName
+      additionalProperties: false
+      description: "GRANT regions: the inputs of the grant module, named after its
+        variables."
+    RegionDescription:
+      type: object
+      properties:
+        regionId:
+          $ref: "#/components/schemas/RegionId"
+        name:
+          type: string
+        displayName:
+          type: string
+        setup:
+          $ref: "#/components/schemas/RegionSetup"
+        cloud:
+          type: string
+          enum:
+            - aws
+            - azure
+            - gcp
+        cloudRegion:
+          type: string
+        aws:
+          type: object
+          properties:
+            accountId:
+              type: string
+              description: The AWS account the region runs in.
+              example: "123456789012"
+          required:
+            - accountId
+          additionalProperties: false
+        azure:
+          type: object
+          properties:
+            subscriptionId:
+              type: string
+              description: The Azure subscription the region runs in.
+              example: 00000000-0000-0000-0000-000000000000
+          required:
+            - subscriptionId
+          additionalProperties: false
+        gcp:
+          type: object
+          properties:
+            projectId:
+              type: string
+              description: The GCP project the region runs in. The region is tied to it.
+              example: acme-restate-prod
+          required:
+            - projectId
+          additionalProperties: false
+        infrastructure:
+          type: object
+          properties:
+            machineType:
+              type: string
+          additionalProperties: false
+        grantId:
+          description: The region grant the region is built with.
+          $ref: "#/components/schemas/RegionGrantId"
+        grantInputs:
+          $ref: "#/components/schemas/RegionGrantInputs"
+        status:
+          $ref: "#/components/schemas/RegionStatus"
+        statusReason:
+          type: string
+          description: "Why the region has its status: PREPARING, AWAITING_SETUP,
+            AWAITING_GRANT, CREATING_INFRASTRUCTURE, DEPLOYING,
+            NEEDS_RESTATE_ATTENTION, SETUP_EXPIRED, REJECTED or ABORTED. More
+            may be added: treat one you do not know by its status."
+        requiredAction:
+          description: Present while the region waits for you.
+          type: object
+          properties:
+            kind:
+              type: string
+              enum:
+                - RUN_INSTALLER
+                - APPLY_GRANT
+              description: "RUN_INSTALLER: retired with INSTALLER regions, which can no longer
+                be created. APPLY_GRANT: apply the grant module with
+                grantInputs, then call SetRegionGrant with its output."
+            deadlineAt:
+              description: "RUN_INSTALLER: when the region fails if the installer has not been
+                applied."
+              type: string
+          required:
+            - kind
+          additionalProperties: false
+        createdAt:
+          type: string
+      required:
+        - regionId
+        - name
+        - displayName
+        - setup
+        - cloud
+        - cloudRegion
+        - infrastructure
+        - status
+        - createdAt
+      additionalProperties: false
+    ForbiddenError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    NotFoundError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    PreconditionFailedError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    NotImplementedError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    SetRegionGrantResponse:
+      $ref: "#/components/schemas/RegionDescription"
+    GoneError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    DeleteRegionResponse:
+      $ref: "#/components/schemas/RegionDescription"
+    DescribeRegionResponse:
+      $ref: "#/components/schemas/RegionDescription"
+    CreateRegionGrantResponse:
+      $ref: "#/components/schemas/RegionGrantDescription"
+    RegionGrantStatus:
+      type: string
+      enum:
+        - PENDING
+        - READY
+        - EXPIRED
+        - DELETED
+      description: "PENDING: not confirmed yet; statusReason says why. READY: regions
+        can be built with it. EXPIRED: it was not confirmed in time; create a
+        new one. DELETED: it was deleted."
+    RegionGrantStatusReason:
+      description: "Present while the grant is PENDING. AWAITING_CONFIRMATION: call
+        ConfirmRegionGrant with the grant module's output. CONFIRMING: the grant
+        is being set up, because Restate is signing in through it, and it turns
+        READY once your cloud accepts the sign-in. CONFIRMATION_FAILED: your
+        cloud kept refusing the sign-in; statusMessage has its answer. Fix the
+        grant and call ConfirmRegionGrant again."
+      type: string
+      enum:
+        - AWAITING_CONFIRMATION
+        - CONFIRMING
+        - CONFIRMATION_FAILED
+    RegionGrantModuleInputs:
+      type: object
+      properties:
+        restateIssuer:
+          type: string
+          description: "restate_issuer: Restate's OIDC issuer, which signs the grant's
+            token."
+        grantSubject:
+          type: string
+          description: "grant_subject: the subject of the grant's token, `grant:<grant
+            id>`."
+        tokenAudience:
+          type: string
+          description: "token_audience: the audience of the grant's token."
+        resourcePrefix:
+          type: string
+          description: "resource_prefix: the prefix of every resource name a region of the
+            grant has in your cloud."
+      required:
+        - restateIssuer
+        - grantSubject
+        - tokenAudience
+        - resourcePrefix
+      additionalProperties: false
+      description: The inputs of the grant module in region grant mode.
+    RegionGrantDescription:
+      type: object
+      properties:
+        grantId:
+          $ref: "#/components/schemas/RegionGrantId"
+        owner:
+          $ref: "#/components/schemas/RegionGrantOwner"
+        ownerId:
+          type: string
+          description: The id of the account or the organization that owns the grant.
+        displayName:
+          type: string
+        cloud:
+          type: string
+          enum:
+            - aws
+            - azure
+            - gcp
+        aws:
+          type: object
+          properties:
+            accountId:
+              type: string
+              pattern: ^[0-9]{12}$
+              description: The AWS account the grant is in.
+              example: "123456789012"
+          required:
+            - accountId
+          additionalProperties: false
+        azure:
+          type: object
+          properties:
+            subscriptionId:
+              type: string
+              format: uuid
+              pattern: ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$
+              description: The Azure subscription the grant is in.
+              example: 00000000-0000-0000-0000-000000000000
+          required:
+            - subscriptionId
+          additionalProperties: false
+        gcp:
+          type: object
+          properties:
+            projectId:
+              type: string
+              pattern: ^[a-z][a-z0-9-]{4,28}[a-z0-9]$
+              description: The GCP project the grant is in.
+              example: acme-restate-prod
+          required:
+            - projectId
+          additionalProperties: false
+        status:
+          $ref: "#/components/schemas/RegionGrantStatus"
+        statusReason:
+          $ref: "#/components/schemas/RegionGrantStatusReason"
+        statusMessage:
+          description: "CONFIRMING or CONFIRMATION_FAILED: the last answer of your cloud,
+            or of Restate's check."
+          type: string
+        grantInputs:
+          description: Present while the grant is PENDING or READY.
+          $ref: "#/components/schemas/RegionGrantModuleInputs"
+        regionIds:
+          type: array
+          items:
+            type: string
+          description: The regions built with the grant that are not deleted yet.
+        createdAt:
+          type: string
+        confirmedAt:
+          type: string
+        expiresAt:
+          description: "PENDING: when the grant expires unless it is confirmed."
+          type: string
+      required:
+        - grantId
+        - owner
+        - ownerId
+        - displayName
+        - cloud
+        - status
+        - regionIds
+        - createdAt
+      additionalProperties: false
+    ConfirmRegionGrantResponse:
+      $ref: "#/components/schemas/RegionGrantDescription"
+    ServiceUnavailableError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    DescribeRegionGrantResponse:
+      $ref: "#/components/schemas/RegionGrantDescription"
+    ListRegionGrantsResponse:
+      type: object
+      properties:
+        grants:
+          type: array
+          items:
+            $ref: "#/components/schemas/RegionGrantDescription"
+      required:
+        - grants
+      additionalProperties: false
+    DeleteRegionGrantResponse:
+      $ref: "#/components/schemas/RegionGrantDescription"
     ListEnvironmentsResponse:
       type: object
       properties:
@@ -2730,6 +5243,130 @@ components:
                 - ok
               additionalProperties: false
             - type: string
+      additionalProperties: false
+    CreateWebhookResponse:
+      type: object
+      properties:
+        webhookId:
+          type: string
+        environmentId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        serviceName:
+          type: string
+        handlerName:
+          type: string
+        mode:
+          $ref: "#/components/schemas/WebhookMode"
+        tokenLast4:
+          type: string
+        createdAt:
+          type: string
+        createdBy:
+          type: string
+      required:
+        - webhookId
+        - environmentId
+        - name
+        - serviceName
+        - handlerName
+        - mode
+        - tokenLast4
+        - createdAt
+        - createdBy
+      additionalProperties: false
+    ListWebhooksResponse:
+      type: object
+      properties:
+        webhooks:
+          type: array
+          items:
+            type: object
+            properties:
+              webhookId:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+              serviceName:
+                type: string
+              handlerName:
+                type: string
+              mode:
+                $ref: "#/components/schemas/WebhookMode"
+              tokenLast4:
+                type: string
+              status:
+                $ref: "#/components/schemas/WebhookStatus"
+              createdAt:
+                type: string
+              createdBy:
+                type: string
+            required:
+              - webhookId
+              - name
+              - serviceName
+              - handlerName
+              - mode
+              - tokenLast4
+              - status
+              - createdAt
+              - createdBy
+            additionalProperties: false
+      required:
+        - webhooks
+      additionalProperties: false
+    WebhookStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - DELETED
+      description: Whether the webhook still accepts deliveries.
+      example: ACTIVE
+    DescribeWebhookResponse:
+      type: object
+      properties:
+        webhookId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        serviceName:
+          type: string
+        handlerName:
+          type: string
+        mode:
+          $ref: "#/components/schemas/WebhookMode"
+        tokenLast4:
+          type: string
+        status:
+          $ref: "#/components/schemas/WebhookStatus"
+        createdAt:
+          type: string
+        createdBy:
+          type: string
+        url:
+          type: string
+      required:
+        - webhookId
+        - name
+        - serviceName
+        - handlerName
+        - mode
+        - tokenLast4
+        - status
+        - createdAt
+        - createdBy
+        - url
+      additionalProperties: false
+    DeleteWebhookResponse:
+      type: object
+      properties: {}
       additionalProperties: false
     CreateAccountApiKeyResponse:
       type: object

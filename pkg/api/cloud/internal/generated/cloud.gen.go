@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // Defines values for AccountApiKeyRoleId.
@@ -25,6 +26,21 @@ const (
 func (e AccountApiKeyRoleId) Valid() bool {
 	switch e {
 	case RstRoleManagementApiAccess:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CheckPermissionRequest0Action.
+const (
+	CreateAccount CheckPermissionRequest0Action = "CreateAccount"
+)
+
+// Valid indicates whether the value is a known member of the CheckPermissionRequest0Action enum.
+func (e CheckPermissionRequest0Action) Valid() bool {
+	switch e {
+	case CreateAccount:
 		return true
 	default:
 		return false
@@ -76,18 +92,75 @@ func (e CreateEnvironmentRequestTierId) Valid() bool {
 	}
 }
 
+// Defines values for CreateRegionGrantRequestCloud.
+const (
+	CreateRegionGrantRequestCloudAws   CreateRegionGrantRequestCloud = "aws"
+	CreateRegionGrantRequestCloudAzure CreateRegionGrantRequestCloud = "azure"
+	CreateRegionGrantRequestCloudGcp   CreateRegionGrantRequestCloud = "gcp"
+)
+
+// Valid indicates whether the value is a known member of the CreateRegionGrantRequestCloud enum.
+func (e CreateRegionGrantRequestCloud) Valid() bool {
+	switch e {
+	case CreateRegionGrantRequestCloudAws:
+		return true
+	case CreateRegionGrantRequestCloudAzure:
+		return true
+	case CreateRegionGrantRequestCloudGcp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateRegionRequestCloud.
+const (
+	CreateRegionRequestCloudAws   CreateRegionRequestCloud = "aws"
+	CreateRegionRequestCloudAzure CreateRegionRequestCloud = "azure"
+	CreateRegionRequestCloudGcp   CreateRegionRequestCloud = "gcp"
+)
+
+// Valid indicates whether the value is a known member of the CreateRegionRequestCloud enum.
+func (e CreateRegionRequestCloud) Valid() bool {
+	switch e {
+	case CreateRegionRequestCloudAws:
+		return true
+	case CreateRegionRequestCloudAzure:
+		return true
+	case CreateRegionRequestCloudGcp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CreateRegionRequestIdentity.
+const (
+	Region CreateRegionRequestIdentity = "region"
+)
+
+// Valid indicates whether the value is a known member of the CreateRegionRequestIdentity enum.
+func (e CreateRegionRequestIdentity) Valid() bool {
+	switch e {
+	case Region:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DescribeAccountResponseBillingMode.
 const (
-	Account DescribeAccountResponseBillingMode = "account"
-	Stripe  DescribeAccountResponseBillingMode = "stripe"
+	DescribeAccountResponseBillingModeAccount DescribeAccountResponseBillingMode = "account"
+	DescribeAccountResponseBillingModeStripe  DescribeAccountResponseBillingMode = "stripe"
 )
 
 // Valid indicates whether the value is a known member of the DescribeAccountResponseBillingMode enum.
 func (e DescribeAccountResponseBillingMode) Valid() bool {
 	switch e {
-	case Account:
+	case DescribeAccountResponseBillingModeAccount:
 		return true
-	case Stripe:
+	case DescribeAccountResponseBillingModeStripe:
 		return true
 	default:
 		return false
@@ -154,6 +227,24 @@ func (e DescribeApiKeyResponseState) Valid() bool {
 	case DescribeApiKeyResponseStateACTIVE:
 		return true
 	case DescribeApiKeyResponseStateDELETED:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DescribeByocAuthorizationResponseGrantedBy.
+const (
+	DescribeByocAuthorizationResponseGrantedByAccount      DescribeByocAuthorizationResponseGrantedBy = "account"
+	DescribeByocAuthorizationResponseGrantedByOrganization DescribeByocAuthorizationResponseGrantedBy = "organization"
+)
+
+// Valid indicates whether the value is a known member of the DescribeByocAuthorizationResponseGrantedBy enum.
+func (e DescribeByocAuthorizationResponseGrantedBy) Valid() bool {
+	switch e {
+	case DescribeByocAuthorizationResponseGrantedByAccount:
+		return true
+	case DescribeByocAuthorizationResponseGrantedByOrganization:
 		return true
 	default:
 		return false
@@ -331,6 +422,54 @@ func (e ListEnvironmentsResponseEnvironmentsTierId) Valid() bool {
 	}
 }
 
+// Defines values for ListOrganizationApiKeysResponseApiKeys0IndexStatus.
+const (
+	VALID ListOrganizationApiKeysResponseApiKeys0IndexStatus = "VALID"
+)
+
+// Valid indicates whether the value is a known member of the ListOrganizationApiKeysResponseApiKeys0IndexStatus enum.
+func (e ListOrganizationApiKeysResponseApiKeys0IndexStatus) Valid() bool {
+	switch e {
+	case VALID:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListOrganizationApiKeysResponseApiKeys0State.
+const (
+	ListOrganizationApiKeysResponseApiKeys0StateACTIVE  ListOrganizationApiKeysResponseApiKeys0State = "ACTIVE"
+	ListOrganizationApiKeysResponseApiKeys0StateDELETED ListOrganizationApiKeysResponseApiKeys0State = "DELETED"
+)
+
+// Valid indicates whether the value is a known member of the ListOrganizationApiKeysResponseApiKeys0State enum.
+func (e ListOrganizationApiKeysResponseApiKeys0State) Valid() bool {
+	switch e {
+	case ListOrganizationApiKeysResponseApiKeys0StateACTIVE:
+		return true
+	case ListOrganizationApiKeysResponseApiKeys0StateDELETED:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListOrganizationApiKeysResponseApiKeys1IndexStatus.
+const (
+	DRIFTED ListOrganizationApiKeysResponseApiKeys1IndexStatus = "DRIFTED"
+)
+
+// Valid indicates whether the value is a known member of the ListOrganizationApiKeysResponseApiKeys1IndexStatus enum.
+func (e ListOrganizationApiKeysResponseApiKeys1IndexStatus) Valid() bool {
+	switch e {
+	case DRIFTED:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListOrganizationRoleBindingsResponseItems0Kind.
 const (
 	ListOrganizationRoleBindingsResponseItems0KindUSER ListOrganizationRoleBindingsResponseItems0Kind = "USER"
@@ -361,6 +500,24 @@ func (e ListOrganizationRoleBindingsResponseItems1Kind) Valid() bool {
 	}
 }
 
+// Defines values for OrganizationApiKeyRoleId.
+const (
+	RstRoleOrganizationAccountCreatorAccess OrganizationApiKeyRoleId = "rst:role::OrganizationAccountCreatorAccess"
+	RstRoleOrganizationRegionGrantAccess    OrganizationApiKeyRoleId = "rst:role::OrganizationRegionGrantAccess"
+)
+
+// Valid indicates whether the value is a known member of the OrganizationApiKeyRoleId enum.
+func (e OrganizationApiKeyRoleId) Valid() bool {
+	switch e {
+	case RstRoleOrganizationAccountCreatorAccess:
+		return true
+	case RstRoleOrganizationRegionGrantAccess:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PublicGroupStatus.
 const (
 	PublicGroupStatusACTIVE   PublicGroupStatus = "ACTIVE"
@@ -373,6 +530,255 @@ func (e PublicGroupStatus) Valid() bool {
 	case PublicGroupStatusACTIVE:
 		return true
 	case PublicGroupStatusARCHIVED:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegionDescriptionCloud.
+const (
+	RegionDescriptionCloudAws   RegionDescriptionCloud = "aws"
+	RegionDescriptionCloudAzure RegionDescriptionCloud = "azure"
+	RegionDescriptionCloudGcp   RegionDescriptionCloud = "gcp"
+)
+
+// Valid indicates whether the value is a known member of the RegionDescriptionCloud enum.
+func (e RegionDescriptionCloud) Valid() bool {
+	switch e {
+	case RegionDescriptionCloudAws:
+		return true
+	case RegionDescriptionCloudAzure:
+		return true
+	case RegionDescriptionCloudGcp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegionDescriptionRequiredActionKind.
+const (
+	APPLYGRANT   RegionDescriptionRequiredActionKind = "APPLY_GRANT"
+	RUNINSTALLER RegionDescriptionRequiredActionKind = "RUN_INSTALLER"
+)
+
+// Valid indicates whether the value is a known member of the RegionDescriptionRequiredActionKind enum.
+func (e RegionDescriptionRequiredActionKind) Valid() bool {
+	switch e {
+	case APPLYGRANT:
+		return true
+	case RUNINSTALLER:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegionGrantDescriptionCloud.
+const (
+	RegionGrantDescriptionCloudAws   RegionGrantDescriptionCloud = "aws"
+	RegionGrantDescriptionCloudAzure RegionGrantDescriptionCloud = "azure"
+	RegionGrantDescriptionCloudGcp   RegionGrantDescriptionCloud = "gcp"
+)
+
+// Valid indicates whether the value is a known member of the RegionGrantDescriptionCloud enum.
+func (e RegionGrantDescriptionCloud) Valid() bool {
+	switch e {
+	case RegionGrantDescriptionCloudAws:
+		return true
+	case RegionGrantDescriptionCloudAzure:
+		return true
+	case RegionGrantDescriptionCloudGcp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegionGrantOwner.
+const (
+	ACCOUNT      RegionGrantOwner = "ACCOUNT"
+	ORGANIZATION RegionGrantOwner = "ORGANIZATION"
+)
+
+// Valid indicates whether the value is a known member of the RegionGrantOwner enum.
+func (e RegionGrantOwner) Valid() bool {
+	switch e {
+	case ACCOUNT:
+		return true
+	case ORGANIZATION:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegionGrantStatus.
+const (
+	RegionGrantStatusDELETED RegionGrantStatus = "DELETED"
+	RegionGrantStatusEXPIRED RegionGrantStatus = "EXPIRED"
+	RegionGrantStatusPENDING RegionGrantStatus = "PENDING"
+	RegionGrantStatusREADY   RegionGrantStatus = "READY"
+)
+
+// Valid indicates whether the value is a known member of the RegionGrantStatus enum.
+func (e RegionGrantStatus) Valid() bool {
+	switch e {
+	case RegionGrantStatusDELETED:
+		return true
+	case RegionGrantStatusEXPIRED:
+		return true
+	case RegionGrantStatusPENDING:
+		return true
+	case RegionGrantStatusREADY:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegionGrantStatusReason.
+const (
+	AWAITINGCONFIRMATION RegionGrantStatusReason = "AWAITING_CONFIRMATION"
+	CONFIRMATIONFAILED   RegionGrantStatusReason = "CONFIRMATION_FAILED"
+	CONFIRMING           RegionGrantStatusReason = "CONFIRMING"
+)
+
+// Valid indicates whether the value is a known member of the RegionGrantStatusReason enum.
+func (e RegionGrantStatusReason) Valid() bool {
+	switch e {
+	case AWAITINGCONFIRMATION:
+		return true
+	case CONFIRMATIONFAILED:
+		return true
+	case CONFIRMING:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegionSetup.
+const (
+	GRANT     RegionSetup = "GRANT"
+	INSTALLER RegionSetup = "INSTALLER"
+)
+
+// Valid indicates whether the value is a known member of the RegionSetup enum.
+func (e RegionSetup) Valid() bool {
+	switch e {
+	case GRANT:
+		return true
+	case INSTALLER:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegionStatus.
+const (
+	RegionStatusACTIVE   RegionStatus = "ACTIVE"
+	RegionStatusDELETED  RegionStatus = "DELETED"
+	RegionStatusDELETING RegionStatus = "DELETING"
+	RegionStatusFAILED   RegionStatus = "FAILED"
+	RegionStatusPENDING  RegionStatus = "PENDING"
+)
+
+// Valid indicates whether the value is a known member of the RegionStatus enum.
+func (e RegionStatus) Valid() bool {
+	switch e {
+	case RegionStatusACTIVE:
+		return true
+	case RegionStatusDELETED:
+		return true
+	case RegionStatusDELETING:
+		return true
+	case RegionStatusFAILED:
+		return true
+	case RegionStatusPENDING:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegisterByocRegionRequestCloud.
+const (
+	RegisterByocRegionRequestCloudAws   RegisterByocRegionRequestCloud = "aws"
+	RegisterByocRegionRequestCloudAzure RegisterByocRegionRequestCloud = "azure"
+	RegisterByocRegionRequestCloudGcp   RegisterByocRegionRequestCloud = "gcp"
+)
+
+// Valid indicates whether the value is a known member of the RegisterByocRegionRequestCloud enum.
+func (e RegisterByocRegionRequestCloud) Valid() bool {
+	switch e {
+	case RegisterByocRegionRequestCloudAws:
+		return true
+	case RegisterByocRegionRequestCloudAzure:
+		return true
+	case RegisterByocRegionRequestCloudGcp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegisterByocRegionResponseStatus.
+const (
+	RegisterByocRegionResponseStatusACTIVE  RegisterByocRegionResponseStatus = "ACTIVE"
+	RegisterByocRegionResponseStatusPENDING RegisterByocRegionResponseStatus = "PENDING"
+)
+
+// Valid indicates whether the value is a known member of the RegisterByocRegionResponseStatus enum.
+func (e RegisterByocRegionResponseStatus) Valid() bool {
+	switch e {
+	case RegisterByocRegionResponseStatusACTIVE:
+		return true
+	case RegisterByocRegionResponseStatusPENDING:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RegisterByocRegionResponseType.
+const (
+	XpAws   RegisterByocRegionResponseType = "xp-aws"
+	XpAzure RegisterByocRegionResponseType = "xp-azure"
+	XpGcp   RegisterByocRegionResponseType = "xp-gcp"
+)
+
+// Valid indicates whether the value is a known member of the RegisterByocRegionResponseType enum.
+func (e RegisterByocRegionResponseType) Valid() bool {
+	switch e {
+	case XpAws:
+		return true
+	case XpAzure:
+		return true
+	case XpGcp:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ReserveByocRegionRequestCloud.
+const (
+	ReserveByocRegionRequestCloudAws   ReserveByocRegionRequestCloud = "aws"
+	ReserveByocRegionRequestCloudAzure ReserveByocRegionRequestCloud = "azure"
+	ReserveByocRegionRequestCloudGcp   ReserveByocRegionRequestCloud = "gcp"
+)
+
+// Valid indicates whether the value is a known member of the ReserveByocRegionRequestCloud enum.
+func (e ReserveByocRegionRequestCloud) Valid() bool {
+	switch e {
+	case ReserveByocRegionRequestCloudAws:
+		return true
+	case ReserveByocRegionRequestCloudAzure:
+		return true
+	case ReserveByocRegionRequestCloudGcp:
 		return true
 	default:
 		return false
@@ -451,6 +857,42 @@ func (e UpdateEnvironmentTierRequestTierId) Valid() bool {
 	}
 }
 
+// Defines values for WebhookMode.
+const (
+	Async WebhookMode = "async"
+	Sync  WebhookMode = "sync"
+)
+
+// Valid indicates whether the value is a known member of the WebhookMode enum.
+func (e WebhookMode) Valid() bool {
+	switch e {
+	case Async:
+		return true
+	case Sync:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WebhookStatus.
+const (
+	WebhookStatusACTIVE  WebhookStatus = "ACTIVE"
+	WebhookStatusDELETED WebhookStatus = "DELETED"
+)
+
+// Valid indicates whether the value is a known member of the WebhookStatus enum.
+func (e WebhookStatus) Valid() bool {
+	switch e {
+	case WebhookStatusACTIVE:
+		return true
+	case WebhookStatusDELETED:
+		return true
+	default:
+		return false
+	}
+}
+
 // AccountApiKeyRoleId Role identifier for an account-scoped management API key.
 type AccountApiKeyRoleId string
 
@@ -467,8 +909,43 @@ type AddAccountSecondaryOwnerResponse struct {
 	SecondaryOwnersUserIds []string `json:"secondaryOwnersUserIds"`
 }
 
+// CheckPermissionRequest defines model for CheckPermissionRequest.
+type CheckPermissionRequest struct {
+	union json.RawMessage
+}
+
+// CheckPermissionRequest0 defines model for CheckPermissionRequest.0.
+type CheckPermissionRequest0 struct {
+	Action CheckPermissionRequest0Action `json:"action"`
+}
+
+// CheckPermissionRequest0Action defines model for CheckPermissionRequest.0.Action.
+type CheckPermissionRequest0Action string
+
+// CheckPermissionResponse defines model for CheckPermissionResponse.
+type CheckPermissionResponse struct {
+	// Allowed Whether the caller is authorized. Other checks may still prevent the operation.
+	Allowed bool `json:"allowed"`
+}
+
 // ClientError defines model for ClientError.
 type ClientError struct {
+	Code    float32 `json:"code"`
+	Message string  `json:"message"`
+}
+
+// ConfirmRegionGrantRequest defines model for ConfirmRegionGrantRequest.
+type ConfirmRegionGrantRequest struct {
+	// Grant The grant module's `grant` output, unchanged: roleArn and permissionsBoundary (AWS); workloadIdentityProvider, serviceAccount and identityProject (GCP); tenantId and clientId (Azure).
+	Grant   map[string]string `json:"grant"`
+	GrantId RegionGrantId     `json:"grantId"`
+}
+
+// ConfirmRegionGrantResponse defines model for ConfirmRegionGrantResponse.
+type ConfirmRegionGrantResponse = RegionGrantDescription
+
+// ConflictError defines model for ConflictError.
+type ConflictError struct {
 	Code    float32 `json:"code"`
 	Message string  `json:"message"`
 }
@@ -549,6 +1026,100 @@ type CreateEnvironmentResponse struct {
 	Name          string  `json:"name"`
 }
 
+// CreateOrganizationApiKeyRequest defines model for CreateOrganizationApiKeyRequest.
+type CreateOrganizationApiKeyRequest struct {
+	Description *string `json:"description,omitempty"`
+
+	// RoleId Role of an organization-scoped API key. OrganizationAccountCreatorAccess creates accounts in the organization. OrganizationRegionGrantAccess manages the organization's region grants and builds regions with them in its accounts.
+	RoleId OrganizationApiKeyRoleId `json:"roleId"`
+}
+
+// CreateOrganizationApiKeyResponse defines model for CreateOrganizationApiKeyResponse.
+type CreateOrganizationApiKeyResponse struct {
+	ApiKey         string  `json:"apiKey"`
+	Description    *string `json:"description,omitempty"`
+	KeyId          string  `json:"keyId"`
+	OrganizationId string  `json:"organizationId"`
+
+	// RoleId Role of an organization-scoped API key. OrganizationAccountCreatorAccess creates accounts in the organization. OrganizationRegionGrantAccess manages the organization's region grants and builds regions with them in its accounts.
+	RoleId OrganizationApiKeyRoleId `json:"roleId"`
+}
+
+// CreateRegionGrantRequest defines model for CreateRegionGrantRequest.
+type CreateRegionGrantRequest struct {
+	Aws *struct {
+		// AccountId The AWS account the grant is in.
+		AccountId string `json:"accountId"`
+	} `json:"aws,omitempty"`
+	Azure *struct {
+		// SubscriptionId The Azure subscription the grant is in.
+		SubscriptionId openapi_types.UUID `json:"subscriptionId"`
+	} `json:"azure,omitempty"`
+	Cloud       CreateRegionGrantRequestCloud `json:"cloud"`
+	DisplayName *string                       `json:"displayName,omitempty"`
+	Gcp         *struct {
+		// ProjectId The GCP project the grant is in.
+		ProjectId string `json:"projectId"`
+	} `json:"gcp,omitempty"`
+
+	// Owner Defaults to ACCOUNT.
+	Owner *RegionGrantOwner `json:"owner,omitempty"`
+}
+
+// CreateRegionGrantRequestCloud defines model for CreateRegionGrantRequest.Cloud.
+type CreateRegionGrantRequestCloud string
+
+// CreateRegionGrantResponse defines model for CreateRegionGrantResponse.
+type CreateRegionGrantResponse = RegionGrantDescription
+
+// CreateRegionRequest defines model for CreateRegionRequest.
+type CreateRegionRequest struct {
+	Aws *struct {
+		// AccountId The AWS account the region runs in.
+		AccountId string `json:"accountId"`
+	} `json:"aws,omitempty"`
+	Azure *struct {
+		// SubscriptionId The Azure subscription the region runs in.
+		SubscriptionId string `json:"subscriptionId"`
+	} `json:"azure,omitempty"`
+	Cloud CreateRegionRequestCloud `json:"cloud"`
+
+	// CloudRegion The AWS region, Azure location or GCP region the cluster runs in.
+	CloudRegion string `json:"cloudRegion"`
+
+	// DisplayName Defaults to the name.
+	DisplayName *string `json:"displayName,omitempty"`
+	Gcp         *struct {
+		// ProjectId The GCP project the region runs in. The region is tied to it.
+		ProjectId string `json:"projectId"`
+	} `json:"gcp,omitempty"`
+
+	// GrantId GRANT: build the region with this READY region grant of the account or of its organization, instead of a grant of its own. The region starts building at once, keeps the grant for its whole life, and signs in with the grant's token, so identity is not taken with it. Its cloud and cloud account must be the grant's.
+	GrantId *RegionGrantId `json:"grantId,omitempty"`
+
+	// Identity Ask for a region that signs in to your cloud with a short-lived token of its own from Restate's issuer. Your grant then trusts the issuer and the region's subject, and no value Restate chose for you. Without it, Restate decides when the region is created. The region keeps that identity for its whole life, so a repeat of the create that asks for another one is refused. A stage that has no issuer, or does not take this request yet, refuses it too.
+	Identity       *CreateRegionRequestIdentity `json:"identity,omitempty"`
+	Infrastructure *struct {
+		// MachineType The node type of the cluster's node pool (GCP) or system nodes (Azure); not available on AWS.
+		MachineType *string `json:"machineType,omitempty"`
+	} `json:"infrastructure,omitempty"`
+
+	// Name Your name for the region, unique within the account: 3 to 40 lower-case letters, digits and hyphens. It is the region's key: creating a region again with the same name and settings returns the same region, so a create can be retried safely. It cannot be changed.
+	Name string `json:"name"`
+
+	// Setup How Restate reaches your cloud. GRANT (the default): you grant Restate access with a Terraform module, and Restate builds and operates the region from outside your account. INSTALLER: a region set up with an installer in your project; new ones can no longer be created.
+	Setup *RegionSetup `json:"setup,omitempty"`
+}
+
+// CreateRegionRequestCloud defines model for CreateRegionRequest.Cloud.
+type CreateRegionRequestCloud string
+
+// CreateRegionRequestIdentity Ask for a region that signs in to your cloud with a short-lived token of its own from Restate's issuer. Your grant then trusts the issuer and the region's subject, and no value Restate chose for you. Without it, Restate decides when the region is created. The region keeps that identity for its whole life, so a repeat of the create that asks for another one is refused. A stage that has no issuer, or does not take this request yet, refuses it too.
+type CreateRegionRequestIdentity string
+
+// CreateRegionResponse defines model for CreateRegionResponse.
+type CreateRegionResponse = RegionDescription
+
 // CreateStripePortalSessionRequest defines model for CreateStripePortalSessionRequest.
 type CreateStripePortalSessionRequest struct {
 	ReturnUrl *string `json:"returnUrl,omitempty"`
@@ -557,6 +1128,34 @@ type CreateStripePortalSessionRequest struct {
 // CreateStripePortalSessionResponse defines model for CreateStripePortalSessionResponse.
 type CreateStripePortalSessionResponse struct {
 	Url string `json:"url"`
+}
+
+// CreateWebhookRequest defines model for CreateWebhookRequest.
+type CreateWebhookRequest struct {
+	Description   *string `json:"description,omitempty"`
+	EnvironmentId string  `json:"environmentId"`
+	HandlerName   string  `json:"handlerName"`
+
+	// Mode Defaults to async.
+	Mode        *WebhookMode `json:"mode,omitempty"`
+	Name        *string      `json:"name,omitempty"`
+	ServiceName string       `json:"serviceName"`
+}
+
+// CreateWebhookResponse defines model for CreateWebhookResponse.
+type CreateWebhookResponse struct {
+	CreatedAt     string  `json:"createdAt"`
+	CreatedBy     string  `json:"createdBy"`
+	Description   *string `json:"description,omitempty"`
+	EnvironmentId string  `json:"environmentId"`
+	HandlerName   string  `json:"handlerName"`
+
+	// Mode How the webhook delivers a request to its handler, fixed at creation. async: the sender gets 202 as soon as Restate accepts the invocation, and never sees the handler's result. sync: the request waits for the handler, for up to 30 seconds, and the sender gets the handler's response (504 if it takes longer).
+	Mode        WebhookMode `json:"mode"`
+	Name        string      `json:"name"`
+	ServiceName string      `json:"serviceName"`
+	TokenLast4  string      `json:"tokenLast4"`
+	WebhookId   string      `json:"webhookId"`
 }
 
 // DeleteAccountApiKeyRequest defines model for DeleteAccountApiKeyRequest.
@@ -630,6 +1229,23 @@ type DeleteApiKeyResponse_Result struct {
 	union json.RawMessage
 }
 
+// DeleteDefaultOrganizationMembersRoleBindingRequest defines model for DeleteDefaultOrganizationMembersRoleBindingRequest.
+type DeleteDefaultOrganizationMembersRoleBindingRequest struct {
+	// ExpectedRevision Opaque revision from ListAccountRoleBindings. A stale revision is rejected with 409; omit only for legacy unconditional writes.
+	ExpectedRevision *string `json:"expectedRevision,omitempty"`
+}
+
+// DeleteDefaultOrganizationMembersRoleBindingResponse defines model for DeleteDefaultOrganizationMembersRoleBindingResponse.
+type DeleteDefaultOrganizationMembersRoleBindingResponse = map[string]interface{}
+
+// DeleteOrganizationApiKeyRequest defines model for DeleteOrganizationApiKeyRequest.
+type DeleteOrganizationApiKeyRequest struct {
+	KeyId string `json:"keyId"`
+}
+
+// DeleteOrganizationApiKeyResponse defines model for DeleteOrganizationApiKeyResponse.
+type DeleteOrganizationApiKeyResponse = map[string]interface{}
+
 // DeleteOrganizationGroupRoleBindingRequest defines model for DeleteOrganizationGroupRoleBindingRequest.
 type DeleteOrganizationGroupRoleBindingRequest struct {
 	GroupId string `json:"groupId"`
@@ -645,6 +1261,51 @@ type DeleteOrganizationUserRoleBindingRequest struct {
 
 // DeleteOrganizationUserRoleBindingResponse defines model for DeleteOrganizationUserRoleBindingResponse.
 type DeleteOrganizationUserRoleBindingResponse = map[string]interface{}
+
+// DeleteRegionGrantRequest defines model for DeleteRegionGrantRequest.
+type DeleteRegionGrantRequest struct {
+	GrantId RegionGrantId `json:"grantId"`
+}
+
+// DeleteRegionGrantResponse defines model for DeleteRegionGrantResponse.
+type DeleteRegionGrantResponse = RegionGrantDescription
+
+// DeleteRegionRequest defines model for DeleteRegionRequest.
+type DeleteRegionRequest struct {
+	// Name The region's name, in place of its id.
+	Name     *string   `json:"name,omitempty"`
+	RegionId *RegionId `json:"regionId,omitempty"`
+}
+
+// DeleteRegionResponse defines model for DeleteRegionResponse.
+type DeleteRegionResponse = RegionDescription
+
+// DeleteWebhookRequest defines model for DeleteWebhookRequest.
+type DeleteWebhookRequest struct {
+	EnvironmentId string `json:"environmentId"`
+	WebhookId     string `json:"webhookId"`
+}
+
+// DeleteWebhookResponse defines model for DeleteWebhookResponse.
+type DeleteWebhookResponse = map[string]interface{}
+
+// DeregisterByocRegionRequest defines model for DeregisterByocRegionRequest.
+type DeregisterByocRegionRequest struct {
+	// Region A short name for the region, unique across registrations. Identifies this registration so that repeating it is safe; the region's domain and Kubernetes objects are named after the generated region id instead.
+	Region string `json:"region"`
+}
+
+// DeregisterByocRegionResponse defines model for DeregisterByocRegionResponse.
+type DeregisterByocRegionResponse struct {
+	// Deregistered False when the account holds no region of that name, which is also the answer once a removal has finished.
+	Deregistered bool `json:"deregistered"`
+
+	// IdentityPending The region's DNS records and certificate are still being removed. Call again to check. The removal needs nothing from the region's cluster.
+	IdentityPending bool `json:"identityPending"`
+
+	// RegionId The region that was removed. Absent when the account holds no region of that name.
+	RegionId *string `json:"regionId,omitempty"`
+}
 
 // DescribeAccountRequest defines model for DescribeAccountRequest.
 type DescribeAccountRequest = map[string]interface{}
@@ -695,6 +1356,21 @@ type DescribeApiKeyResponse struct {
 // DescribeApiKeyResponseState defines model for DescribeApiKeyResponse.State.
 type DescribeApiKeyResponseState string
 
+// DescribeByocAuthorizationRequest defines model for DescribeByocAuthorizationRequest.
+type DescribeByocAuthorizationRequest = map[string]interface{}
+
+// DescribeByocAuthorizationResponse defines model for DescribeByocAuthorizationResponse.
+type DescribeByocAuthorizationResponse struct {
+	// Authorized Whether this account may register BYOC regions.
+	Authorized bool `json:"authorized"`
+
+	// GrantedBy Which grant allows it: the account's own, or its organization's.
+	GrantedBy *DescribeByocAuthorizationResponseGrantedBy `json:"grantedBy,omitempty"`
+}
+
+// DescribeByocAuthorizationResponseGrantedBy Which grant allows it: the account's own, or its organization's.
+type DescribeByocAuthorizationResponseGrantedBy string
+
 // DescribeEnvironmentRequest defines model for DescribeEnvironmentRequest.
 type DescribeEnvironmentRequest struct {
 	EnvironmentId string `json:"environmentId"`
@@ -727,6 +1403,49 @@ type DescribeEnvironmentResponseStatus string
 // DescribeEnvironmentResponseTierId defines model for DescribeEnvironmentResponse.TierId.
 type DescribeEnvironmentResponseTierId string
 
+// DescribeRegionGrantRequest defines model for DescribeRegionGrantRequest.
+type DescribeRegionGrantRequest struct {
+	GrantId RegionGrantId `json:"grantId"`
+}
+
+// DescribeRegionGrantResponse defines model for DescribeRegionGrantResponse.
+type DescribeRegionGrantResponse = RegionGrantDescription
+
+// DescribeRegionRequest defines model for DescribeRegionRequest.
+type DescribeRegionRequest struct {
+	// Name The region's name, in place of its id.
+	Name     *string   `json:"name,omitempty"`
+	RegionId *RegionId `json:"regionId,omitempty"`
+}
+
+// DescribeRegionResponse defines model for DescribeRegionResponse.
+type DescribeRegionResponse = RegionDescription
+
+// DescribeWebhookRequest defines model for DescribeWebhookRequest.
+type DescribeWebhookRequest struct {
+	EnvironmentId string `json:"environmentId"`
+	WebhookId     string `json:"webhookId"`
+}
+
+// DescribeWebhookResponse defines model for DescribeWebhookResponse.
+type DescribeWebhookResponse struct {
+	CreatedAt   string  `json:"createdAt"`
+	CreatedBy   string  `json:"createdBy"`
+	Description *string `json:"description,omitempty"`
+	HandlerName string  `json:"handlerName"`
+
+	// Mode How the webhook delivers a request to its handler, fixed at creation. async: the sender gets 202 as soon as Restate accepts the invocation, and never sees the handler's result. sync: the request waits for the handler, for up to 30 seconds, and the sender gets the handler's response (504 if it takes longer).
+	Mode        WebhookMode `json:"mode"`
+	Name        string      `json:"name"`
+	ServiceName string      `json:"serviceName"`
+
+	// Status Whether the webhook still accepts deliveries.
+	Status     WebhookStatus `json:"status"`
+	TokenLast4 string        `json:"tokenLast4"`
+	Url        string        `json:"url"`
+	WebhookId  string        `json:"webhookId"`
+}
+
 // DestroyEnvironmentRequest defines model for DestroyEnvironmentRequest.
 type DestroyEnvironmentRequest struct {
 	EnvironmentId string `json:"environmentId"`
@@ -748,6 +1467,12 @@ type DestroyEnvironmentResponseResult1 = string
 // DestroyEnvironmentResponse_Result defines model for DestroyEnvironmentResponse.Result.
 type DestroyEnvironmentResponse_Result struct {
 	union json.RawMessage
+}
+
+// ForbiddenError defines model for ForbiddenError.
+type ForbiddenError struct {
+	Code    float32 `json:"code"`
+	Message string  `json:"message"`
 }
 
 // GetAccountLimitsRequest defines model for GetAccountLimitsRequest.
@@ -815,6 +1540,12 @@ type GetUserLimitsResponse struct {
 	} `json:"accounts"`
 }
 
+// GoneError defines model for GoneError.
+type GoneError struct {
+	Code    float32 `json:"code"`
+	Message string  `json:"message"`
+}
+
 // ListAccountApiKeysRequest defines model for ListAccountApiKeysRequest.
 type ListAccountApiKeysRequest = map[string]interface{}
 
@@ -839,7 +1570,10 @@ type ListAccountRoleBindingsRequest = map[string]interface{}
 
 // ListAccountRoleBindingsResponse defines model for ListAccountRoleBindingsResponse.
 type ListAccountRoleBindingsResponse struct {
-	Items []ListAccountRoleBindingsResponse_Items_Item `json:"items"`
+	// DefaultOrganizationMembersRevision Opaque revision for conditional updates of the default organization-members binding.
+	DefaultOrganizationMembersRevision *string                                      `json:"defaultOrganizationMembersRevision,omitempty"`
+	DefaultOrganizationMembersRoles    *[]PublicAccountRoleId                       `json:"defaultOrganizationMembersRoles,omitempty"`
+	Items                              []ListAccountRoleBindingsResponse_Items_Item `json:"items"`
 }
 
 // ListAccountRoleBindingsResponseItems0 defines model for ListAccountRoleBindingsResponse.Items.0.
@@ -930,6 +1664,46 @@ type ListEnvironmentsResponse struct {
 // ListEnvironmentsResponseEnvironmentsTierId defines model for ListEnvironmentsResponse.Environments.TierId.
 type ListEnvironmentsResponseEnvironmentsTierId string
 
+// ListOrganizationApiKeysRequest defines model for ListOrganizationApiKeysRequest.
+type ListOrganizationApiKeysRequest = map[string]interface{}
+
+// ListOrganizationApiKeysResponse defines model for ListOrganizationApiKeysResponse.
+type ListOrganizationApiKeysResponse struct {
+	ApiKeys []ListOrganizationApiKeysResponse_ApiKeys_Item `json:"apiKeys"`
+}
+
+// ListOrganizationApiKeysResponseApiKeys0 defines model for ListOrganizationApiKeysResponse.ApiKeys.0.
+type ListOrganizationApiKeysResponseApiKeys0 struct {
+	Description    *string                                            `json:"description,omitempty"`
+	IndexStatus    ListOrganizationApiKeysResponseApiKeys0IndexStatus `json:"indexStatus"`
+	KeyId          string                                             `json:"keyId"`
+	OrganizationId string                                             `json:"organizationId"`
+
+	// RoleId Role of an organization-scoped API key. OrganizationAccountCreatorAccess creates accounts in the organization. OrganizationRegionGrantAccess manages the organization's region grants and builds regions with them in its accounts.
+	RoleId OrganizationApiKeyRoleId                     `json:"roleId"`
+	State  ListOrganizationApiKeysResponseApiKeys0State `json:"state"`
+}
+
+// ListOrganizationApiKeysResponseApiKeys0IndexStatus defines model for ListOrganizationApiKeysResponse.ApiKeys.0.IndexStatus.
+type ListOrganizationApiKeysResponseApiKeys0IndexStatus string
+
+// ListOrganizationApiKeysResponseApiKeys0State defines model for ListOrganizationApiKeysResponse.ApiKeys.0.State.
+type ListOrganizationApiKeysResponseApiKeys0State string
+
+// ListOrganizationApiKeysResponseApiKeys1 defines model for ListOrganizationApiKeysResponse.ApiKeys.1.
+type ListOrganizationApiKeysResponseApiKeys1 struct {
+	IndexStatus ListOrganizationApiKeysResponseApiKeys1IndexStatus `json:"indexStatus"`
+	KeyId       string                                             `json:"keyId"`
+}
+
+// ListOrganizationApiKeysResponseApiKeys1IndexStatus defines model for ListOrganizationApiKeysResponse.ApiKeys.1.IndexStatus.
+type ListOrganizationApiKeysResponseApiKeys1IndexStatus string
+
+// ListOrganizationApiKeysResponse_ApiKeys_Item defines model for ListOrganizationApiKeysResponse.apiKeys.Item.
+type ListOrganizationApiKeysResponse_ApiKeys_Item struct {
+	union json.RawMessage
+}
+
 // ListOrganizationGroupMembersRequest defines model for ListOrganizationGroupMembersRequest.
 type ListOrganizationGroupMembersRequest struct {
 	GroupId string `json:"groupId"`
@@ -1006,15 +1780,80 @@ type ListOrganizationUsersResponse struct {
 	} `json:"users"`
 }
 
+// ListRegionGrantsRequest defines model for ListRegionGrantsRequest.
+type ListRegionGrantsRequest struct {
+	// Owner Defaults to ACCOUNT.
+	Owner *RegionGrantOwner `json:"owner,omitempty"`
+}
+
+// ListRegionGrantsResponse defines model for ListRegionGrantsResponse.
+type ListRegionGrantsResponse struct {
+	Grants []RegionGrantDescription `json:"grants"`
+}
+
 // ListRegionsRequest defines model for ListRegionsRequest.
 type ListRegionsRequest = map[string]interface{}
 
 // ListRegionsResponse defines model for ListRegionsResponse.
 type ListRegionsResponse struct {
 	Regions []struct {
+		// Name BYOC regions you created: the name you gave the region.
+		Name              *string `json:"name,omitempty"`
 		RegionDisplayName *string `json:"regionDisplayName,omitempty"`
 		RegionName        string  `json:"regionName"`
+
+		// Status BYOC regions you created, including ones still being set up.
+		Status *RegionStatus `json:"status,omitempty"`
+
+		// StatusReason Why the region has its status: PREPARING, AWAITING_SETUP, AWAITING_GRANT, CREATING_INFRASTRUCTURE, DEPLOYING, NEEDS_RESTATE_ATTENTION, SETUP_EXPIRED, REJECTED or ABORTED. More may be added: treat one you do not know by its status.
+		StatusReason *string `json:"statusReason,omitempty"`
 	} `json:"regions"`
+}
+
+// ListWebhooksRequest defines model for ListWebhooksRequest.
+type ListWebhooksRequest struct {
+	EnvironmentId string `json:"environmentId"`
+}
+
+// ListWebhooksResponse defines model for ListWebhooksResponse.
+type ListWebhooksResponse struct {
+	Webhooks []struct {
+		CreatedAt   string  `json:"createdAt"`
+		CreatedBy   string  `json:"createdBy"`
+		Description *string `json:"description,omitempty"`
+		HandlerName string  `json:"handlerName"`
+
+		// Mode How the webhook delivers a request to its handler, fixed at creation. async: the sender gets 202 as soon as Restate accepts the invocation, and never sees the handler's result. sync: the request waits for the handler, for up to 30 seconds, and the sender gets the handler's response (504 if it takes longer).
+		Mode        WebhookMode `json:"mode"`
+		Name        string      `json:"name"`
+		ServiceName string      `json:"serviceName"`
+
+		// Status Whether the webhook still accepts deliveries.
+		Status     WebhookStatus `json:"status"`
+		TokenLast4 string        `json:"tokenLast4"`
+		WebhookId  string        `json:"webhookId"`
+	} `json:"webhooks"`
+}
+
+// NotFoundError defines model for NotFoundError.
+type NotFoundError struct {
+	Code    float32 `json:"code"`
+	Message string  `json:"message"`
+}
+
+// NotImplementedError defines model for NotImplementedError.
+type NotImplementedError struct {
+	Code    float32 `json:"code"`
+	Message string  `json:"message"`
+}
+
+// OrganizationApiKeyRoleId Role of an organization-scoped API key. OrganizationAccountCreatorAccess creates accounts in the organization. OrganizationRegionGrantAccess manages the organization's region grants and builds regions with them in its accounts.
+type OrganizationApiKeyRoleId string
+
+// PreconditionFailedError defines model for PreconditionFailedError.
+type PreconditionFailedError struct {
+	Code    float32 `json:"code"`
+	Message string  `json:"message"`
 }
 
 // PublicAccountRoleId Account-level role identifier. Built-in role IDs include `restate/AccountAdmin` and `restate/AccountReadOnly`. The `restate/*` prefix is reserved for Restate-supplied built-in roles; customer-defined role IDs must use a non-reserved namespace.
@@ -1050,6 +1889,16 @@ type PutAccountUserRoleBindingResponse struct {
 	UserId string                `json:"userId"`
 }
 
+// PutDefaultOrganizationMembersRoleBindingRequest defines model for PutDefaultOrganizationMembersRoleBindingRequest.
+type PutDefaultOrganizationMembersRoleBindingRequest struct {
+	// ExpectedRevision Opaque revision from ListAccountRoleBindings. A stale revision is rejected with 409; omit only for legacy unconditional writes.
+	ExpectedRevision *string               `json:"expectedRevision,omitempty"`
+	Roles            []PublicAccountRoleId `json:"roles"`
+}
+
+// PutDefaultOrganizationMembersRoleBindingResponse defines model for PutDefaultOrganizationMembersRoleBindingResponse.
+type PutDefaultOrganizationMembersRoleBindingResponse = map[string]interface{}
+
 // PutOrganizationGroupRoleBindingRequest defines model for PutOrganizationGroupRoleBindingRequest.
 type PutOrganizationGroupRoleBindingRequest struct {
 	GroupId string                     `json:"groupId"`
@@ -1074,6 +1923,262 @@ type PutOrganizationUserRoleBindingResponse struct {
 	UserId string                     `json:"userId"`
 }
 
+// RegionDescription defines model for RegionDescription.
+type RegionDescription struct {
+	Aws *struct {
+		// AccountId The AWS account the region runs in.
+		AccountId string `json:"accountId"`
+	} `json:"aws,omitempty"`
+	Azure *struct {
+		// SubscriptionId The Azure subscription the region runs in.
+		SubscriptionId string `json:"subscriptionId"`
+	} `json:"azure,omitempty"`
+	Cloud       RegionDescriptionCloud `json:"cloud"`
+	CloudRegion string                 `json:"cloudRegion"`
+	CreatedAt   string                 `json:"createdAt"`
+	DisplayName string                 `json:"displayName"`
+	Gcp         *struct {
+		// ProjectId The GCP project the region runs in. The region is tied to it.
+		ProjectId string `json:"projectId"`
+	} `json:"gcp,omitempty"`
+
+	// GrantId The region grant the region is built with.
+	GrantId *RegionGrantId `json:"grantId,omitempty"`
+
+	// GrantInputs GRANT regions: the inputs of the grant module, named after its variables.
+	GrantInputs    *RegionGrantInputs `json:"grantInputs,omitempty"`
+	Infrastructure struct {
+		MachineType *string `json:"machineType,omitempty"`
+	} `json:"infrastructure"`
+	Name     string   `json:"name"`
+	RegionId RegionId `json:"regionId"`
+
+	// RequiredAction Present while the region waits for you.
+	RequiredAction *struct {
+		// DeadlineAt RUN_INSTALLER: when the region fails if the installer has not been applied.
+		DeadlineAt *string `json:"deadlineAt,omitempty"`
+
+		// Kind RUN_INSTALLER: retired with INSTALLER regions, which can no longer be created. APPLY_GRANT: apply the grant module with grantInputs, then call SetRegionGrant with its output.
+		Kind RegionDescriptionRequiredActionKind `json:"kind"`
+	} `json:"requiredAction,omitempty"`
+
+	// Setup How Restate reaches your cloud. GRANT (the default): you grant Restate access with a Terraform module, and Restate builds and operates the region from outside your account. INSTALLER: a region set up with an installer in your project; new ones can no longer be created.
+	Setup RegionSetup `json:"setup"`
+
+	// Status PENDING while the region is being set up; DELETING and DELETED once its deletion starts.
+	Status RegionStatus `json:"status"`
+
+	// StatusReason Why the region has its status: PREPARING, AWAITING_SETUP, AWAITING_GRANT, CREATING_INFRASTRUCTURE, DEPLOYING, NEEDS_RESTATE_ATTENTION, SETUP_EXPIRED, REJECTED or ABORTED. More may be added: treat one you do not know by its status.
+	StatusReason *string `json:"statusReason,omitempty"`
+}
+
+// RegionDescriptionCloud defines model for RegionDescription.Cloud.
+type RegionDescriptionCloud string
+
+// RegionDescriptionRequiredActionKind RUN_INSTALLER: retired with INSTALLER regions, which can no longer be created. APPLY_GRANT: apply the grant module with grantInputs, then call SetRegionGrant with its output.
+type RegionDescriptionRequiredActionKind string
+
+// RegionGrantDescription defines model for RegionGrantDescription.
+type RegionGrantDescription struct {
+	Aws *struct {
+		// AccountId The AWS account the grant is in.
+		AccountId string `json:"accountId"`
+	} `json:"aws,omitempty"`
+	Azure *struct {
+		// SubscriptionId The Azure subscription the grant is in.
+		SubscriptionId openapi_types.UUID `json:"subscriptionId"`
+	} `json:"azure,omitempty"`
+	Cloud       RegionGrantDescriptionCloud `json:"cloud"`
+	ConfirmedAt *string                     `json:"confirmedAt,omitempty"`
+	CreatedAt   string                      `json:"createdAt"`
+	DisplayName string                      `json:"displayName"`
+
+	// ExpiresAt PENDING: when the grant expires unless it is confirmed.
+	ExpiresAt *string `json:"expiresAt,omitempty"`
+	Gcp       *struct {
+		// ProjectId The GCP project the grant is in.
+		ProjectId string `json:"projectId"`
+	} `json:"gcp,omitempty"`
+	GrantId RegionGrantId `json:"grantId"`
+
+	// GrantInputs Present while the grant is PENDING or READY.
+	GrantInputs *RegionGrantModuleInputs `json:"grantInputs,omitempty"`
+
+	// Owner Who owns the grant. ACCOUNT: the account in the path, whose administrators and management keys manage it and build regions with it. ORGANIZATION: the organization of the account in the path, whose administrators manage it and build regions with it in any of its accounts.
+	Owner RegionGrantOwner `json:"owner"`
+
+	// OwnerId The id of the account or the organization that owns the grant.
+	OwnerId string `json:"ownerId"`
+
+	// RegionIds The regions built with the grant that are not deleted yet.
+	RegionIds []string `json:"regionIds"`
+
+	// Status PENDING: not confirmed yet; statusReason says why. READY: regions can be built with it. EXPIRED: it was not confirmed in time; create a new one. DELETED: it was deleted.
+	Status RegionGrantStatus `json:"status"`
+
+	// StatusMessage CONFIRMING or CONFIRMATION_FAILED: the last answer of your cloud, or of Restate's check.
+	StatusMessage *string `json:"statusMessage,omitempty"`
+
+	// StatusReason Present while the grant is PENDING. AWAITING_CONFIRMATION: call ConfirmRegionGrant with the grant module's output. CONFIRMING: the grant is being set up, because Restate is signing in through it, and it turns READY once your cloud accepts the sign-in. CONFIRMATION_FAILED: your cloud kept refusing the sign-in; statusMessage has its answer. Fix the grant and call ConfirmRegionGrant again.
+	StatusReason *RegionGrantStatusReason `json:"statusReason,omitempty"`
+}
+
+// RegionGrantDescriptionCloud defines model for RegionGrantDescription.Cloud.
+type RegionGrantDescriptionCloud string
+
+// RegionGrantId defines model for RegionGrantId.
+type RegionGrantId = string
+
+// RegionGrantInputs GRANT regions: the inputs of the grant module, named after its variables.
+type RegionGrantInputs struct {
+	// CompositionIssuer composition_issuer (GCP, Azure): the identity issuer the grant trusts.
+	CompositionIssuer *string `json:"compositionIssuer,omitempty"`
+
+	// ExternalId external_id (AWS): what the role's trust policy requires.
+	ExternalId *string `json:"externalId,omitempty"`
+
+	// RegionName region_name: the prefix of the region's resource names.
+	RegionName string `json:"regionName"`
+
+	// RegionSubject region_subject: the subject of the region's token, `region:<region id>`.
+	RegionSubject *string `json:"regionSubject,omitempty"`
+
+	// RegionTag region_tag (GCP, Azure): the label on your project, or the tag on the resource group.
+	RegionTag *string `json:"regionTag,omitempty"`
+
+	// RestateIssuer restate_issuer: Restate's OIDC issuer, which signs the region's own token. Set for a region with an identity of its own, which is fixed when the region is created. externalId, regionTag, restatePrincipals and compositionIssuer are then absent.
+	RestateIssuer *string `json:"restateIssuer,omitempty"`
+
+	// RestatePrincipals restate_principals (AWS): the roles that may assume the grant.
+	RestatePrincipals *[]string `json:"restatePrincipals,omitempty"`
+
+	// TokenAudience token_audience: the audience of the region's token, which the grant requires.
+	TokenAudience *string `json:"tokenAudience,omitempty"`
+}
+
+// RegionGrantModuleInputs The inputs of the grant module in region grant mode.
+type RegionGrantModuleInputs struct {
+	// GrantSubject grant_subject: the subject of the grant's token, `grant:<grant id>`.
+	GrantSubject string `json:"grantSubject"`
+
+	// ResourcePrefix resource_prefix: the prefix of every resource name a region of the grant has in your cloud.
+	ResourcePrefix string `json:"resourcePrefix"`
+
+	// RestateIssuer restate_issuer: Restate's OIDC issuer, which signs the grant's token.
+	RestateIssuer string `json:"restateIssuer"`
+
+	// TokenAudience token_audience: the audience of the grant's token.
+	TokenAudience string `json:"tokenAudience"`
+}
+
+// RegionGrantOwner Who owns the grant. ACCOUNT: the account in the path, whose administrators and management keys manage it and build regions with it. ORGANIZATION: the organization of the account in the path, whose administrators manage it and build regions with it in any of its accounts.
+type RegionGrantOwner string
+
+// RegionGrantStatus PENDING: not confirmed yet; statusReason says why. READY: regions can be built with it. EXPIRED: it was not confirmed in time; create a new one. DELETED: it was deleted.
+type RegionGrantStatus string
+
+// RegionGrantStatusReason Present while the grant is PENDING. AWAITING_CONFIRMATION: call ConfirmRegionGrant with the grant module's output. CONFIRMING: the grant is being set up, because Restate is signing in through it, and it turns READY once your cloud accepts the sign-in. CONFIRMATION_FAILED: your cloud kept refusing the sign-in; statusMessage has its answer. Fix the grant and call ConfirmRegionGrant again.
+type RegionGrantStatusReason string
+
+// RegionId defines model for RegionId.
+type RegionId = string
+
+// RegionSetup How Restate reaches your cloud. GRANT (the default): you grant Restate access with a Terraform module, and Restate builds and operates the region from outside your account. INSTALLER: a region set up with an installer in your project; new ones can no longer be created.
+type RegionSetup string
+
+// RegionStatus PENDING while the region is being set up; DELETING and DELETED once its deletion starts.
+type RegionStatus string
+
+// RegisterByocRegionRequest defines model for RegisterByocRegionRequest.
+type RegisterByocRegionRequest struct {
+	// AccountId Optional. When present it must be the account in the path.
+	AccountId *string `json:"accountId,omitempty"`
+
+	// AvailabilityZones The region's availability zones, comma separated, as its nodes' `topology.kubernetes.io/zone` labels name them. On Azure each entry is either a bare zone number (`1`) or the AKS label form `<providerRegion>-<n>` (`westeurope-1`); bare numbers are normalised to the label form and anything else is rejected with 400. The tunnel runs one instance per zone and refuses fewer than three, so a region registered with fewer comes up with no tunnel.
+	AvailabilityZones *string `json:"availabilityZones,omitempty"`
+
+	// Cloud Cloud the region's cluster runs on.
+	Cloud RegisterByocRegionRequestCloud `json:"cloud"`
+
+	// EgressNetworkName Linkerd EgressNetwork in the region, which the tunnel's TLSRoute attaches to. Without it the tunnel component stays off, because a region with no linkerd has nothing for that route to attach to.
+	EgressNetworkName *string `json:"egressNetworkName,omitempty"`
+
+	// Ipv4 Public IPv4 address the region's ingress answers on. With `ipv4Addresses` it must be that list's first entry. One of the two is required.
+	Ipv4 *string `json:"ipv4,omitempty"`
+
+	// Ipv4Addresses Every public IPv4 address the region answers on, in zone order; the region's DNS records carry all of them. AWS regions have one per zone. A region with one address may send `ipv4` alone.
+	Ipv4Addresses *[]string `json:"ipv4Addresses,omitempty"`
+
+	// KubeCa PEM CA bundle for that API server.
+	KubeCa string `json:"kubeCa"`
+
+	// KubeEndpoint API server URL of the region's cluster.
+	KubeEndpoint string `json:"kubeEndpoint"`
+
+	// KubeToken Bearer token the control plane reaches the region with.
+	KubeToken string `json:"kubeToken"`
+
+	// Kubeconfig Full kubeconfig for the region's cluster. Stored as a Secret on the cluster that issues the region's identity, which is how Crossplane delivers the certificate and pull credential.
+	Kubeconfig         string  `json:"kubeconfig"`
+	PodIdentityRoleArn *string `json:"podIdentityRoleArn,omitempty"`
+
+	// ProviderRegion The cloud's own name for where the region runs, e.g. `westeurope`. The region's CR carries it, so a registration without one reconciles into a failure rather than a clear refusal here. On Azure it must be the lowercase ARM location name (`westeurope`), which AKS zone labels are built from; `WestEurope` or `West Europe` is rejected with 400 rather than lowercased.
+	ProviderRegion string `json:"providerRegion"`
+
+	// Region A short name for the region, unique across registrations. Identifies this registration so that repeating it is safe; the region's domain and Kubernetes objects are named after the generated region id instead.
+	Region string `json:"region"`
+
+	// RegionDisplayName What a customer sees when picking this region. Defaults to the region name, cloud and provider region with the id after it; the console shows the raw id when nothing is set.
+	RegionDisplayName *string `json:"regionDisplayName,omitempty"`
+
+	// ReleasePackage Initial region release Function package, pinned by digest. Later targets are owned by the region virtual object.
+	ReleasePackage     *string `json:"releasePackage,omitempty"`
+	RestateGcpSaEmail  *string `json:"restateGcpSaEmail,omitempty"`
+	StorageAccountName *string `json:"storageAccountName,omitempty"`
+	StorageBucket      *string `json:"storageBucket,omitempty"`
+
+	// StorageContainerName Azure. The container the region's composition created for snapshots. Checked against the container environments actually write to, and rejected if they differ.
+	StorageContainerName *string `json:"storageContainerName,omitempty"`
+}
+
+// RegisterByocRegionRequestCloud Cloud the region's cluster runs on.
+type RegisterByocRegionRequestCloud string
+
+// RegisterByocRegionResponse defines model for RegisterByocRegionResponse.
+type RegisterByocRegionResponse struct {
+	// ApiKey The region's access key, returned only when this call created the region. There is no way to read it back afterwards.
+	ApiKey *string `json:"apiKey,omitempty"`
+
+	// Created False when the region already existed, so a repeated registration reads as a repeat.
+	Created bool `json:"created"`
+
+	// DomainName The region's public domain, built from the generated region id.
+	DomainName string `json:"domainName"`
+
+	// ImagePull What the region pulls Restate's images with: a Restate API key for the registry proxy, not a cloud credential. Shown once, on the registration that minted it; a repeat returns nothing here because the key cannot be read back.
+	ImagePull *struct {
+		Password string `json:"password"`
+		Registry string `json:"registry"`
+		Username string `json:"username"`
+	} `json:"imagePull,omitempty"`
+
+	// MissingFields Per-cloud facts the region still needs before it can leave PENDING. Present means the identity was issued and the region exists, but is not yet active.
+	MissingFields *[]string `json:"missingFields,omitempty"`
+
+	// RegionId The region's key, generated on first registration and stable across repeats. The name in the request is what the region's domain and its Kubernetes objects are named after.
+	RegionId string                           `json:"regionId"`
+	Status   RegisterByocRegionResponseStatus `json:"status"`
+
+	// Type Region type derived from `cloud`. Always an `xp-` type: a region registered here was provisioned by Restate's own Crossplane compositions, which is also what makes it control-plane-authored.
+	Type RegisterByocRegionResponseType `json:"type"`
+}
+
+// RegisterByocRegionResponseStatus defines model for RegisterByocRegionResponse.Status.
+type RegisterByocRegionResponseStatus string
+
+// RegisterByocRegionResponseType Region type derived from `cloud`. Always an `xp-` type: a region registered here was provisioned by Restate's own Crossplane compositions, which is also what makes it control-plane-authored.
+type RegisterByocRegionResponseType string
+
 // RemoveAccountSecondaryOwnerRequest defines model for RemoveAccountSecondaryOwnerRequest.
 type RemoveAccountSecondaryOwnerRequest struct {
 	SecondaryOwnerUserId string `json:"secondaryOwnerUserId"`
@@ -1084,6 +2189,43 @@ type RemoveAccountSecondaryOwnerResponse struct {
 	SecondaryOwnersUserIds []string `json:"secondaryOwnersUserIds"`
 }
 
+// ReserveByocRegionRequest defines model for ReserveByocRegionRequest.
+type ReserveByocRegionRequest struct {
+	// AccountId Restate account the region is reserved for. Defaults to the account the call addresses.
+	AccountId *string `json:"accountId,omitempty"`
+
+	// Cloud Cloud the region's cluster will run on.
+	Cloud ReserveByocRegionRequestCloud `json:"cloud"`
+
+	// ProviderRegion The cloud's own name for where the region will run, as `RegisterByocRegion` takes it. On Azure the lowercase ARM location name.
+	ProviderRegion string `json:"providerRegion"`
+
+	// Region A short name for the region, unique across registrations. Identifies this registration so that repeating it is safe; the region's domain and Kubernetes objects are named after the generated region id instead.
+	Region string `json:"region"`
+}
+
+// ReserveByocRegionRequestCloud Cloud the region's cluster will run on.
+type ReserveByocRegionRequestCloud string
+
+// ReserveByocRegionResponse defines model for ReserveByocRegionResponse.
+type ReserveByocRegionResponse struct {
+	// DomainName The domain registration gives the region. A region can configure its cluster with it before it registers: `RegisterByocRegion` refuses a `baseDomain` that would give the region another one. Absent on a stage with no BYOC domain.
+	DomainName *string `json:"domainName,omitempty"`
+
+	// ImagePull What a region with no cluster yet pulls its node-local registry with: a Restate API key for the registry proxy. Shown once. Absent when the region is already registered, since it holds the credential registration delivered. Calling again for the same account while the region is unregistered revokes the previous key and returns a new one. Registration replaces this key when it hands the region over, and keeps it working for 24 hours so the cluster can switch to the replacement. An unregistered reservation expires after 7 days, which revokes this key.
+	ImagePull *struct {
+		Password string `json:"password"`
+		Registry string `json:"registry"`
+
+		// RepositoryPrefix What a repository name is appended to: the registry host and this stage's prefix. `restate-byoc-components`, `restate-byoc-bundle-registry`, `restate-byoc-registry-front` and `restate-byoc-registry-agent` all live under it.
+		RepositoryPrefix string `json:"repositoryPrefix"`
+		Username         string `json:"username"`
+	} `json:"imagePull,omitempty"`
+
+	// RegionId The region's key. `RegisterByocRegion` for the same name completes this region.
+	RegionId string `json:"regionId"`
+}
+
 // RoleId Role identifier for an environment-scoped API key.
 type RoleId string
 
@@ -1092,6 +2234,22 @@ type ServerInternalError struct {
 	Code    float32 `json:"code"`
 	Message string  `json:"message"`
 }
+
+// ServiceUnavailableError defines model for ServiceUnavailableError.
+type ServiceUnavailableError struct {
+	Code    float32 `json:"code"`
+	Message string  `json:"message"`
+}
+
+// SetRegionGrantRequest defines model for SetRegionGrantRequest.
+type SetRegionGrantRequest struct {
+	// Grant The grant module's `grant` output, unchanged: roleArn and permissionsBoundary (AWS); workloadIdentityProvider, serviceAccount and identityProject (GCP); tenantId, clientId and resourceGroup (Azure).
+	Grant    map[string]string `json:"grant"`
+	RegionId RegionId          `json:"regionId"`
+}
+
+// SetRegionGrantResponse defines model for SetRegionGrantResponse.
+type SetRegionGrantResponse = RegionDescription
 
 // UnauthorizedError defines model for UnauthorizedError.
 type UnauthorizedError struct {
@@ -1147,11 +2305,26 @@ type UpdateEnvironmentTierResponse struct {
 	CheckoutUrl *string `json:"checkoutUrl,omitempty"`
 }
 
+// WebhookMode How the webhook delivers a request to its handler, fixed at creation. async: the sender gets 202 as soon as Restate accepts the invocation, and never sees the handler's result. sync: the request waits for the handler, for up to 30 seconds, and the sender gets the handler's response (504 if it takes longer).
+type WebhookMode string
+
+// WebhookStatus Whether the webhook still accepts deliveries.
+type WebhookStatus string
+
+// CheckPermissionJSONRequestBody defines body for CheckPermission for application/json ContentType.
+type CheckPermissionJSONRequestBody = CheckPermissionRequest
+
 // CreateAccountJSONRequestBody defines body for CreateAccount for application/json ContentType.
 type CreateAccountJSONRequestBody = CreateAccountRequest
 
+// CreateOrganizationApiKeyJSONRequestBody defines body for CreateOrganizationApiKey for application/json ContentType.
+type CreateOrganizationApiKeyJSONRequestBody = CreateOrganizationApiKeyRequest
+
 // DeleteAccountJSONRequestBody defines body for DeleteAccount for application/json ContentType.
 type DeleteAccountJSONRequestBody = DeleteAccountRequest
+
+// DeleteOrganizationApiKeyJSONRequestBody defines body for DeleteOrganizationApiKey for application/json ContentType.
+type DeleteOrganizationApiKeyJSONRequestBody = DeleteOrganizationApiKeyRequest
 
 // DeleteOrganizationGroupRoleBindingJSONRequestBody defines body for DeleteOrganizationGroupRoleBinding for application/json ContentType.
 type DeleteOrganizationGroupRoleBindingJSONRequestBody = DeleteOrganizationGroupRoleBindingRequest
@@ -1167,6 +2340,9 @@ type GetUserLimitsJSONRequestBody = GetUserLimitsRequest
 
 // ListAccountsJSONRequestBody defines body for ListAccounts for application/json ContentType.
 type ListAccountsJSONRequestBody = ListAccountsRequest
+
+// ListOrganizationApiKeysJSONRequestBody defines body for ListOrganizationApiKeys for application/json ContentType.
+type ListOrganizationApiKeysJSONRequestBody = ListOrganizationApiKeysRequest
 
 // ListOrganizationGroupMembersJSONRequestBody defines body for ListOrganizationGroupMembers for application/json ContentType.
 type ListOrganizationGroupMembersJSONRequestBody = ListOrganizationGroupMembersRequest
@@ -1192,6 +2368,9 @@ type UpdateAccountJSONRequestBody = UpdateAccountRequest
 // AddAccountSecondaryOwnerJSONRequestBody defines body for AddAccountSecondaryOwner for application/json ContentType.
 type AddAccountSecondaryOwnerJSONRequestBody = AddAccountSecondaryOwnerRequest
 
+// ConfirmRegionGrantJSONRequestBody defines body for ConfirmRegionGrant for application/json ContentType.
+type ConfirmRegionGrantJSONRequestBody = ConfirmRegionGrantRequest
+
 // CreateAccountApiKeyJSONRequestBody defines body for CreateAccountApiKey for application/json ContentType.
 type CreateAccountApiKeyJSONRequestBody = CreateAccountApiKeyRequest
 
@@ -1201,8 +2380,17 @@ type CreateApiKeyJSONRequestBody = CreateApiKeyRequest
 // CreateEnvironmentJSONRequestBody defines body for CreateEnvironment for application/json ContentType.
 type CreateEnvironmentJSONRequestBody = CreateEnvironmentRequest
 
+// CreateRegionJSONRequestBody defines body for CreateRegion for application/json ContentType.
+type CreateRegionJSONRequestBody = CreateRegionRequest
+
+// CreateRegionGrantJSONRequestBody defines body for CreateRegionGrant for application/json ContentType.
+type CreateRegionGrantJSONRequestBody = CreateRegionGrantRequest
+
 // CreateStripePortalSessionJSONRequestBody defines body for CreateStripePortalSession for application/json ContentType.
 type CreateStripePortalSessionJSONRequestBody = CreateStripePortalSessionRequest
+
+// CreateWebhookJSONRequestBody defines body for CreateWebhook for application/json ContentType.
+type CreateWebhookJSONRequestBody = CreateWebhookRequest
 
 // DeleteAccountApiKeyJSONRequestBody defines body for DeleteAccountApiKey for application/json ContentType.
 type DeleteAccountApiKeyJSONRequestBody = DeleteAccountApiKeyRequest
@@ -1216,14 +2404,41 @@ type DeleteAccountUserRoleBindingJSONRequestBody = DeleteAccountUserRoleBindingR
 // DeleteApiKeyJSONRequestBody defines body for DeleteApiKey for application/json ContentType.
 type DeleteApiKeyJSONRequestBody = DeleteApiKeyRequest
 
+// DeleteDefaultOrganizationMembersRoleBindingJSONRequestBody defines body for DeleteDefaultOrganizationMembersRoleBinding for application/json ContentType.
+type DeleteDefaultOrganizationMembersRoleBindingJSONRequestBody = DeleteDefaultOrganizationMembersRoleBindingRequest
+
+// DeleteRegionJSONRequestBody defines body for DeleteRegion for application/json ContentType.
+type DeleteRegionJSONRequestBody = DeleteRegionRequest
+
+// DeleteRegionGrantJSONRequestBody defines body for DeleteRegionGrant for application/json ContentType.
+type DeleteRegionGrantJSONRequestBody = DeleteRegionGrantRequest
+
+// DeleteWebhookJSONRequestBody defines body for DeleteWebhook for application/json ContentType.
+type DeleteWebhookJSONRequestBody = DeleteWebhookRequest
+
+// DeregisterByocRegionJSONRequestBody defines body for DeregisterByocRegion for application/json ContentType.
+type DeregisterByocRegionJSONRequestBody = DeregisterByocRegionRequest
+
 // DescribeAccountJSONRequestBody defines body for DescribeAccount for application/json ContentType.
 type DescribeAccountJSONRequestBody = DescribeAccountRequest
 
 // DescribeApiKeyJSONRequestBody defines body for DescribeApiKey for application/json ContentType.
 type DescribeApiKeyJSONRequestBody = DescribeApiKeyRequest
 
+// DescribeByocAuthorizationJSONRequestBody defines body for DescribeByocAuthorization for application/json ContentType.
+type DescribeByocAuthorizationJSONRequestBody = DescribeByocAuthorizationRequest
+
 // DescribeEnvironmentJSONRequestBody defines body for DescribeEnvironment for application/json ContentType.
 type DescribeEnvironmentJSONRequestBody = DescribeEnvironmentRequest
+
+// DescribeRegionJSONRequestBody defines body for DescribeRegion for application/json ContentType.
+type DescribeRegionJSONRequestBody = DescribeRegionRequest
+
+// DescribeRegionGrantJSONRequestBody defines body for DescribeRegionGrant for application/json ContentType.
+type DescribeRegionGrantJSONRequestBody = DescribeRegionGrantRequest
+
+// DescribeWebhookJSONRequestBody defines body for DescribeWebhook for application/json ContentType.
+type DescribeWebhookJSONRequestBody = DescribeWebhookRequest
 
 // DestroyEnvironmentJSONRequestBody defines body for DestroyEnvironment for application/json ContentType.
 type DestroyEnvironmentJSONRequestBody = DestroyEnvironmentRequest
@@ -1249,8 +2464,14 @@ type ListApiKeysJSONRequestBody = ListApiKeysRequest
 // ListEnvironmentsJSONRequestBody defines body for ListEnvironments for application/json ContentType.
 type ListEnvironmentsJSONRequestBody = ListEnvironmentsRequest
 
+// ListRegionGrantsJSONRequestBody defines body for ListRegionGrants for application/json ContentType.
+type ListRegionGrantsJSONRequestBody = ListRegionGrantsRequest
+
 // ListRegionsJSONRequestBody defines body for ListRegions for application/json ContentType.
 type ListRegionsJSONRequestBody = ListRegionsRequest
+
+// ListWebhooksJSONRequestBody defines body for ListWebhooks for application/json ContentType.
+type ListWebhooksJSONRequestBody = ListWebhooksRequest
 
 // PutAccountGroupRoleBindingJSONRequestBody defines body for PutAccountGroupRoleBinding for application/json ContentType.
 type PutAccountGroupRoleBindingJSONRequestBody = PutAccountGroupRoleBindingRequest
@@ -1258,14 +2479,62 @@ type PutAccountGroupRoleBindingJSONRequestBody = PutAccountGroupRoleBindingReque
 // PutAccountUserRoleBindingJSONRequestBody defines body for PutAccountUserRoleBinding for application/json ContentType.
 type PutAccountUserRoleBindingJSONRequestBody = PutAccountUserRoleBindingRequest
 
+// PutDefaultOrganizationMembersRoleBindingJSONRequestBody defines body for PutDefaultOrganizationMembersRoleBinding for application/json ContentType.
+type PutDefaultOrganizationMembersRoleBindingJSONRequestBody = PutDefaultOrganizationMembersRoleBindingRequest
+
+// RegisterByocRegionJSONRequestBody defines body for RegisterByocRegion for application/json ContentType.
+type RegisterByocRegionJSONRequestBody = RegisterByocRegionRequest
+
 // RemoveAccountSecondaryOwnerJSONRequestBody defines body for RemoveAccountSecondaryOwner for application/json ContentType.
 type RemoveAccountSecondaryOwnerJSONRequestBody = RemoveAccountSecondaryOwnerRequest
+
+// ReserveByocRegionJSONRequestBody defines body for ReserveByocRegion for application/json ContentType.
+type ReserveByocRegionJSONRequestBody = ReserveByocRegionRequest
+
+// SetRegionGrantJSONRequestBody defines body for SetRegionGrant for application/json ContentType.
+type SetRegionGrantJSONRequestBody = SetRegionGrantRequest
 
 // UpdateEnvironmentJSONRequestBody defines body for UpdateEnvironment for application/json ContentType.
 type UpdateEnvironmentJSONRequestBody = UpdateEnvironmentRequest
 
 // UpdateEnvironmentTierJSONRequestBody defines body for UpdateEnvironmentTier for application/json ContentType.
 type UpdateEnvironmentTierJSONRequestBody = UpdateEnvironmentTierRequest
+
+// AsCheckPermissionRequest0 returns the union data inside the CheckPermissionRequest as a CheckPermissionRequest0
+func (t CheckPermissionRequest) AsCheckPermissionRequest0() (CheckPermissionRequest0, error) {
+	var body CheckPermissionRequest0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCheckPermissionRequest0 overwrites any union data inside the CheckPermissionRequest as the provided CheckPermissionRequest0
+func (t *CheckPermissionRequest) FromCheckPermissionRequest0(v CheckPermissionRequest0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCheckPermissionRequest0 performs a merge with any union data inside the CheckPermissionRequest, using the provided CheckPermissionRequest0
+func (t *CheckPermissionRequest) MergeCheckPermissionRequest0(v CheckPermissionRequest0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t CheckPermissionRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *CheckPermissionRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // AsDeleteAccountResponseResult0 returns the union data inside the DeleteAccountResponse_Result as a DeleteAccountResponseResult0
 func (t DeleteAccountResponse_Result) AsDeleteAccountResponseResult0() (DeleteAccountResponseResult0, error) {
@@ -1515,6 +2784,68 @@ func (t *ListAccountRoleBindingsResponse_Items_Item) UnmarshalJSON(b []byte) err
 	return err
 }
 
+// AsListOrganizationApiKeysResponseApiKeys0 returns the union data inside the ListOrganizationApiKeysResponse_ApiKeys_Item as a ListOrganizationApiKeysResponseApiKeys0
+func (t ListOrganizationApiKeysResponse_ApiKeys_Item) AsListOrganizationApiKeysResponseApiKeys0() (ListOrganizationApiKeysResponseApiKeys0, error) {
+	var body ListOrganizationApiKeysResponseApiKeys0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListOrganizationApiKeysResponseApiKeys0 overwrites any union data inside the ListOrganizationApiKeysResponse_ApiKeys_Item as the provided ListOrganizationApiKeysResponseApiKeys0
+func (t *ListOrganizationApiKeysResponse_ApiKeys_Item) FromListOrganizationApiKeysResponseApiKeys0(v ListOrganizationApiKeysResponseApiKeys0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeListOrganizationApiKeysResponseApiKeys0 performs a merge with any union data inside the ListOrganizationApiKeysResponse_ApiKeys_Item, using the provided ListOrganizationApiKeysResponseApiKeys0
+func (t *ListOrganizationApiKeysResponse_ApiKeys_Item) MergeListOrganizationApiKeysResponseApiKeys0(v ListOrganizationApiKeysResponseApiKeys0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsListOrganizationApiKeysResponseApiKeys1 returns the union data inside the ListOrganizationApiKeysResponse_ApiKeys_Item as a ListOrganizationApiKeysResponseApiKeys1
+func (t ListOrganizationApiKeysResponse_ApiKeys_Item) AsListOrganizationApiKeysResponseApiKeys1() (ListOrganizationApiKeysResponseApiKeys1, error) {
+	var body ListOrganizationApiKeysResponseApiKeys1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromListOrganizationApiKeysResponseApiKeys1 overwrites any union data inside the ListOrganizationApiKeysResponse_ApiKeys_Item as the provided ListOrganizationApiKeysResponseApiKeys1
+func (t *ListOrganizationApiKeysResponse_ApiKeys_Item) FromListOrganizationApiKeysResponseApiKeys1(v ListOrganizationApiKeysResponseApiKeys1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeListOrganizationApiKeysResponseApiKeys1 performs a merge with any union data inside the ListOrganizationApiKeysResponse_ApiKeys_Item, using the provided ListOrganizationApiKeysResponseApiKeys1
+func (t *ListOrganizationApiKeysResponse_ApiKeys_Item) MergeListOrganizationApiKeysResponseApiKeys1(v ListOrganizationApiKeysResponseApiKeys1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ListOrganizationApiKeysResponse_ApiKeys_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ListOrganizationApiKeysResponse_ApiKeys_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsListOrganizationRoleBindingsResponseItems0 returns the union data inside the ListOrganizationRoleBindingsResponse_Items_Item as a ListOrganizationRoleBindingsResponseItems0
 func (t ListOrganizationRoleBindingsResponse_Items_Item) AsListOrganizationRoleBindingsResponseItems0() (ListOrganizationRoleBindingsResponseItems0, error) {
 	var body ListOrganizationRoleBindingsResponseItems0
@@ -1651,6 +2982,20 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 // The interface specification for the client above.
 type ClientInterface interface {
 
+	// CheckPermissionWithBody Check whether the current user is authorized for an action
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /CheckPermission (the `CheckPermission` operationId).
+	CheckPermissionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CheckPermission Check whether the current user is authorized for an action
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /CheckPermission (the `CheckPermission` operationId).
+	CheckPermission(ctx context.Context, body CheckPermissionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateAccountWithBody Create a new account
 	//
 	// Takes any type of body and a specified content type.
@@ -1665,6 +3010,20 @@ type ClientInterface interface {
 	// Corresponds with POST /CreateAccount (the `CreateAccount` operationId).
 	CreateAccount(ctx context.Context, body CreateAccountJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateOrganizationApiKeyWithBody Create an organization-scoped account-creation API key
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /CreateOrganizationApiKey (the `CreateOrganizationApiKey` operationId).
+	CreateOrganizationApiKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateOrganizationApiKey Create an organization-scoped account-creation API key
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /CreateOrganizationApiKey (the `CreateOrganizationApiKey` operationId).
+	CreateOrganizationApiKey(ctx context.Context, body CreateOrganizationApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteAccountWithBody Delete an account
 	//
 	// Takes any type of body and a specified content type.
@@ -1678,6 +3037,20 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /DeleteAccount (the `DeleteAccount` operationId).
 	DeleteAccount(ctx context.Context, body DeleteAccountJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganizationApiKeyWithBody Delete an organization-scoped API key
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /DeleteOrganizationApiKey (the `DeleteOrganizationApiKey` operationId).
+	DeleteOrganizationApiKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteOrganizationApiKey Delete an organization-scoped API key
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /DeleteOrganizationApiKey (the `DeleteOrganizationApiKey` operationId).
+	DeleteOrganizationApiKey(ctx context.Context, body DeleteOrganizationApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteOrganizationGroupRoleBindingWithBody Remove the org-level role binding for a directory group
 	//
@@ -1748,6 +3121,20 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /ListAccounts (the `ListAccounts` operationId).
 	ListAccounts(ctx context.Context, body ListAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListOrganizationApiKeysWithBody List organization-scoped API keys
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /ListOrganizationApiKeys (the `ListOrganizationApiKeys` operationId).
+	ListOrganizationApiKeysWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListOrganizationApiKeys List organization-scoped API keys
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /ListOrganizationApiKeys (the `ListOrganizationApiKeys` operationId).
+	ListOrganizationApiKeys(ctx context.Context, body ListOrganizationApiKeysJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListOrganizationGroupMembersWithBody List members of a directory group in the current user's organization
 	//
@@ -1861,6 +3248,20 @@ type ClientInterface interface {
 	// Corresponds with POST /{accountId}/AddAccountSecondaryOwner (the `AddAccountSecondaryOwner` operationId).
 	AddAccountSecondaryOwner(ctx context.Context, accountId AccountId, body AddAccountSecondaryOwnerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ConfirmRegionGrantWithBody Confirm a region grant with the grant module's output, after Restate has signed in through it
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/ConfirmRegionGrant (the `ConfirmRegionGrant` operationId).
+	ConfirmRegionGrantWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ConfirmRegionGrant Confirm a region grant with the grant module's output, after Restate has signed in through it
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/ConfirmRegionGrant (the `ConfirmRegionGrant` operationId).
+	ConfirmRegionGrant(ctx context.Context, accountId AccountId, body ConfirmRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateAccountApiKeyWithBody Create a new account-scoped management API key
 	//
 	// Takes any type of body and a specified content type.
@@ -1903,6 +3304,38 @@ type ClientInterface interface {
 	// Corresponds with POST /{accountId}/CreateEnvironment (the `CreateEnvironment` operationId).
 	CreateEnvironment(ctx context.Context, accountId AccountId, body CreateEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateRegionWithBody Create a BYOC region in your own cloud account
+	//
+	// With a grantId, the region is built with that region grant. The request answers 400 when its cloud or cloud account differs from the grant's.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/CreateRegion (the `CreateRegion` operationId).
+	CreateRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRegion Create a BYOC region in your own cloud account
+	//
+	// With a grantId, the region is built with that region grant. The request answers 400 when its cloud or cloud account differs from the grant's.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/CreateRegion (the `CreateRegion` operationId).
+	CreateRegion(ctx context.Context, accountId AccountId, body CreateRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRegionGrantWithBody Create a region grant, which builds GRANT regions in one cloud account
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/CreateRegionGrant (the `CreateRegionGrant` operationId).
+	CreateRegionGrantWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateRegionGrant Create a region grant, which builds GRANT regions in one cloud account
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/CreateRegionGrant (the `CreateRegionGrant` operationId).
+	CreateRegionGrant(ctx context.Context, accountId AccountId, body CreateRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateStripePortalSessionWithBody Create Stripe portal session
 	//
 	// Takes any type of body and a specified content type.
@@ -1916,6 +3349,24 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /{accountId}/CreateStripePortalSession (the `CreateStripePortalSession` operationId).
 	CreateStripePortalSession(ctx context.Context, accountId AccountId, body CreateStripePortalSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWebhookWithBody Create an incoming webhook that sends requests to one handler of an environment
+	//
+	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/CreateWebhook (the `CreateWebhook` operationId).
+	CreateWebhookWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWebhook Create an incoming webhook that sends requests to one handler of an environment
+	//
+	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/CreateWebhook (the `CreateWebhook` operationId).
+	CreateWebhook(ctx context.Context, accountId AccountId, body CreateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteAccountApiKeyWithBody Delete an account-scoped management API key
 	//
@@ -1973,6 +3424,76 @@ type ClientInterface interface {
 	// Corresponds with POST /{accountId}/DeleteApiKey (the `DeleteApiKey` operationId).
 	DeleteApiKey(ctx context.Context, accountId AccountId, body DeleteApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteDefaultOrganizationMembersRoleBindingWithBody Remove the default account roles for organization members
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/DeleteDefaultOrganizationMembersRoleBinding (the `DeleteDefaultOrganizationMembersRoleBinding` operationId).
+	DeleteDefaultOrganizationMembersRoleBindingWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDefaultOrganizationMembersRoleBinding Remove the default account roles for organization members
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/DeleteDefaultOrganizationMembersRoleBinding (the `DeleteDefaultOrganizationMembersRoleBinding` operationId).
+	DeleteDefaultOrganizationMembersRoleBinding(ctx context.Context, accountId AccountId, body DeleteDefaultOrganizationMembersRoleBindingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRegionWithBody Delete a GRANT region. Call again until it answers; remove its own grant only after that, and a region grant once no region uses it
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/DeleteRegion (the `DeleteRegion` operationId).
+	DeleteRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRegion Delete a GRANT region. Call again until it answers; remove its own grant only after that, and a region grant once no region uses it
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/DeleteRegion (the `DeleteRegion` operationId).
+	DeleteRegion(ctx context.Context, accountId AccountId, body DeleteRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRegionGrantWithBody Delete a region grant that no region uses. Remove it from your cloud only after this answers
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/DeleteRegionGrant (the `DeleteRegionGrant` operationId).
+	DeleteRegionGrantWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteRegionGrant Delete a region grant that no region uses. Remove it from your cloud only after this answers
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/DeleteRegionGrant (the `DeleteRegionGrant` operationId).
+	DeleteRegionGrant(ctx context.Context, accountId AccountId, body DeleteRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteWebhookWithBody Delete an incoming webhook. Its URL stops accepting deliveries within 30 seconds
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/DeleteWebhook (the `DeleteWebhook` operationId).
+	DeleteWebhookWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteWebhook Delete an incoming webhook. Its URL stops accepting deliveries within 30 seconds
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/DeleteWebhook (the `DeleteWebhook` operationId).
+	DeleteWebhook(ctx context.Context, accountId AccountId, body DeleteWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeregisterByocRegionWithBody Remove a BYOC region from Restate. Refused while the account has environments in it
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/DeregisterByocRegion (the `DeregisterByocRegion` operationId).
+	DeregisterByocRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeregisterByocRegion Remove a BYOC region from Restate. Refused while the account has environments in it
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/DeregisterByocRegion (the `DeregisterByocRegion` operationId).
+	DeregisterByocRegion(ctx context.Context, accountId AccountId, body DeregisterByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DescribeAccountWithBody Retrieve an account's details
 	//
 	// Takes any type of body and a specified content type.
@@ -2001,6 +3522,20 @@ type ClientInterface interface {
 	// Corresponds with POST /{accountId}/DescribeApiKey (the `DescribeApiKey` operationId).
 	DescribeApiKey(ctx context.Context, accountId AccountId, body DescribeApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DescribeByocAuthorizationWithBody Check whether an account may register BYOC regions
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/DescribeByocAuthorization (the `DescribeByocAuthorization` operationId).
+	DescribeByocAuthorizationWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DescribeByocAuthorization Check whether an account may register BYOC regions
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/DescribeByocAuthorization (the `DescribeByocAuthorization` operationId).
+	DescribeByocAuthorization(ctx context.Context, accountId AccountId, body DescribeByocAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DescribeEnvironmentWithBody Retrieve an environment's details
 	//
 	// Takes any type of body and a specified content type.
@@ -2014,6 +3549,52 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /{accountId}/DescribeEnvironment (the `DescribeEnvironment` operationId).
 	DescribeEnvironment(ctx context.Context, accountId AccountId, body DescribeEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DescribeRegionWithBody Retrieve a BYOC region's status and what it waits for
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/DescribeRegion (the `DescribeRegion` operationId).
+	DescribeRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DescribeRegion Retrieve a BYOC region's status and what it waits for
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/DescribeRegion (the `DescribeRegion` operationId).
+	DescribeRegion(ctx context.Context, accountId AccountId, body DescribeRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DescribeRegionGrantWithBody Retrieve a region grant and the regions built with it
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/DescribeRegionGrant (the `DescribeRegionGrant` operationId).
+	DescribeRegionGrantWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DescribeRegionGrant Retrieve a region grant and the regions built with it
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/DescribeRegionGrant (the `DescribeRegionGrant` operationId).
+	DescribeRegionGrant(ctx context.Context, accountId AccountId, body DescribeRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DescribeWebhookWithBody Retrieve one incoming webhook, including the URL its sender posts to
+	//
+	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/DescribeWebhook (the `DescribeWebhook` operationId).
+	DescribeWebhookWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DescribeWebhook Retrieve one incoming webhook, including the URL its sender posts to
+	//
+	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/DescribeWebhook (the `DescribeWebhook` operationId).
+	DescribeWebhook(ctx context.Context, accountId AccountId, body DescribeWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DestroyEnvironmentWithBody Shut down an environment and destroy all its stored metadata and state
 	//
@@ -2127,6 +3708,20 @@ type ClientInterface interface {
 	// Corresponds with POST /{accountId}/ListEnvironments (the `ListEnvironments` operationId).
 	ListEnvironments(ctx context.Context, accountId AccountId, body ListEnvironmentsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListRegionGrantsWithBody List the live region grants of the account or of its organization
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/ListRegionGrants (the `ListRegionGrants` operationId).
+	ListRegionGrantsWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListRegionGrants List the live region grants of the account or of its organization
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/ListRegionGrants (the `ListRegionGrants` operationId).
+	ListRegionGrants(ctx context.Context, accountId AccountId, body ListRegionGrantsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListRegionsWithBody Retrieve an account's available regions
 	//
 	// Takes any type of body and a specified content type.
@@ -2140,6 +3735,20 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /{accountId}/ListRegions (the `ListRegions` operationId).
 	ListRegions(ctx context.Context, accountId AccountId, body ListRegionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListWebhooksWithBody List an environment's incoming webhooks, without any of their URLs
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/ListWebhooks (the `ListWebhooks` operationId).
+	ListWebhooksWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListWebhooks List an environment's incoming webhooks, without any of their URLs
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/ListWebhooks (the `ListWebhooks` operationId).
+	ListWebhooks(ctx context.Context, accountId AccountId, body ListWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PutAccountGroupRoleBindingWithBody Set the role binding for a directory group on an organization account
 	//
@@ -2169,6 +3778,34 @@ type ClientInterface interface {
 	// Corresponds with POST /{accountId}/PutAccountUserRoleBinding (the `PutAccountUserRoleBinding` operationId).
 	PutAccountUserRoleBinding(ctx context.Context, accountId AccountId, body PutAccountUserRoleBindingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PutDefaultOrganizationMembersRoleBindingWithBody Set the default account roles for organization members
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/PutDefaultOrganizationMembersRoleBinding (the `PutDefaultOrganizationMembersRoleBinding` operationId).
+	PutDefaultOrganizationMembersRoleBindingWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PutDefaultOrganizationMembersRoleBinding Set the default account roles for organization members
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/PutDefaultOrganizationMembersRoleBinding (the `PutDefaultOrganizationMembersRoleBinding` operationId).
+	PutDefaultOrganizationMembersRoleBinding(ctx context.Context, accountId AccountId, body PutDefaultOrganizationMembersRoleBindingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RegisterByocRegionWithBody Register a BYOC region built with restate-byoc
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/RegisterByocRegion (the `RegisterByocRegion` operationId).
+	RegisterByocRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RegisterByocRegion Register a BYOC region built with restate-byoc
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/RegisterByocRegion (the `RegisterByocRegion` operationId).
+	RegisterByocRegion(ctx context.Context, accountId AccountId, body RegisterByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// RemoveAccountSecondaryOwnerWithBody Remove a secondary owning user from an account
 	//
 	// Takes any type of body and a specified content type.
@@ -2182,6 +3819,34 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /{accountId}/RemoveAccountSecondaryOwner (the `RemoveAccountSecondaryOwner` operationId).
 	RemoveAccountSecondaryOwner(ctx context.Context, accountId AccountId, body RemoveAccountSecondaryOwnerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReserveByocRegionWithBody Reserve a BYOC region and its image pull key before its cluster exists
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/ReserveByocRegion (the `ReserveByocRegion` operationId).
+	ReserveByocRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ReserveByocRegion Reserve a BYOC region and its image pull key before its cluster exists
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/ReserveByocRegion (the `ReserveByocRegion` operationId).
+	ReserveByocRegion(ctx context.Context, accountId AccountId, body ReserveByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetRegionGrantWithBody Hand over a GRANT region's grant, which starts building the region
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/SetRegionGrant (the `SetRegionGrant` operationId).
+	SetRegionGrantWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetRegionGrant Hand over a GRANT region's grant, which starts building the region
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/SetRegionGrant (the `SetRegionGrant` operationId).
+	SetRegionGrant(ctx context.Context, accountId AccountId, body SetRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateEnvironmentWithBody Update environment details
 	//
@@ -2210,6 +3875,40 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /{accountId}/UpdateEnvironmentTier (the `UpdateEnvironmentTier` operationId).
 	UpdateEnvironmentTier(ctx context.Context, accountId AccountId, body UpdateEnvironmentTierJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+// CheckPermissionWithBody Check whether the current user is authorized for an action
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /CheckPermission (the `CheckPermission` operationId).
+func (c *Client) CheckPermissionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCheckPermissionRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CheckPermission Check whether the current user is authorized for an action
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /CheckPermission (the `CheckPermission` operationId).
+func (c *Client) CheckPermission(ctx context.Context, body CheckPermissionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCheckPermissionRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 // CreateAccountWithBody Create a new account
@@ -2246,6 +3945,40 @@ func (c *Client) CreateAccount(ctx context.Context, body CreateAccountJSONReques
 	return c.Client.Do(req)
 }
 
+// CreateOrganizationApiKeyWithBody Create an organization-scoped account-creation API key
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /CreateOrganizationApiKey (the `CreateOrganizationApiKey` operationId).
+func (c *Client) CreateOrganizationApiKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationApiKeyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateOrganizationApiKey Create an organization-scoped account-creation API key
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /CreateOrganizationApiKey (the `CreateOrganizationApiKey` operationId).
+func (c *Client) CreateOrganizationApiKey(ctx context.Context, body CreateOrganizationApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOrganizationApiKeyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // DeleteAccountWithBody Delete an account
 //
 // Takes any type of body and a specified content type.
@@ -2270,6 +4003,40 @@ func (c *Client) DeleteAccountWithBody(ctx context.Context, contentType string, 
 // Corresponds with POST /DeleteAccount (the `DeleteAccount` operationId).
 func (c *Client) DeleteAccount(ctx context.Context, body DeleteAccountJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteAccountRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteOrganizationApiKeyWithBody Delete an organization-scoped API key
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /DeleteOrganizationApiKey (the `DeleteOrganizationApiKey` operationId).
+func (c *Client) DeleteOrganizationApiKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationApiKeyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteOrganizationApiKey Delete an organization-scoped API key
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /DeleteOrganizationApiKey (the `DeleteOrganizationApiKey` operationId).
+func (c *Client) DeleteOrganizationApiKey(ctx context.Context, body DeleteOrganizationApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteOrganizationApiKeyRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2440,6 +4207,40 @@ func (c *Client) ListAccountsWithBody(ctx context.Context, contentType string, b
 // Corresponds with POST /ListAccounts (the `ListAccounts` operationId).
 func (c *Client) ListAccounts(ctx context.Context, body ListAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListAccountsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListOrganizationApiKeysWithBody List organization-scoped API keys
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /ListOrganizationApiKeys (the `ListOrganizationApiKeys` operationId).
+func (c *Client) ListOrganizationApiKeysWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationApiKeysRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListOrganizationApiKeys List organization-scoped API keys
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /ListOrganizationApiKeys (the `ListOrganizationApiKeys` operationId).
+func (c *Client) ListOrganizationApiKeys(ctx context.Context, body ListOrganizationApiKeysJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOrganizationApiKeysRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2722,6 +4523,40 @@ func (c *Client) AddAccountSecondaryOwner(ctx context.Context, accountId Account
 	return c.Client.Do(req)
 }
 
+// ConfirmRegionGrantWithBody Confirm a region grant with the grant module's output, after Restate has signed in through it
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/ConfirmRegionGrant (the `ConfirmRegionGrant` operationId).
+func (c *Client) ConfirmRegionGrantWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmRegionGrantRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ConfirmRegionGrant Confirm a region grant with the grant module's output, after Restate has signed in through it
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/ConfirmRegionGrant (the `ConfirmRegionGrant` operationId).
+func (c *Client) ConfirmRegionGrant(ctx context.Context, accountId AccountId, body ConfirmRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewConfirmRegionGrantRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // CreateAccountApiKeyWithBody Create a new account-scoped management API key
 //
 // Takes any type of body and a specified content type.
@@ -2824,6 +4659,78 @@ func (c *Client) CreateEnvironment(ctx context.Context, accountId AccountId, bod
 	return c.Client.Do(req)
 }
 
+// CreateRegionWithBody Create a BYOC region in your own cloud account
+//
+// With a grantId, the region is built with that region grant. The request answers 400 when its cloud or cloud account differs from the grant's.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/CreateRegion (the `CreateRegion` operationId).
+func (c *Client) CreateRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRegionRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateRegion Create a BYOC region in your own cloud account
+//
+// With a grantId, the region is built with that region grant. The request answers 400 when its cloud or cloud account differs from the grant's.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/CreateRegion (the `CreateRegion` operationId).
+func (c *Client) CreateRegion(ctx context.Context, accountId AccountId, body CreateRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRegionRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateRegionGrantWithBody Create a region grant, which builds GRANT regions in one cloud account
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/CreateRegionGrant (the `CreateRegionGrant` operationId).
+func (c *Client) CreateRegionGrantWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRegionGrantRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateRegionGrant Create a region grant, which builds GRANT regions in one cloud account
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/CreateRegionGrant (the `CreateRegionGrant` operationId).
+func (c *Client) CreateRegionGrant(ctx context.Context, accountId AccountId, body CreateRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateRegionGrantRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // CreateStripePortalSessionWithBody Create Stripe portal session
 //
 // Takes any type of body and a specified content type.
@@ -2848,6 +4755,44 @@ func (c *Client) CreateStripePortalSessionWithBody(ctx context.Context, accountI
 // Corresponds with POST /{accountId}/CreateStripePortalSession (the `CreateStripePortalSession` operationId).
 func (c *Client) CreateStripePortalSession(ctx context.Context, accountId AccountId, body CreateStripePortalSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateStripePortalSessionRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateWebhookWithBody Create an incoming webhook that sends requests to one handler of an environment
+//
+// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/CreateWebhook (the `CreateWebhook` operationId).
+func (c *Client) CreateWebhookWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWebhookRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateWebhook Create an incoming webhook that sends requests to one handler of an environment
+//
+// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/CreateWebhook (the `CreateWebhook` operationId).
+func (c *Client) CreateWebhook(ctx context.Context, accountId AccountId, body CreateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWebhookRequest(c.Server, accountId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2994,6 +4939,176 @@ func (c *Client) DeleteApiKey(ctx context.Context, accountId AccountId, body Del
 	return c.Client.Do(req)
 }
 
+// DeleteDefaultOrganizationMembersRoleBindingWithBody Remove the default account roles for organization members
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/DeleteDefaultOrganizationMembersRoleBinding (the `DeleteDefaultOrganizationMembersRoleBinding` operationId).
+func (c *Client) DeleteDefaultOrganizationMembersRoleBindingWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDefaultOrganizationMembersRoleBindingRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteDefaultOrganizationMembersRoleBinding Remove the default account roles for organization members
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/DeleteDefaultOrganizationMembersRoleBinding (the `DeleteDefaultOrganizationMembersRoleBinding` operationId).
+func (c *Client) DeleteDefaultOrganizationMembersRoleBinding(ctx context.Context, accountId AccountId, body DeleteDefaultOrganizationMembersRoleBindingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDefaultOrganizationMembersRoleBindingRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteRegionWithBody Delete a GRANT region. Call again until it answers; remove its own grant only after that, and a region grant once no region uses it
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/DeleteRegion (the `DeleteRegion` operationId).
+func (c *Client) DeleteRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRegionRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteRegion Delete a GRANT region. Call again until it answers; remove its own grant only after that, and a region grant once no region uses it
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/DeleteRegion (the `DeleteRegion` operationId).
+func (c *Client) DeleteRegion(ctx context.Context, accountId AccountId, body DeleteRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRegionRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteRegionGrantWithBody Delete a region grant that no region uses. Remove it from your cloud only after this answers
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/DeleteRegionGrant (the `DeleteRegionGrant` operationId).
+func (c *Client) DeleteRegionGrantWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRegionGrantRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteRegionGrant Delete a region grant that no region uses. Remove it from your cloud only after this answers
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/DeleteRegionGrant (the `DeleteRegionGrant` operationId).
+func (c *Client) DeleteRegionGrant(ctx context.Context, accountId AccountId, body DeleteRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteRegionGrantRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteWebhookWithBody Delete an incoming webhook. Its URL stops accepting deliveries within 30 seconds
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/DeleteWebhook (the `DeleteWebhook` operationId).
+func (c *Client) DeleteWebhookWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWebhookRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteWebhook Delete an incoming webhook. Its URL stops accepting deliveries within 30 seconds
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/DeleteWebhook (the `DeleteWebhook` operationId).
+func (c *Client) DeleteWebhook(ctx context.Context, accountId AccountId, body DeleteWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWebhookRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeregisterByocRegionWithBody Remove a BYOC region from Restate. Refused while the account has environments in it
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/DeregisterByocRegion (the `DeregisterByocRegion` operationId).
+func (c *Client) DeregisterByocRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeregisterByocRegionRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeregisterByocRegion Remove a BYOC region from Restate. Refused while the account has environments in it
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/DeregisterByocRegion (the `DeregisterByocRegion` operationId).
+func (c *Client) DeregisterByocRegion(ctx context.Context, accountId AccountId, body DeregisterByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeregisterByocRegionRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // DescribeAccountWithBody Retrieve an account's details
 //
 // Takes any type of body and a specified content type.
@@ -3062,6 +5177,40 @@ func (c *Client) DescribeApiKey(ctx context.Context, accountId AccountId, body D
 	return c.Client.Do(req)
 }
 
+// DescribeByocAuthorizationWithBody Check whether an account may register BYOC regions
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/DescribeByocAuthorization (the `DescribeByocAuthorization` operationId).
+func (c *Client) DescribeByocAuthorizationWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDescribeByocAuthorizationRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DescribeByocAuthorization Check whether an account may register BYOC regions
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/DescribeByocAuthorization (the `DescribeByocAuthorization` operationId).
+func (c *Client) DescribeByocAuthorization(ctx context.Context, accountId AccountId, body DescribeByocAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDescribeByocAuthorizationRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // DescribeEnvironmentWithBody Retrieve an environment's details
 //
 // Takes any type of body and a specified content type.
@@ -3086,6 +5235,112 @@ func (c *Client) DescribeEnvironmentWithBody(ctx context.Context, accountId Acco
 // Corresponds with POST /{accountId}/DescribeEnvironment (the `DescribeEnvironment` operationId).
 func (c *Client) DescribeEnvironment(ctx context.Context, accountId AccountId, body DescribeEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDescribeEnvironmentRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DescribeRegionWithBody Retrieve a BYOC region's status and what it waits for
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/DescribeRegion (the `DescribeRegion` operationId).
+func (c *Client) DescribeRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDescribeRegionRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DescribeRegion Retrieve a BYOC region's status and what it waits for
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/DescribeRegion (the `DescribeRegion` operationId).
+func (c *Client) DescribeRegion(ctx context.Context, accountId AccountId, body DescribeRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDescribeRegionRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DescribeRegionGrantWithBody Retrieve a region grant and the regions built with it
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/DescribeRegionGrant (the `DescribeRegionGrant` operationId).
+func (c *Client) DescribeRegionGrantWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDescribeRegionGrantRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DescribeRegionGrant Retrieve a region grant and the regions built with it
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/DescribeRegionGrant (the `DescribeRegionGrant` operationId).
+func (c *Client) DescribeRegionGrant(ctx context.Context, accountId AccountId, body DescribeRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDescribeRegionGrantRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DescribeWebhookWithBody Retrieve one incoming webhook, including the URL its sender posts to
+//
+// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/DescribeWebhook (the `DescribeWebhook` operationId).
+func (c *Client) DescribeWebhookWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDescribeWebhookRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DescribeWebhook Retrieve one incoming webhook, including the URL its sender posts to
+//
+// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/DescribeWebhook (the `DescribeWebhook` operationId).
+func (c *Client) DescribeWebhook(ctx context.Context, accountId AccountId, body DescribeWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDescribeWebhookRequest(c.Server, accountId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3368,6 +5623,40 @@ func (c *Client) ListEnvironments(ctx context.Context, accountId AccountId, body
 	return c.Client.Do(req)
 }
 
+// ListRegionGrantsWithBody List the live region grants of the account or of its organization
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/ListRegionGrants (the `ListRegionGrants` operationId).
+func (c *Client) ListRegionGrantsWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListRegionGrantsRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListRegionGrants List the live region grants of the account or of its organization
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/ListRegionGrants (the `ListRegionGrants` operationId).
+func (c *Client) ListRegionGrants(ctx context.Context, accountId AccountId, body ListRegionGrantsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListRegionGrantsRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // ListRegionsWithBody Retrieve an account's available regions
 //
 // Takes any type of body and a specified content type.
@@ -3392,6 +5681,40 @@ func (c *Client) ListRegionsWithBody(ctx context.Context, accountId AccountId, c
 // Corresponds with POST /{accountId}/ListRegions (the `ListRegions` operationId).
 func (c *Client) ListRegions(ctx context.Context, accountId AccountId, body ListRegionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListRegionsRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListWebhooksWithBody List an environment's incoming webhooks, without any of their URLs
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/ListWebhooks (the `ListWebhooks` operationId).
+func (c *Client) ListWebhooksWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWebhooksRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ListWebhooks List an environment's incoming webhooks, without any of their URLs
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/ListWebhooks (the `ListWebhooks` operationId).
+func (c *Client) ListWebhooks(ctx context.Context, accountId AccountId, body ListWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWebhooksRequest(c.Server, accountId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3470,6 +5793,74 @@ func (c *Client) PutAccountUserRoleBinding(ctx context.Context, accountId Accoun
 	return c.Client.Do(req)
 }
 
+// PutDefaultOrganizationMembersRoleBindingWithBody Set the default account roles for organization members
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/PutDefaultOrganizationMembersRoleBinding (the `PutDefaultOrganizationMembersRoleBinding` operationId).
+func (c *Client) PutDefaultOrganizationMembersRoleBindingWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutDefaultOrganizationMembersRoleBindingRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// PutDefaultOrganizationMembersRoleBinding Set the default account roles for organization members
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/PutDefaultOrganizationMembersRoleBinding (the `PutDefaultOrganizationMembersRoleBinding` operationId).
+func (c *Client) PutDefaultOrganizationMembersRoleBinding(ctx context.Context, accountId AccountId, body PutDefaultOrganizationMembersRoleBindingJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutDefaultOrganizationMembersRoleBindingRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RegisterByocRegionWithBody Register a BYOC region built with restate-byoc
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/RegisterByocRegion (the `RegisterByocRegion` operationId).
+func (c *Client) RegisterByocRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegisterByocRegionRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// RegisterByocRegion Register a BYOC region built with restate-byoc
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/RegisterByocRegion (the `RegisterByocRegion` operationId).
+func (c *Client) RegisterByocRegion(ctx context.Context, accountId AccountId, body RegisterByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegisterByocRegionRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // RemoveAccountSecondaryOwnerWithBody Remove a secondary owning user from an account
 //
 // Takes any type of body and a specified content type.
@@ -3494,6 +5885,74 @@ func (c *Client) RemoveAccountSecondaryOwnerWithBody(ctx context.Context, accoun
 // Corresponds with POST /{accountId}/RemoveAccountSecondaryOwner (the `RemoveAccountSecondaryOwner` operationId).
 func (c *Client) RemoveAccountSecondaryOwner(ctx context.Context, accountId AccountId, body RemoveAccountSecondaryOwnerJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRemoveAccountSecondaryOwnerRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ReserveByocRegionWithBody Reserve a BYOC region and its image pull key before its cluster exists
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/ReserveByocRegion (the `ReserveByocRegion` operationId).
+func (c *Client) ReserveByocRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReserveByocRegionRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// ReserveByocRegion Reserve a BYOC region and its image pull key before its cluster exists
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/ReserveByocRegion (the `ReserveByocRegion` operationId).
+func (c *Client) ReserveByocRegion(ctx context.Context, accountId AccountId, body ReserveByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewReserveByocRegionRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SetRegionGrantWithBody Hand over a GRANT region's grant, which starts building the region
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/SetRegionGrant (the `SetRegionGrant` operationId).
+func (c *Client) SetRegionGrantWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetRegionGrantRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SetRegionGrant Hand over a GRANT region's grant, which starts building the region
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/SetRegionGrant (the `SetRegionGrant` operationId).
+func (c *Client) SetRegionGrant(ctx context.Context, accountId AccountId, body SetRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetRegionGrantRequest(c.Server, accountId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3572,6 +6031,46 @@ func (c *Client) UpdateEnvironmentTier(ctx context.Context, accountId AccountId,
 	return c.Client.Do(req)
 }
 
+// NewCheckPermissionRequest calls the generic CheckPermission builder with application/json body
+func NewCheckPermissionRequest(server string, body CheckPermissionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCheckPermissionRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCheckPermissionRequestWithBody constructs an http.Request for the CheckPermission method, with any body, and a specified content type
+func NewCheckPermissionRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/CheckPermission")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateAccountRequest calls the generic CreateAccount builder with application/json body
 func NewCreateAccountRequest(server string, body CreateAccountJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -3612,6 +6111,46 @@ func NewCreateAccountRequestWithBody(server string, contentType string, body io.
 	return req, nil
 }
 
+// NewCreateOrganizationApiKeyRequest calls the generic CreateOrganizationApiKey builder with application/json body
+func NewCreateOrganizationApiKeyRequest(server string, body CreateOrganizationApiKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateOrganizationApiKeyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateOrganizationApiKeyRequestWithBody constructs an http.Request for the CreateOrganizationApiKey method, with any body, and a specified content type
+func NewCreateOrganizationApiKeyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/CreateOrganizationApiKey")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteAccountRequest calls the generic DeleteAccount builder with application/json body
 func NewDeleteAccountRequest(server string, body DeleteAccountJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -3633,6 +6172,46 @@ func NewDeleteAccountRequestWithBody(server string, contentType string, body io.
 	}
 
 	operationPath := fmt.Sprintf("/DeleteAccount")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteOrganizationApiKeyRequest calls the generic DeleteOrganizationApiKey builder with application/json body
+func NewDeleteOrganizationApiKeyRequest(server string, body DeleteOrganizationApiKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteOrganizationApiKeyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewDeleteOrganizationApiKeyRequestWithBody constructs an http.Request for the DeleteOrganizationApiKey method, with any body, and a specified content type
+func NewDeleteOrganizationApiKeyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/DeleteOrganizationApiKey")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -3833,6 +6412,46 @@ func NewListAccountsRequestWithBody(server string, contentType string, body io.R
 	}
 
 	operationPath := fmt.Sprintf("/ListAccounts")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListOrganizationApiKeysRequest calls the generic ListOrganizationApiKeys builder with application/json body
+func NewListOrganizationApiKeysRequest(server string, body ListOrganizationApiKeysJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewListOrganizationApiKeysRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewListOrganizationApiKeysRequestWithBody constructs an http.Request for the ListOrganizationApiKeys method, with any body, and a specified content type
+func NewListOrganizationApiKeysRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/ListOrganizationApiKeys")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -4179,6 +6798,53 @@ func NewAddAccountSecondaryOwnerRequestWithBody(server string, accountId Account
 	return req, nil
 }
 
+// NewConfirmRegionGrantRequest calls the generic ConfirmRegionGrant builder with application/json body
+func NewConfirmRegionGrantRequest(server string, accountId AccountId, body ConfirmRegionGrantJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewConfirmRegionGrantRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewConfirmRegionGrantRequestWithBody constructs an http.Request for the ConfirmRegionGrant method, with any body, and a specified content type
+func NewConfirmRegionGrantRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/ConfirmRegionGrant", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateAccountApiKeyRequest calls the generic CreateAccountApiKey builder with application/json body
 func NewCreateAccountApiKeyRequest(server string, accountId AccountId, body CreateAccountApiKeyJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -4320,6 +6986,100 @@ func NewCreateEnvironmentRequestWithBody(server string, accountId AccountId, con
 	return req, nil
 }
 
+// NewCreateRegionRequest calls the generic CreateRegion builder with application/json body
+func NewCreateRegionRequest(server string, accountId AccountId, body CreateRegionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateRegionRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewCreateRegionRequestWithBody constructs an http.Request for the CreateRegion method, with any body, and a specified content type
+func NewCreateRegionRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/CreateRegion", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateRegionGrantRequest calls the generic CreateRegionGrant builder with application/json body
+func NewCreateRegionGrantRequest(server string, accountId AccountId, body CreateRegionGrantJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateRegionGrantRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewCreateRegionGrantRequestWithBody constructs an http.Request for the CreateRegionGrant method, with any body, and a specified content type
+func NewCreateRegionGrantRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/CreateRegionGrant", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateStripePortalSessionRequest calls the generic CreateStripePortalSession builder with application/json body
 func NewCreateStripePortalSessionRequest(server string, accountId AccountId, body CreateStripePortalSessionJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -4348,6 +7108,53 @@ func NewCreateStripePortalSessionRequestWithBody(server string, accountId Accoun
 	}
 
 	operationPath := fmt.Sprintf("/%s/CreateStripePortalSession", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateWebhookRequest calls the generic CreateWebhook builder with application/json body
+func NewCreateWebhookRequest(server string, accountId AccountId, body CreateWebhookJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWebhookRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewCreateWebhookRequestWithBody constructs an http.Request for the CreateWebhook method, with any body, and a specified content type
+func NewCreateWebhookRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/CreateWebhook", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -4555,6 +7362,241 @@ func NewDeleteApiKeyRequestWithBody(server string, accountId AccountId, contentT
 	return req, nil
 }
 
+// NewDeleteDefaultOrganizationMembersRoleBindingRequest calls the generic DeleteDefaultOrganizationMembersRoleBinding builder with application/json body
+func NewDeleteDefaultOrganizationMembersRoleBindingRequest(server string, accountId AccountId, body DeleteDefaultOrganizationMembersRoleBindingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteDefaultOrganizationMembersRoleBindingRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewDeleteDefaultOrganizationMembersRoleBindingRequestWithBody constructs an http.Request for the DeleteDefaultOrganizationMembersRoleBinding method, with any body, and a specified content type
+func NewDeleteDefaultOrganizationMembersRoleBindingRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/DeleteDefaultOrganizationMembersRoleBinding", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteRegionRequest calls the generic DeleteRegion builder with application/json body
+func NewDeleteRegionRequest(server string, accountId AccountId, body DeleteRegionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteRegionRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewDeleteRegionRequestWithBody constructs an http.Request for the DeleteRegion method, with any body, and a specified content type
+func NewDeleteRegionRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/DeleteRegion", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteRegionGrantRequest calls the generic DeleteRegionGrant builder with application/json body
+func NewDeleteRegionGrantRequest(server string, accountId AccountId, body DeleteRegionGrantJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteRegionGrantRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewDeleteRegionGrantRequestWithBody constructs an http.Request for the DeleteRegionGrant method, with any body, and a specified content type
+func NewDeleteRegionGrantRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/DeleteRegionGrant", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteWebhookRequest calls the generic DeleteWebhook builder with application/json body
+func NewDeleteWebhookRequest(server string, accountId AccountId, body DeleteWebhookJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteWebhookRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewDeleteWebhookRequestWithBody constructs an http.Request for the DeleteWebhook method, with any body, and a specified content type
+func NewDeleteWebhookRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/DeleteWebhook", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeregisterByocRegionRequest calls the generic DeregisterByocRegion builder with application/json body
+func NewDeregisterByocRegionRequest(server string, accountId AccountId, body DeregisterByocRegionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeregisterByocRegionRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewDeregisterByocRegionRequestWithBody constructs an http.Request for the DeregisterByocRegion method, with any body, and a specified content type
+func NewDeregisterByocRegionRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/DeregisterByocRegion", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDescribeAccountRequest calls the generic DescribeAccount builder with application/json body
 func NewDescribeAccountRequest(server string, accountId AccountId, body DescribeAccountJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -4649,6 +7691,53 @@ func NewDescribeApiKeyRequestWithBody(server string, accountId AccountId, conten
 	return req, nil
 }
 
+// NewDescribeByocAuthorizationRequest calls the generic DescribeByocAuthorization builder with application/json body
+func NewDescribeByocAuthorizationRequest(server string, accountId AccountId, body DescribeByocAuthorizationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDescribeByocAuthorizationRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewDescribeByocAuthorizationRequestWithBody constructs an http.Request for the DescribeByocAuthorization method, with any body, and a specified content type
+func NewDescribeByocAuthorizationRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/DescribeByocAuthorization", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDescribeEnvironmentRequest calls the generic DescribeEnvironment builder with application/json body
 func NewDescribeEnvironmentRequest(server string, accountId AccountId, body DescribeEnvironmentJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -4677,6 +7766,147 @@ func NewDescribeEnvironmentRequestWithBody(server string, accountId AccountId, c
 	}
 
 	operationPath := fmt.Sprintf("/%s/DescribeEnvironment", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDescribeRegionRequest calls the generic DescribeRegion builder with application/json body
+func NewDescribeRegionRequest(server string, accountId AccountId, body DescribeRegionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDescribeRegionRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewDescribeRegionRequestWithBody constructs an http.Request for the DescribeRegion method, with any body, and a specified content type
+func NewDescribeRegionRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/DescribeRegion", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDescribeRegionGrantRequest calls the generic DescribeRegionGrant builder with application/json body
+func NewDescribeRegionGrantRequest(server string, accountId AccountId, body DescribeRegionGrantJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDescribeRegionGrantRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewDescribeRegionGrantRequestWithBody constructs an http.Request for the DescribeRegionGrant method, with any body, and a specified content type
+func NewDescribeRegionGrantRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/DescribeRegionGrant", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDescribeWebhookRequest calls the generic DescribeWebhook builder with application/json body
+func NewDescribeWebhookRequest(server string, accountId AccountId, body DescribeWebhookJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDescribeWebhookRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewDescribeWebhookRequestWithBody constructs an http.Request for the DescribeWebhook method, with any body, and a specified content type
+func NewDescribeWebhookRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/DescribeWebhook", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -5072,6 +8302,53 @@ func NewListEnvironmentsRequestWithBody(server string, accountId AccountId, cont
 	return req, nil
 }
 
+// NewListRegionGrantsRequest calls the generic ListRegionGrants builder with application/json body
+func NewListRegionGrantsRequest(server string, accountId AccountId, body ListRegionGrantsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewListRegionGrantsRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewListRegionGrantsRequestWithBody constructs an http.Request for the ListRegionGrants method, with any body, and a specified content type
+func NewListRegionGrantsRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/ListRegionGrants", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListRegionsRequest calls the generic ListRegions builder with application/json body
 func NewListRegionsRequest(server string, accountId AccountId, body ListRegionsJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -5100,6 +8377,53 @@ func NewListRegionsRequestWithBody(server string, accountId AccountId, contentTy
 	}
 
 	operationPath := fmt.Sprintf("/%s/ListRegions", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListWebhooksRequest calls the generic ListWebhooks builder with application/json body
+func NewListWebhooksRequest(server string, accountId AccountId, body ListWebhooksJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewListWebhooksRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewListWebhooksRequestWithBody constructs an http.Request for the ListWebhooks method, with any body, and a specified content type
+func NewListWebhooksRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/ListWebhooks", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -5213,6 +8537,100 @@ func NewPutAccountUserRoleBindingRequestWithBody(server string, accountId Accoun
 	return req, nil
 }
 
+// NewPutDefaultOrganizationMembersRoleBindingRequest calls the generic PutDefaultOrganizationMembersRoleBinding builder with application/json body
+func NewPutDefaultOrganizationMembersRoleBindingRequest(server string, accountId AccountId, body PutDefaultOrganizationMembersRoleBindingJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutDefaultOrganizationMembersRoleBindingRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewPutDefaultOrganizationMembersRoleBindingRequestWithBody constructs an http.Request for the PutDefaultOrganizationMembersRoleBinding method, with any body, and a specified content type
+func NewPutDefaultOrganizationMembersRoleBindingRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/PutDefaultOrganizationMembersRoleBinding", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRegisterByocRegionRequest calls the generic RegisterByocRegion builder with application/json body
+func NewRegisterByocRegionRequest(server string, accountId AccountId, body RegisterByocRegionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRegisterByocRegionRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewRegisterByocRegionRequestWithBody constructs an http.Request for the RegisterByocRegion method, with any body, and a specified content type
+func NewRegisterByocRegionRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/RegisterByocRegion", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewRemoveAccountSecondaryOwnerRequest calls the generic RemoveAccountSecondaryOwner builder with application/json body
 func NewRemoveAccountSecondaryOwnerRequest(server string, accountId AccountId, body RemoveAccountSecondaryOwnerJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -5241,6 +8659,100 @@ func NewRemoveAccountSecondaryOwnerRequestWithBody(server string, accountId Acco
 	}
 
 	operationPath := fmt.Sprintf("/%s/RemoveAccountSecondaryOwner", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewReserveByocRegionRequest calls the generic ReserveByocRegion builder with application/json body
+func NewReserveByocRegionRequest(server string, accountId AccountId, body ReserveByocRegionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewReserveByocRegionRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewReserveByocRegionRequestWithBody constructs an http.Request for the ReserveByocRegion method, with any body, and a specified content type
+func NewReserveByocRegionRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/ReserveByocRegion", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSetRegionGrantRequest calls the generic SetRegionGrant builder with application/json body
+func NewSetRegionGrantRequest(server string, accountId AccountId, body SetRegionGrantJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSetRegionGrantRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewSetRegionGrantRequestWithBody constructs an http.Request for the SetRegionGrant method, with any body, and a specified content type
+func NewSetRegionGrantRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/SetRegionGrant", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -5398,6 +8910,20 @@ func WithBaseURL(baseURL string) ClientOption {
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
 
+	// CheckPermissionWithBodyWithResponse Check whether the current user is authorized for an action
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /CheckPermission (the `CheckPermission` operationId).
+	CheckPermissionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CheckPermissionHTTPResult, error)
+
+	// CheckPermissionWithResponse Check whether the current user is authorized for an action
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /CheckPermission (the `CheckPermission` operationId).
+	CheckPermissionWithResponse(ctx context.Context, body CheckPermissionJSONRequestBody, reqEditors ...RequestEditorFn) (*CheckPermissionHTTPResult, error)
+
 	// CreateAccountWithBodyWithResponse Create a new account
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -5412,6 +8938,20 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /CreateAccount (the `CreateAccount` operationId).
 	CreateAccountWithResponse(ctx context.Context, body CreateAccountJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAccountHTTPResult, error)
 
+	// CreateOrganizationApiKeyWithBodyWithResponse Create an organization-scoped account-creation API key
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /CreateOrganizationApiKey (the `CreateOrganizationApiKey` operationId).
+	CreateOrganizationApiKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationApiKeyHTTPResult, error)
+
+	// CreateOrganizationApiKeyWithResponse Create an organization-scoped account-creation API key
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /CreateOrganizationApiKey (the `CreateOrganizationApiKey` operationId).
+	CreateOrganizationApiKeyWithResponse(ctx context.Context, body CreateOrganizationApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationApiKeyHTTPResult, error)
+
 	// DeleteAccountWithBodyWithResponse Delete an account
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -5425,6 +8965,20 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /DeleteAccount (the `DeleteAccount` operationId).
 	DeleteAccountWithResponse(ctx context.Context, body DeleteAccountJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteAccountHTTPResult, error)
+
+	// DeleteOrganizationApiKeyWithBodyWithResponse Delete an organization-scoped API key
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /DeleteOrganizationApiKey (the `DeleteOrganizationApiKey` operationId).
+	DeleteOrganizationApiKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteOrganizationApiKeyHTTPResult, error)
+
+	// DeleteOrganizationApiKeyWithResponse Delete an organization-scoped API key
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /DeleteOrganizationApiKey (the `DeleteOrganizationApiKey` operationId).
+	DeleteOrganizationApiKeyWithResponse(ctx context.Context, body DeleteOrganizationApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteOrganizationApiKeyHTTPResult, error)
 
 	// DeleteOrganizationGroupRoleBindingWithBodyWithResponse Remove the org-level role binding for a directory group
 	//
@@ -5495,6 +9049,20 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /ListAccounts (the `ListAccounts` operationId).
 	ListAccountsWithResponse(ctx context.Context, body ListAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*ListAccountsHTTPResult, error)
+
+	// ListOrganizationApiKeysWithBodyWithResponse List organization-scoped API keys
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /ListOrganizationApiKeys (the `ListOrganizationApiKeys` operationId).
+	ListOrganizationApiKeysWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ListOrganizationApiKeysHTTPResult, error)
+
+	// ListOrganizationApiKeysWithResponse List organization-scoped API keys
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /ListOrganizationApiKeys (the `ListOrganizationApiKeys` operationId).
+	ListOrganizationApiKeysWithResponse(ctx context.Context, body ListOrganizationApiKeysJSONRequestBody, reqEditors ...RequestEditorFn) (*ListOrganizationApiKeysHTTPResult, error)
 
 	// ListOrganizationGroupMembersWithBodyWithResponse List members of a directory group in the current user's organization
 	//
@@ -5608,6 +9176,20 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /{accountId}/AddAccountSecondaryOwner (the `AddAccountSecondaryOwner` operationId).
 	AddAccountSecondaryOwnerWithResponse(ctx context.Context, accountId AccountId, body AddAccountSecondaryOwnerJSONRequestBody, reqEditors ...RequestEditorFn) (*AddAccountSecondaryOwnerHTTPResult, error)
 
+	// ConfirmRegionGrantWithBodyWithResponse Confirm a region grant with the grant module's output, after Restate has signed in through it
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/ConfirmRegionGrant (the `ConfirmRegionGrant` operationId).
+	ConfirmRegionGrantWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmRegionGrantHTTPResult, error)
+
+	// ConfirmRegionGrantWithResponse Confirm a region grant with the grant module's output, after Restate has signed in through it
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/ConfirmRegionGrant (the `ConfirmRegionGrant` operationId).
+	ConfirmRegionGrantWithResponse(ctx context.Context, accountId AccountId, body ConfirmRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmRegionGrantHTTPResult, error)
+
 	// CreateAccountApiKeyWithBodyWithResponse Create a new account-scoped management API key
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -5650,6 +9232,38 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /{accountId}/CreateEnvironment (the `CreateEnvironment` operationId).
 	CreateEnvironmentWithResponse(ctx context.Context, accountId AccountId, body CreateEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEnvironmentHTTPResult, error)
 
+	// CreateRegionWithBodyWithResponse Create a BYOC region in your own cloud account
+	//
+	// With a grantId, the region is built with that region grant. The request answers 400 when its cloud or cloud account differs from the grant's.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/CreateRegion (the `CreateRegion` operationId).
+	CreateRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRegionHTTPResult, error)
+
+	// CreateRegionWithResponse Create a BYOC region in your own cloud account
+	//
+	// With a grantId, the region is built with that region grant. The request answers 400 when its cloud or cloud account differs from the grant's.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/CreateRegion (the `CreateRegion` operationId).
+	CreateRegionWithResponse(ctx context.Context, accountId AccountId, body CreateRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRegionHTTPResult, error)
+
+	// CreateRegionGrantWithBodyWithResponse Create a region grant, which builds GRANT regions in one cloud account
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/CreateRegionGrant (the `CreateRegionGrant` operationId).
+	CreateRegionGrantWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRegionGrantHTTPResult, error)
+
+	// CreateRegionGrantWithResponse Create a region grant, which builds GRANT regions in one cloud account
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/CreateRegionGrant (the `CreateRegionGrant` operationId).
+	CreateRegionGrantWithResponse(ctx context.Context, accountId AccountId, body CreateRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRegionGrantHTTPResult, error)
+
 	// CreateStripePortalSessionWithBodyWithResponse Create Stripe portal session
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -5663,6 +9277,24 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /{accountId}/CreateStripePortalSession (the `CreateStripePortalSession` operationId).
 	CreateStripePortalSessionWithResponse(ctx context.Context, accountId AccountId, body CreateStripePortalSessionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateStripePortalSessionHTTPResult, error)
+
+	// CreateWebhookWithBodyWithResponse Create an incoming webhook that sends requests to one handler of an environment
+	//
+	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/CreateWebhook (the `CreateWebhook` operationId).
+	CreateWebhookWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWebhookHTTPResult, error)
+
+	// CreateWebhookWithResponse Create an incoming webhook that sends requests to one handler of an environment
+	//
+	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/CreateWebhook (the `CreateWebhook` operationId).
+	CreateWebhookWithResponse(ctx context.Context, accountId AccountId, body CreateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWebhookHTTPResult, error)
 
 	// DeleteAccountApiKeyWithBodyWithResponse Delete an account-scoped management API key
 	//
@@ -5720,6 +9352,76 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /{accountId}/DeleteApiKey (the `DeleteApiKey` operationId).
 	DeleteApiKeyWithResponse(ctx context.Context, accountId AccountId, body DeleteApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteApiKeyHTTPResult, error)
 
+	// DeleteDefaultOrganizationMembersRoleBindingWithBodyWithResponse Remove the default account roles for organization members
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeleteDefaultOrganizationMembersRoleBinding (the `DeleteDefaultOrganizationMembersRoleBinding` operationId).
+	DeleteDefaultOrganizationMembersRoleBindingWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteDefaultOrganizationMembersRoleBindingHTTPResult, error)
+
+	// DeleteDefaultOrganizationMembersRoleBindingWithResponse Remove the default account roles for organization members
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeleteDefaultOrganizationMembersRoleBinding (the `DeleteDefaultOrganizationMembersRoleBinding` operationId).
+	DeleteDefaultOrganizationMembersRoleBindingWithResponse(ctx context.Context, accountId AccountId, body DeleteDefaultOrganizationMembersRoleBindingJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteDefaultOrganizationMembersRoleBindingHTTPResult, error)
+
+	// DeleteRegionWithBodyWithResponse Delete a GRANT region. Call again until it answers; remove its own grant only after that, and a region grant once no region uses it
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeleteRegion (the `DeleteRegion` operationId).
+	DeleteRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteRegionHTTPResult, error)
+
+	// DeleteRegionWithResponse Delete a GRANT region. Call again until it answers; remove its own grant only after that, and a region grant once no region uses it
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeleteRegion (the `DeleteRegion` operationId).
+	DeleteRegionWithResponse(ctx context.Context, accountId AccountId, body DeleteRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteRegionHTTPResult, error)
+
+	// DeleteRegionGrantWithBodyWithResponse Delete a region grant that no region uses. Remove it from your cloud only after this answers
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeleteRegionGrant (the `DeleteRegionGrant` operationId).
+	DeleteRegionGrantWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteRegionGrantHTTPResult, error)
+
+	// DeleteRegionGrantWithResponse Delete a region grant that no region uses. Remove it from your cloud only after this answers
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeleteRegionGrant (the `DeleteRegionGrant` operationId).
+	DeleteRegionGrantWithResponse(ctx context.Context, accountId AccountId, body DeleteRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteRegionGrantHTTPResult, error)
+
+	// DeleteWebhookWithBodyWithResponse Delete an incoming webhook. Its URL stops accepting deliveries within 30 seconds
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeleteWebhook (the `DeleteWebhook` operationId).
+	DeleteWebhookWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteWebhookHTTPResult, error)
+
+	// DeleteWebhookWithResponse Delete an incoming webhook. Its URL stops accepting deliveries within 30 seconds
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeleteWebhook (the `DeleteWebhook` operationId).
+	DeleteWebhookWithResponse(ctx context.Context, accountId AccountId, body DeleteWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteWebhookHTTPResult, error)
+
+	// DeregisterByocRegionWithBodyWithResponse Remove a BYOC region from Restate. Refused while the account has environments in it
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeregisterByocRegion (the `DeregisterByocRegion` operationId).
+	DeregisterByocRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeregisterByocRegionHTTPResult, error)
+
+	// DeregisterByocRegionWithResponse Remove a BYOC region from Restate. Refused while the account has environments in it
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeregisterByocRegion (the `DeregisterByocRegion` operationId).
+	DeregisterByocRegionWithResponse(ctx context.Context, accountId AccountId, body DeregisterByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*DeregisterByocRegionHTTPResult, error)
+
 	// DescribeAccountWithBodyWithResponse Retrieve an account's details
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -5748,6 +9450,20 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /{accountId}/DescribeApiKey (the `DescribeApiKey` operationId).
 	DescribeApiKeyWithResponse(ctx context.Context, accountId AccountId, body DescribeApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*DescribeApiKeyHTTPResult, error)
 
+	// DescribeByocAuthorizationWithBodyWithResponse Check whether an account may register BYOC regions
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DescribeByocAuthorization (the `DescribeByocAuthorization` operationId).
+	DescribeByocAuthorizationWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DescribeByocAuthorizationHTTPResult, error)
+
+	// DescribeByocAuthorizationWithResponse Check whether an account may register BYOC regions
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DescribeByocAuthorization (the `DescribeByocAuthorization` operationId).
+	DescribeByocAuthorizationWithResponse(ctx context.Context, accountId AccountId, body DescribeByocAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*DescribeByocAuthorizationHTTPResult, error)
+
 	// DescribeEnvironmentWithBodyWithResponse Retrieve an environment's details
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -5761,6 +9477,52 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /{accountId}/DescribeEnvironment (the `DescribeEnvironment` operationId).
 	DescribeEnvironmentWithResponse(ctx context.Context, accountId AccountId, body DescribeEnvironmentJSONRequestBody, reqEditors ...RequestEditorFn) (*DescribeEnvironmentHTTPResult, error)
+
+	// DescribeRegionWithBodyWithResponse Retrieve a BYOC region's status and what it waits for
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DescribeRegion (the `DescribeRegion` operationId).
+	DescribeRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DescribeRegionHTTPResult, error)
+
+	// DescribeRegionWithResponse Retrieve a BYOC region's status and what it waits for
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DescribeRegion (the `DescribeRegion` operationId).
+	DescribeRegionWithResponse(ctx context.Context, accountId AccountId, body DescribeRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*DescribeRegionHTTPResult, error)
+
+	// DescribeRegionGrantWithBodyWithResponse Retrieve a region grant and the regions built with it
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DescribeRegionGrant (the `DescribeRegionGrant` operationId).
+	DescribeRegionGrantWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DescribeRegionGrantHTTPResult, error)
+
+	// DescribeRegionGrantWithResponse Retrieve a region grant and the regions built with it
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DescribeRegionGrant (the `DescribeRegionGrant` operationId).
+	DescribeRegionGrantWithResponse(ctx context.Context, accountId AccountId, body DescribeRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*DescribeRegionGrantHTTPResult, error)
+
+	// DescribeWebhookWithBodyWithResponse Retrieve one incoming webhook, including the URL its sender posts to
+	//
+	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DescribeWebhook (the `DescribeWebhook` operationId).
+	DescribeWebhookWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DescribeWebhookHTTPResult, error)
+
+	// DescribeWebhookWithResponse Retrieve one incoming webhook, including the URL its sender posts to
+	//
+	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DescribeWebhook (the `DescribeWebhook` operationId).
+	DescribeWebhookWithResponse(ctx context.Context, accountId AccountId, body DescribeWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*DescribeWebhookHTTPResult, error)
 
 	// DestroyEnvironmentWithBodyWithResponse Shut down an environment and destroy all its stored metadata and state
 	//
@@ -5874,6 +9636,20 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /{accountId}/ListEnvironments (the `ListEnvironments` operationId).
 	ListEnvironmentsWithResponse(ctx context.Context, accountId AccountId, body ListEnvironmentsJSONRequestBody, reqEditors ...RequestEditorFn) (*ListEnvironmentsHTTPResult, error)
 
+	// ListRegionGrantsWithBodyWithResponse List the live region grants of the account or of its organization
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/ListRegionGrants (the `ListRegionGrants` operationId).
+	ListRegionGrantsWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ListRegionGrantsHTTPResult, error)
+
+	// ListRegionGrantsWithResponse List the live region grants of the account or of its organization
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/ListRegionGrants (the `ListRegionGrants` operationId).
+	ListRegionGrantsWithResponse(ctx context.Context, accountId AccountId, body ListRegionGrantsJSONRequestBody, reqEditors ...RequestEditorFn) (*ListRegionGrantsHTTPResult, error)
+
 	// ListRegionsWithBodyWithResponse Retrieve an account's available regions
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -5887,6 +9663,20 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /{accountId}/ListRegions (the `ListRegions` operationId).
 	ListRegionsWithResponse(ctx context.Context, accountId AccountId, body ListRegionsJSONRequestBody, reqEditors ...RequestEditorFn) (*ListRegionsHTTPResult, error)
+
+	// ListWebhooksWithBodyWithResponse List an environment's incoming webhooks, without any of their URLs
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/ListWebhooks (the `ListWebhooks` operationId).
+	ListWebhooksWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ListWebhooksHTTPResult, error)
+
+	// ListWebhooksWithResponse List an environment's incoming webhooks, without any of their URLs
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/ListWebhooks (the `ListWebhooks` operationId).
+	ListWebhooksWithResponse(ctx context.Context, accountId AccountId, body ListWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*ListWebhooksHTTPResult, error)
 
 	// PutAccountGroupRoleBindingWithBodyWithResponse Set the role binding for a directory group on an organization account
 	//
@@ -5916,6 +9706,34 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /{accountId}/PutAccountUserRoleBinding (the `PutAccountUserRoleBinding` operationId).
 	PutAccountUserRoleBindingWithResponse(ctx context.Context, accountId AccountId, body PutAccountUserRoleBindingJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAccountUserRoleBindingHTTPResult, error)
 
+	// PutDefaultOrganizationMembersRoleBindingWithBodyWithResponse Set the default account roles for organization members
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/PutDefaultOrganizationMembersRoleBinding (the `PutDefaultOrganizationMembersRoleBinding` operationId).
+	PutDefaultOrganizationMembersRoleBindingWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutDefaultOrganizationMembersRoleBindingHTTPResult, error)
+
+	// PutDefaultOrganizationMembersRoleBindingWithResponse Set the default account roles for organization members
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/PutDefaultOrganizationMembersRoleBinding (the `PutDefaultOrganizationMembersRoleBinding` operationId).
+	PutDefaultOrganizationMembersRoleBindingWithResponse(ctx context.Context, accountId AccountId, body PutDefaultOrganizationMembersRoleBindingJSONRequestBody, reqEditors ...RequestEditorFn) (*PutDefaultOrganizationMembersRoleBindingHTTPResult, error)
+
+	// RegisterByocRegionWithBodyWithResponse Register a BYOC region built with restate-byoc
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/RegisterByocRegion (the `RegisterByocRegion` operationId).
+	RegisterByocRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterByocRegionHTTPResult, error)
+
+	// RegisterByocRegionWithResponse Register a BYOC region built with restate-byoc
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/RegisterByocRegion (the `RegisterByocRegion` operationId).
+	RegisterByocRegionWithResponse(ctx context.Context, accountId AccountId, body RegisterByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*RegisterByocRegionHTTPResult, error)
+
 	// RemoveAccountSecondaryOwnerWithBodyWithResponse Remove a secondary owning user from an account
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -5929,6 +9747,34 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /{accountId}/RemoveAccountSecondaryOwner (the `RemoveAccountSecondaryOwner` operationId).
 	RemoveAccountSecondaryOwnerWithResponse(ctx context.Context, accountId AccountId, body RemoveAccountSecondaryOwnerJSONRequestBody, reqEditors ...RequestEditorFn) (*RemoveAccountSecondaryOwnerHTTPResult, error)
+
+	// ReserveByocRegionWithBodyWithResponse Reserve a BYOC region and its image pull key before its cluster exists
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/ReserveByocRegion (the `ReserveByocRegion` operationId).
+	ReserveByocRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReserveByocRegionHTTPResult, error)
+
+	// ReserveByocRegionWithResponse Reserve a BYOC region and its image pull key before its cluster exists
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/ReserveByocRegion (the `ReserveByocRegion` operationId).
+	ReserveByocRegionWithResponse(ctx context.Context, accountId AccountId, body ReserveByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*ReserveByocRegionHTTPResult, error)
+
+	// SetRegionGrantWithBodyWithResponse Hand over a GRANT region's grant, which starts building the region
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/SetRegionGrant (the `SetRegionGrant` operationId).
+	SetRegionGrantWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetRegionGrantHTTPResult, error)
+
+	// SetRegionGrantWithResponse Hand over a GRANT region's grant, which starts building the region
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/SetRegionGrant (the `SetRegionGrant` operationId).
+	SetRegionGrantWithResponse(ctx context.Context, accountId AccountId, body SetRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*SetRegionGrantHTTPResult, error)
 
 	// UpdateEnvironmentWithBodyWithResponse Update environment details
 	//
@@ -5957,6 +9803,68 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /{accountId}/UpdateEnvironmentTier (the `UpdateEnvironmentTier` operationId).
 	UpdateEnvironmentTierWithResponse(ctx context.Context, accountId AccountId, body UpdateEnvironmentTierJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEnvironmentTierHTTPResult, error)
+}
+
+type CheckPermissionHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *CheckPermissionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CheckPermissionHTTPResult) GetJSON200() *CheckPermissionResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CheckPermissionHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CheckPermissionHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CheckPermissionHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CheckPermissionHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CheckPermissionHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CheckPermissionHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CheckPermissionHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
 }
 
 type CreateAccountHTTPResult struct {
@@ -6021,6 +9929,68 @@ func (r CreateAccountHTTPResult) ContentType() string {
 	return ""
 }
 
+type CreateOrganizationApiKeyHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *CreateOrganizationApiKeyResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateOrganizationApiKeyHTTPResult) GetJSON200() *CreateOrganizationApiKeyResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateOrganizationApiKeyHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateOrganizationApiKeyHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateOrganizationApiKeyHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateOrganizationApiKeyHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateOrganizationApiKeyHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateOrganizationApiKeyHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateOrganizationApiKeyHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type DeleteAccountHTTPResult struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -6077,6 +10047,68 @@ func (r DeleteAccountHTTPResult) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r DeleteAccountHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteOrganizationApiKeyHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DeleteOrganizationApiKeyResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteOrganizationApiKeyHTTPResult) GetJSON200() *DeleteOrganizationApiKeyResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteOrganizationApiKeyHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteOrganizationApiKeyHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeleteOrganizationApiKeyHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteOrganizationApiKeyHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteOrganizationApiKeyHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteOrganizationApiKeyHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteOrganizationApiKeyHTTPResult) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -6387,6 +10419,68 @@ func (r ListAccountsHTTPResult) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ListAccountsHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListOrganizationApiKeysHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListOrganizationApiKeysResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListOrganizationApiKeysHTTPResult) GetJSON200() *ListOrganizationApiKeysResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ListOrganizationApiKeysHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListOrganizationApiKeysHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ListOrganizationApiKeysHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ListOrganizationApiKeysHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListOrganizationApiKeysHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListOrganizationApiKeysHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListOrganizationApiKeysHTTPResult) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -6889,6 +10983,103 @@ func (r AddAccountSecondaryOwnerHTTPResult) ContentType() string {
 	return ""
 }
 
+type ConfirmRegionGrantHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ConfirmRegionGrantResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON410 the response for an HTTP 410 `application/json` response
+	JSON410 *GoneError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ServiceUnavailableError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ConfirmRegionGrantHTTPResult) GetJSON200() *ConfirmRegionGrantResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ConfirmRegionGrantHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ConfirmRegionGrantHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r ConfirmRegionGrantHTTPResult) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ConfirmRegionGrantHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r ConfirmRegionGrantHTTPResult) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON410 returns the response for an HTTP 410 `application/json` response
+func (r ConfirmRegionGrantHTTPResult) GetJSON410() *GoneError {
+	return r.JSON410
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ConfirmRegionGrantHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r ConfirmRegionGrantHTTPResult) GetJSON503() *ServiceUnavailableError {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r ConfirmRegionGrantHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ConfirmRegionGrantHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ConfirmRegionGrantHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ConfirmRegionGrantHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type CreateAccountApiKeyHTTPResult struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -7075,6 +11266,193 @@ func (r CreateEnvironmentHTTPResult) ContentType() string {
 	return ""
 }
 
+type CreateRegionHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *CreateRegionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON412 the response for an HTTP 412 `application/json` response
+	JSON412 *PreconditionFailedError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+	// JSON501 the response for an HTTP 501 `application/json` response
+	JSON501 *NotImplementedError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateRegionHTTPResult) GetJSON200() *CreateRegionResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateRegionHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateRegionHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateRegionHTTPResult) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreateRegionHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateRegionHTTPResult) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON412 returns the response for an HTTP 412 `application/json` response
+func (r CreateRegionHTTPResult) GetJSON412() *PreconditionFailedError {
+	return r.JSON412
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateRegionHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetJSON501 returns the response for an HTTP 501 `application/json` response
+func (r CreateRegionHTTPResult) GetJSON501() *NotImplementedError {
+	return r.JSON501
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateRegionHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateRegionHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateRegionHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateRegionHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateRegionGrantHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *CreateRegionGrantResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON410 the response for an HTTP 410 `application/json` response
+	JSON410 *GoneError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+	// JSON501 the response for an HTTP 501 `application/json` response
+	JSON501 *NotImplementedError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateRegionGrantHTTPResult) GetJSON200() *CreateRegionGrantResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateRegionGrantHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateRegionGrantHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateRegionGrantHTTPResult) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r CreateRegionGrantHTTPResult) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON410 returns the response for an HTTP 410 `application/json` response
+func (r CreateRegionGrantHTTPResult) GetJSON410() *GoneError {
+	return r.JSON410
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateRegionGrantHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetJSON501 returns the response for an HTTP 501 `application/json` response
+func (r CreateRegionGrantHTTPResult) GetJSON501() *NotImplementedError {
+	return r.JSON501
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateRegionGrantHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateRegionGrantHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateRegionGrantHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateRegionGrantHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type CreateStripePortalSessionHTTPResult struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -7131,6 +11509,75 @@ func (r CreateStripePortalSessionHTTPResult) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r CreateStripePortalSessionHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type CreateWebhookHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *CreateWebhookResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateWebhookHTTPResult) GetJSON200() *CreateWebhookResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateWebhookHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateWebhookHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r CreateWebhookHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateWebhookHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateWebhookHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateWebhookHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateWebhookHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateWebhookHTTPResult) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -7385,6 +11832,372 @@ func (r DeleteApiKeyHTTPResult) ContentType() string {
 	return ""
 }
 
+type DeleteDefaultOrganizationMembersRoleBindingHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DeleteDefaultOrganizationMembersRoleBindingResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteDefaultOrganizationMembersRoleBindingHTTPResult) GetJSON200() *DeleteDefaultOrganizationMembersRoleBindingResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteDefaultOrganizationMembersRoleBindingHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteDefaultOrganizationMembersRoleBindingHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r DeleteDefaultOrganizationMembersRoleBindingHTTPResult) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeleteDefaultOrganizationMembersRoleBindingHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteDefaultOrganizationMembersRoleBindingHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDefaultOrganizationMembersRoleBindingHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDefaultOrganizationMembersRoleBindingHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteDefaultOrganizationMembersRoleBindingHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteRegionHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DeleteRegionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteRegionHTTPResult) GetJSON200() *DeleteRegionResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteRegionHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteRegionHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteRegionHTTPResult) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteRegionHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r DeleteRegionHTTPResult) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeleteRegionHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteRegionHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRegionHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRegionHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteRegionHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteRegionGrantHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DeleteRegionGrantResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteRegionGrantHTTPResult) GetJSON200() *DeleteRegionGrantResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteRegionGrantHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteRegionGrantHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DeleteRegionGrantHTTPResult) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteRegionGrantHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r DeleteRegionGrantHTTPResult) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeleteRegionGrantHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteRegionGrantHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRegionGrantHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRegionGrantHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteRegionGrantHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteWebhookHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DeleteWebhookResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteWebhookHTTPResult) GetJSON200() *DeleteWebhookResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteWebhookHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteWebhookHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteWebhookHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeleteWebhookHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteWebhookHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteWebhookHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteWebhookHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteWebhookHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeregisterByocRegionHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DeregisterByocRegionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeregisterByocRegionHTTPResult) GetJSON200() *DeregisterByocRegionResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeregisterByocRegionHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeregisterByocRegionHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeregisterByocRegionHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeregisterByocRegionHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeregisterByocRegionHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeregisterByocRegionHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeregisterByocRegionHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type DescribeAccountHTTPResult struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -7509,6 +12322,68 @@ func (r DescribeApiKeyHTTPResult) ContentType() string {
 	return ""
 }
 
+type DescribeByocAuthorizationHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DescribeByocAuthorizationResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DescribeByocAuthorizationHTTPResult) GetJSON200() *DescribeByocAuthorizationResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DescribeByocAuthorizationHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DescribeByocAuthorizationHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DescribeByocAuthorizationHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DescribeByocAuthorizationHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DescribeByocAuthorizationHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DescribeByocAuthorizationHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DescribeByocAuthorizationHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type DescribeEnvironmentHTTPResult struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -7565,6 +12440,220 @@ func (r DescribeEnvironmentHTTPResult) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r DescribeEnvironmentHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DescribeRegionHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DescribeRegionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DescribeRegionHTTPResult) GetJSON200() *DescribeRegionResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DescribeRegionHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DescribeRegionHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r DescribeRegionHTTPResult) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DescribeRegionHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DescribeRegionHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DescribeRegionHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DescribeRegionHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DescribeRegionHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DescribeRegionHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DescribeRegionGrantHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DescribeRegionGrantResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DescribeRegionGrantHTTPResult) GetJSON200() *DescribeRegionGrantResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DescribeRegionGrantHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DescribeRegionGrantHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DescribeRegionGrantHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DescribeRegionGrantHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DescribeRegionGrantHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DescribeRegionGrantHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DescribeRegionGrantHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DescribeRegionGrantHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DescribeWebhookHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DescribeWebhookResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DescribeWebhookHTTPResult) GetJSON200() *DescribeWebhookResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DescribeWebhookHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DescribeWebhookHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DescribeWebhookHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DescribeWebhookHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DescribeWebhookHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DescribeWebhookHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DescribeWebhookHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DescribeWebhookHTTPResult) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -8067,6 +13156,68 @@ func (r ListEnvironmentsHTTPResult) ContentType() string {
 	return ""
 }
 
+type ListRegionGrantsHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListRegionGrantsResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListRegionGrantsHTTPResult) GetJSON200() *ListRegionGrantsResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ListRegionGrantsHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListRegionGrantsHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ListRegionGrantsHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ListRegionGrantsHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListRegionGrantsHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListRegionGrantsHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListRegionGrantsHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type ListRegionsHTTPResult struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -8123,6 +13274,75 @@ func (r ListRegionsHTTPResult) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r ListRegionsHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ListWebhooksHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ListWebhooksResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ListWebhooksHTTPResult) GetJSON200() *ListWebhooksResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ListWebhooksHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ListWebhooksHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r ListWebhooksHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ListWebhooksHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ListWebhooksHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ListWebhooksHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListWebhooksHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ListWebhooksHTTPResult) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -8253,6 +13473,137 @@ func (r PutAccountUserRoleBindingHTTPResult) ContentType() string {
 	return ""
 }
 
+type PutDefaultOrganizationMembersRoleBindingHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *PutDefaultOrganizationMembersRoleBindingResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r PutDefaultOrganizationMembersRoleBindingHTTPResult) GetJSON200() *PutDefaultOrganizationMembersRoleBindingResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r PutDefaultOrganizationMembersRoleBindingHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r PutDefaultOrganizationMembersRoleBindingHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r PutDefaultOrganizationMembersRoleBindingHTTPResult) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r PutDefaultOrganizationMembersRoleBindingHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r PutDefaultOrganizationMembersRoleBindingHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r PutDefaultOrganizationMembersRoleBindingHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutDefaultOrganizationMembersRoleBindingHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r PutDefaultOrganizationMembersRoleBindingHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type RegisterByocRegionHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *RegisterByocRegionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r RegisterByocRegionHTTPResult) GetJSON200() *RegisterByocRegionResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r RegisterByocRegionHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r RegisterByocRegionHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r RegisterByocRegionHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r RegisterByocRegionHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r RegisterByocRegionHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RegisterByocRegionHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r RegisterByocRegionHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type RemoveAccountSecondaryOwnerHTTPResult struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -8309,6 +13660,158 @@ func (r RemoveAccountSecondaryOwnerHTTPResult) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r RemoveAccountSecondaryOwnerHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type ReserveByocRegionHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ReserveByocRegionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r ReserveByocRegionHTTPResult) GetJSON200() *ReserveByocRegionResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r ReserveByocRegionHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r ReserveByocRegionHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r ReserveByocRegionHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r ReserveByocRegionHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r ReserveByocRegionHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ReserveByocRegionHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r ReserveByocRegionHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type SetRegionGrantHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *SetRegionGrantResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON410 the response for an HTTP 410 `application/json` response
+	JSON410 *GoneError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SetRegionGrantHTTPResult) GetJSON200() *SetRegionGrantResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SetRegionGrantHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SetRegionGrantHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SetRegionGrantHTTPResult) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SetRegionGrantHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r SetRegionGrantHTTPResult) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON410 returns the response for an HTTP 410 `application/json` response
+func (r SetRegionGrantHTTPResult) GetJSON410() *GoneError {
+	return r.JSON410
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r SetRegionGrantHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r SetRegionGrantHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SetRegionGrantHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SetRegionGrantHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SetRegionGrantHTTPResult) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -8439,6 +13942,32 @@ func (r UpdateEnvironmentTierHTTPResult) ContentType() string {
 	return ""
 }
 
+// CheckPermissionWithBodyWithResponse Check whether the current user is authorized for an action
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /CheckPermission (the `CheckPermission` operationId).
+func (c *ClientWithResponses) CheckPermissionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CheckPermissionHTTPResult, error) {
+	rsp, err := c.CheckPermissionWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCheckPermissionHTTPResult(rsp)
+}
+
+// CheckPermissionWithResponse Check whether the current user is authorized for an action
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /CheckPermission (the `CheckPermission` operationId).
+func (c *ClientWithResponses) CheckPermissionWithResponse(ctx context.Context, body CheckPermissionJSONRequestBody, reqEditors ...RequestEditorFn) (*CheckPermissionHTTPResult, error) {
+	rsp, err := c.CheckPermission(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCheckPermissionHTTPResult(rsp)
+}
+
 // CreateAccountWithBodyWithResponse Create a new account
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -8465,6 +13994,32 @@ func (c *ClientWithResponses) CreateAccountWithResponse(ctx context.Context, bod
 	return ParseCreateAccountHTTPResult(rsp)
 }
 
+// CreateOrganizationApiKeyWithBodyWithResponse Create an organization-scoped account-creation API key
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /CreateOrganizationApiKey (the `CreateOrganizationApiKey` operationId).
+func (c *ClientWithResponses) CreateOrganizationApiKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOrganizationApiKeyHTTPResult, error) {
+	rsp, err := c.CreateOrganizationApiKeyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationApiKeyHTTPResult(rsp)
+}
+
+// CreateOrganizationApiKeyWithResponse Create an organization-scoped account-creation API key
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /CreateOrganizationApiKey (the `CreateOrganizationApiKey` operationId).
+func (c *ClientWithResponses) CreateOrganizationApiKeyWithResponse(ctx context.Context, body CreateOrganizationApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOrganizationApiKeyHTTPResult, error) {
+	rsp, err := c.CreateOrganizationApiKey(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateOrganizationApiKeyHTTPResult(rsp)
+}
+
 // DeleteAccountWithBodyWithResponse Delete an account
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -8489,6 +14044,32 @@ func (c *ClientWithResponses) DeleteAccountWithResponse(ctx context.Context, bod
 		return nil, err
 	}
 	return ParseDeleteAccountHTTPResult(rsp)
+}
+
+// DeleteOrganizationApiKeyWithBodyWithResponse Delete an organization-scoped API key
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /DeleteOrganizationApiKey (the `DeleteOrganizationApiKey` operationId).
+func (c *ClientWithResponses) DeleteOrganizationApiKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteOrganizationApiKeyHTTPResult, error) {
+	rsp, err := c.DeleteOrganizationApiKeyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationApiKeyHTTPResult(rsp)
+}
+
+// DeleteOrganizationApiKeyWithResponse Delete an organization-scoped API key
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /DeleteOrganizationApiKey (the `DeleteOrganizationApiKey` operationId).
+func (c *ClientWithResponses) DeleteOrganizationApiKeyWithResponse(ctx context.Context, body DeleteOrganizationApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteOrganizationApiKeyHTTPResult, error) {
+	rsp, err := c.DeleteOrganizationApiKey(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteOrganizationApiKeyHTTPResult(rsp)
 }
 
 // DeleteOrganizationGroupRoleBindingWithBodyWithResponse Remove the org-level role binding for a directory group
@@ -8619,6 +14200,32 @@ func (c *ClientWithResponses) ListAccountsWithResponse(ctx context.Context, body
 		return nil, err
 	}
 	return ParseListAccountsHTTPResult(rsp)
+}
+
+// ListOrganizationApiKeysWithBodyWithResponse List organization-scoped API keys
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /ListOrganizationApiKeys (the `ListOrganizationApiKeys` operationId).
+func (c *ClientWithResponses) ListOrganizationApiKeysWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ListOrganizationApiKeysHTTPResult, error) {
+	rsp, err := c.ListOrganizationApiKeysWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOrganizationApiKeysHTTPResult(rsp)
+}
+
+// ListOrganizationApiKeysWithResponse List organization-scoped API keys
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /ListOrganizationApiKeys (the `ListOrganizationApiKeys` operationId).
+func (c *ClientWithResponses) ListOrganizationApiKeysWithResponse(ctx context.Context, body ListOrganizationApiKeysJSONRequestBody, reqEditors ...RequestEditorFn) (*ListOrganizationApiKeysHTTPResult, error) {
+	rsp, err := c.ListOrganizationApiKeys(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListOrganizationApiKeysHTTPResult(rsp)
 }
 
 // ListOrganizationGroupMembersWithBodyWithResponse List members of a directory group in the current user's organization
@@ -8829,6 +14436,32 @@ func (c *ClientWithResponses) AddAccountSecondaryOwnerWithResponse(ctx context.C
 	return ParseAddAccountSecondaryOwnerHTTPResult(rsp)
 }
 
+// ConfirmRegionGrantWithBodyWithResponse Confirm a region grant with the grant module's output, after Restate has signed in through it
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/ConfirmRegionGrant (the `ConfirmRegionGrant` operationId).
+func (c *ClientWithResponses) ConfirmRegionGrantWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ConfirmRegionGrantHTTPResult, error) {
+	rsp, err := c.ConfirmRegionGrantWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmRegionGrantHTTPResult(rsp)
+}
+
+// ConfirmRegionGrantWithResponse Confirm a region grant with the grant module's output, after Restate has signed in through it
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/ConfirmRegionGrant (the `ConfirmRegionGrant` operationId).
+func (c *ClientWithResponses) ConfirmRegionGrantWithResponse(ctx context.Context, accountId AccountId, body ConfirmRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*ConfirmRegionGrantHTTPResult, error) {
+	rsp, err := c.ConfirmRegionGrant(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseConfirmRegionGrantHTTPResult(rsp)
+}
+
 // CreateAccountApiKeyWithBodyWithResponse Create a new account-scoped management API key
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -8907,6 +14540,62 @@ func (c *ClientWithResponses) CreateEnvironmentWithResponse(ctx context.Context,
 	return ParseCreateEnvironmentHTTPResult(rsp)
 }
 
+// CreateRegionWithBodyWithResponse Create a BYOC region in your own cloud account
+//
+// With a grantId, the region is built with that region grant. The request answers 400 when its cloud or cloud account differs from the grant's.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/CreateRegion (the `CreateRegion` operationId).
+func (c *ClientWithResponses) CreateRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRegionHTTPResult, error) {
+	rsp, err := c.CreateRegionWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRegionHTTPResult(rsp)
+}
+
+// CreateRegionWithResponse Create a BYOC region in your own cloud account
+//
+// With a grantId, the region is built with that region grant. The request answers 400 when its cloud or cloud account differs from the grant's.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/CreateRegion (the `CreateRegion` operationId).
+func (c *ClientWithResponses) CreateRegionWithResponse(ctx context.Context, accountId AccountId, body CreateRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRegionHTTPResult, error) {
+	rsp, err := c.CreateRegion(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRegionHTTPResult(rsp)
+}
+
+// CreateRegionGrantWithBodyWithResponse Create a region grant, which builds GRANT regions in one cloud account
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/CreateRegionGrant (the `CreateRegionGrant` operationId).
+func (c *ClientWithResponses) CreateRegionGrantWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateRegionGrantHTTPResult, error) {
+	rsp, err := c.CreateRegionGrantWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRegionGrantHTTPResult(rsp)
+}
+
+// CreateRegionGrantWithResponse Create a region grant, which builds GRANT regions in one cloud account
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/CreateRegionGrant (the `CreateRegionGrant` operationId).
+func (c *ClientWithResponses) CreateRegionGrantWithResponse(ctx context.Context, accountId AccountId, body CreateRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateRegionGrantHTTPResult, error) {
+	rsp, err := c.CreateRegionGrant(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateRegionGrantHTTPResult(rsp)
+}
+
 // CreateStripePortalSessionWithBodyWithResponse Create Stripe portal session
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -8931,6 +14620,36 @@ func (c *ClientWithResponses) CreateStripePortalSessionWithResponse(ctx context.
 		return nil, err
 	}
 	return ParseCreateStripePortalSessionHTTPResult(rsp)
+}
+
+// CreateWebhookWithBodyWithResponse Create an incoming webhook that sends requests to one handler of an environment
+//
+// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/CreateWebhook (the `CreateWebhook` operationId).
+func (c *ClientWithResponses) CreateWebhookWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWebhookHTTPResult, error) {
+	rsp, err := c.CreateWebhookWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWebhookHTTPResult(rsp)
+}
+
+// CreateWebhookWithResponse Create an incoming webhook that sends requests to one handler of an environment
+//
+// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/CreateWebhook (the `CreateWebhook` operationId).
+func (c *ClientWithResponses) CreateWebhookWithResponse(ctx context.Context, accountId AccountId, body CreateWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWebhookHTTPResult, error) {
+	rsp, err := c.CreateWebhook(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWebhookHTTPResult(rsp)
 }
 
 // DeleteAccountApiKeyWithBodyWithResponse Delete an account-scoped management API key
@@ -9037,6 +14756,136 @@ func (c *ClientWithResponses) DeleteApiKeyWithResponse(ctx context.Context, acco
 	return ParseDeleteApiKeyHTTPResult(rsp)
 }
 
+// DeleteDefaultOrganizationMembersRoleBindingWithBodyWithResponse Remove the default account roles for organization members
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeleteDefaultOrganizationMembersRoleBinding (the `DeleteDefaultOrganizationMembersRoleBinding` operationId).
+func (c *ClientWithResponses) DeleteDefaultOrganizationMembersRoleBindingWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteDefaultOrganizationMembersRoleBindingHTTPResult, error) {
+	rsp, err := c.DeleteDefaultOrganizationMembersRoleBindingWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDefaultOrganizationMembersRoleBindingHTTPResult(rsp)
+}
+
+// DeleteDefaultOrganizationMembersRoleBindingWithResponse Remove the default account roles for organization members
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeleteDefaultOrganizationMembersRoleBinding (the `DeleteDefaultOrganizationMembersRoleBinding` operationId).
+func (c *ClientWithResponses) DeleteDefaultOrganizationMembersRoleBindingWithResponse(ctx context.Context, accountId AccountId, body DeleteDefaultOrganizationMembersRoleBindingJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteDefaultOrganizationMembersRoleBindingHTTPResult, error) {
+	rsp, err := c.DeleteDefaultOrganizationMembersRoleBinding(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDefaultOrganizationMembersRoleBindingHTTPResult(rsp)
+}
+
+// DeleteRegionWithBodyWithResponse Delete a GRANT region. Call again until it answers; remove its own grant only after that, and a region grant once no region uses it
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeleteRegion (the `DeleteRegion` operationId).
+func (c *ClientWithResponses) DeleteRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteRegionHTTPResult, error) {
+	rsp, err := c.DeleteRegionWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRegionHTTPResult(rsp)
+}
+
+// DeleteRegionWithResponse Delete a GRANT region. Call again until it answers; remove its own grant only after that, and a region grant once no region uses it
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeleteRegion (the `DeleteRegion` operationId).
+func (c *ClientWithResponses) DeleteRegionWithResponse(ctx context.Context, accountId AccountId, body DeleteRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteRegionHTTPResult, error) {
+	rsp, err := c.DeleteRegion(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRegionHTTPResult(rsp)
+}
+
+// DeleteRegionGrantWithBodyWithResponse Delete a region grant that no region uses. Remove it from your cloud only after this answers
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeleteRegionGrant (the `DeleteRegionGrant` operationId).
+func (c *ClientWithResponses) DeleteRegionGrantWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteRegionGrantHTTPResult, error) {
+	rsp, err := c.DeleteRegionGrantWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRegionGrantHTTPResult(rsp)
+}
+
+// DeleteRegionGrantWithResponse Delete a region grant that no region uses. Remove it from your cloud only after this answers
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeleteRegionGrant (the `DeleteRegionGrant` operationId).
+func (c *ClientWithResponses) DeleteRegionGrantWithResponse(ctx context.Context, accountId AccountId, body DeleteRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteRegionGrantHTTPResult, error) {
+	rsp, err := c.DeleteRegionGrant(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRegionGrantHTTPResult(rsp)
+}
+
+// DeleteWebhookWithBodyWithResponse Delete an incoming webhook. Its URL stops accepting deliveries within 30 seconds
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeleteWebhook (the `DeleteWebhook` operationId).
+func (c *ClientWithResponses) DeleteWebhookWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteWebhookHTTPResult, error) {
+	rsp, err := c.DeleteWebhookWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteWebhookHTTPResult(rsp)
+}
+
+// DeleteWebhookWithResponse Delete an incoming webhook. Its URL stops accepting deliveries within 30 seconds
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeleteWebhook (the `DeleteWebhook` operationId).
+func (c *ClientWithResponses) DeleteWebhookWithResponse(ctx context.Context, accountId AccountId, body DeleteWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteWebhookHTTPResult, error) {
+	rsp, err := c.DeleteWebhook(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteWebhookHTTPResult(rsp)
+}
+
+// DeregisterByocRegionWithBodyWithResponse Remove a BYOC region from Restate. Refused while the account has environments in it
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeregisterByocRegion (the `DeregisterByocRegion` operationId).
+func (c *ClientWithResponses) DeregisterByocRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeregisterByocRegionHTTPResult, error) {
+	rsp, err := c.DeregisterByocRegionWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeregisterByocRegionHTTPResult(rsp)
+}
+
+// DeregisterByocRegionWithResponse Remove a BYOC region from Restate. Refused while the account has environments in it
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeregisterByocRegion (the `DeregisterByocRegion` operationId).
+func (c *ClientWithResponses) DeregisterByocRegionWithResponse(ctx context.Context, accountId AccountId, body DeregisterByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*DeregisterByocRegionHTTPResult, error) {
+	rsp, err := c.DeregisterByocRegion(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeregisterByocRegionHTTPResult(rsp)
+}
+
 // DescribeAccountWithBodyWithResponse Retrieve an account's details
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -9089,6 +14938,32 @@ func (c *ClientWithResponses) DescribeApiKeyWithResponse(ctx context.Context, ac
 	return ParseDescribeApiKeyHTTPResult(rsp)
 }
 
+// DescribeByocAuthorizationWithBodyWithResponse Check whether an account may register BYOC regions
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DescribeByocAuthorization (the `DescribeByocAuthorization` operationId).
+func (c *ClientWithResponses) DescribeByocAuthorizationWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DescribeByocAuthorizationHTTPResult, error) {
+	rsp, err := c.DescribeByocAuthorizationWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDescribeByocAuthorizationHTTPResult(rsp)
+}
+
+// DescribeByocAuthorizationWithResponse Check whether an account may register BYOC regions
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DescribeByocAuthorization (the `DescribeByocAuthorization` operationId).
+func (c *ClientWithResponses) DescribeByocAuthorizationWithResponse(ctx context.Context, accountId AccountId, body DescribeByocAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*DescribeByocAuthorizationHTTPResult, error) {
+	rsp, err := c.DescribeByocAuthorization(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDescribeByocAuthorizationHTTPResult(rsp)
+}
+
 // DescribeEnvironmentWithBodyWithResponse Retrieve an environment's details
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -9113,6 +14988,88 @@ func (c *ClientWithResponses) DescribeEnvironmentWithResponse(ctx context.Contex
 		return nil, err
 	}
 	return ParseDescribeEnvironmentHTTPResult(rsp)
+}
+
+// DescribeRegionWithBodyWithResponse Retrieve a BYOC region's status and what it waits for
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DescribeRegion (the `DescribeRegion` operationId).
+func (c *ClientWithResponses) DescribeRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DescribeRegionHTTPResult, error) {
+	rsp, err := c.DescribeRegionWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDescribeRegionHTTPResult(rsp)
+}
+
+// DescribeRegionWithResponse Retrieve a BYOC region's status and what it waits for
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DescribeRegion (the `DescribeRegion` operationId).
+func (c *ClientWithResponses) DescribeRegionWithResponse(ctx context.Context, accountId AccountId, body DescribeRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*DescribeRegionHTTPResult, error) {
+	rsp, err := c.DescribeRegion(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDescribeRegionHTTPResult(rsp)
+}
+
+// DescribeRegionGrantWithBodyWithResponse Retrieve a region grant and the regions built with it
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DescribeRegionGrant (the `DescribeRegionGrant` operationId).
+func (c *ClientWithResponses) DescribeRegionGrantWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DescribeRegionGrantHTTPResult, error) {
+	rsp, err := c.DescribeRegionGrantWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDescribeRegionGrantHTTPResult(rsp)
+}
+
+// DescribeRegionGrantWithResponse Retrieve a region grant and the regions built with it
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DescribeRegionGrant (the `DescribeRegionGrant` operationId).
+func (c *ClientWithResponses) DescribeRegionGrantWithResponse(ctx context.Context, accountId AccountId, body DescribeRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*DescribeRegionGrantHTTPResult, error) {
+	rsp, err := c.DescribeRegionGrant(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDescribeRegionGrantHTTPResult(rsp)
+}
+
+// DescribeWebhookWithBodyWithResponse Retrieve one incoming webhook, including the URL its sender posts to
+//
+// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DescribeWebhook (the `DescribeWebhook` operationId).
+func (c *ClientWithResponses) DescribeWebhookWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DescribeWebhookHTTPResult, error) {
+	rsp, err := c.DescribeWebhookWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDescribeWebhookHTTPResult(rsp)
+}
+
+// DescribeWebhookWithResponse Retrieve one incoming webhook, including the URL its sender posts to
+//
+// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DescribeWebhook (the `DescribeWebhook` operationId).
+func (c *ClientWithResponses) DescribeWebhookWithResponse(ctx context.Context, accountId AccountId, body DescribeWebhookJSONRequestBody, reqEditors ...RequestEditorFn) (*DescribeWebhookHTTPResult, error) {
+	rsp, err := c.DescribeWebhook(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDescribeWebhookHTTPResult(rsp)
 }
 
 // DestroyEnvironmentWithBodyWithResponse Shut down an environment and destroy all its stored metadata and state
@@ -9323,6 +15280,32 @@ func (c *ClientWithResponses) ListEnvironmentsWithResponse(ctx context.Context, 
 	return ParseListEnvironmentsHTTPResult(rsp)
 }
 
+// ListRegionGrantsWithBodyWithResponse List the live region grants of the account or of its organization
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/ListRegionGrants (the `ListRegionGrants` operationId).
+func (c *ClientWithResponses) ListRegionGrantsWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ListRegionGrantsHTTPResult, error) {
+	rsp, err := c.ListRegionGrantsWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListRegionGrantsHTTPResult(rsp)
+}
+
+// ListRegionGrantsWithResponse List the live region grants of the account or of its organization
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/ListRegionGrants (the `ListRegionGrants` operationId).
+func (c *ClientWithResponses) ListRegionGrantsWithResponse(ctx context.Context, accountId AccountId, body ListRegionGrantsJSONRequestBody, reqEditors ...RequestEditorFn) (*ListRegionGrantsHTTPResult, error) {
+	rsp, err := c.ListRegionGrants(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListRegionGrantsHTTPResult(rsp)
+}
+
 // ListRegionsWithBodyWithResponse Retrieve an account's available regions
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -9347,6 +15330,32 @@ func (c *ClientWithResponses) ListRegionsWithResponse(ctx context.Context, accou
 		return nil, err
 	}
 	return ParseListRegionsHTTPResult(rsp)
+}
+
+// ListWebhooksWithBodyWithResponse List an environment's incoming webhooks, without any of their URLs
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/ListWebhooks (the `ListWebhooks` operationId).
+func (c *ClientWithResponses) ListWebhooksWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ListWebhooksHTTPResult, error) {
+	rsp, err := c.ListWebhooksWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListWebhooksHTTPResult(rsp)
+}
+
+// ListWebhooksWithResponse List an environment's incoming webhooks, without any of their URLs
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/ListWebhooks (the `ListWebhooks` operationId).
+func (c *ClientWithResponses) ListWebhooksWithResponse(ctx context.Context, accountId AccountId, body ListWebhooksJSONRequestBody, reqEditors ...RequestEditorFn) (*ListWebhooksHTTPResult, error) {
+	rsp, err := c.ListWebhooks(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListWebhooksHTTPResult(rsp)
 }
 
 // PutAccountGroupRoleBindingWithBodyWithResponse Set the role binding for a directory group on an organization account
@@ -9401,6 +15410,58 @@ func (c *ClientWithResponses) PutAccountUserRoleBindingWithResponse(ctx context.
 	return ParsePutAccountUserRoleBindingHTTPResult(rsp)
 }
 
+// PutDefaultOrganizationMembersRoleBindingWithBodyWithResponse Set the default account roles for organization members
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/PutDefaultOrganizationMembersRoleBinding (the `PutDefaultOrganizationMembersRoleBinding` operationId).
+func (c *ClientWithResponses) PutDefaultOrganizationMembersRoleBindingWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutDefaultOrganizationMembersRoleBindingHTTPResult, error) {
+	rsp, err := c.PutDefaultOrganizationMembersRoleBindingWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutDefaultOrganizationMembersRoleBindingHTTPResult(rsp)
+}
+
+// PutDefaultOrganizationMembersRoleBindingWithResponse Set the default account roles for organization members
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/PutDefaultOrganizationMembersRoleBinding (the `PutDefaultOrganizationMembersRoleBinding` operationId).
+func (c *ClientWithResponses) PutDefaultOrganizationMembersRoleBindingWithResponse(ctx context.Context, accountId AccountId, body PutDefaultOrganizationMembersRoleBindingJSONRequestBody, reqEditors ...RequestEditorFn) (*PutDefaultOrganizationMembersRoleBindingHTTPResult, error) {
+	rsp, err := c.PutDefaultOrganizationMembersRoleBinding(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutDefaultOrganizationMembersRoleBindingHTTPResult(rsp)
+}
+
+// RegisterByocRegionWithBodyWithResponse Register a BYOC region built with restate-byoc
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/RegisterByocRegion (the `RegisterByocRegion` operationId).
+func (c *ClientWithResponses) RegisterByocRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterByocRegionHTTPResult, error) {
+	rsp, err := c.RegisterByocRegionWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegisterByocRegionHTTPResult(rsp)
+}
+
+// RegisterByocRegionWithResponse Register a BYOC region built with restate-byoc
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/RegisterByocRegion (the `RegisterByocRegion` operationId).
+func (c *ClientWithResponses) RegisterByocRegionWithResponse(ctx context.Context, accountId AccountId, body RegisterByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*RegisterByocRegionHTTPResult, error) {
+	rsp, err := c.RegisterByocRegion(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegisterByocRegionHTTPResult(rsp)
+}
+
 // RemoveAccountSecondaryOwnerWithBodyWithResponse Remove a secondary owning user from an account
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -9425,6 +15486,58 @@ func (c *ClientWithResponses) RemoveAccountSecondaryOwnerWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseRemoveAccountSecondaryOwnerHTTPResult(rsp)
+}
+
+// ReserveByocRegionWithBodyWithResponse Reserve a BYOC region and its image pull key before its cluster exists
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/ReserveByocRegion (the `ReserveByocRegion` operationId).
+func (c *ClientWithResponses) ReserveByocRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ReserveByocRegionHTTPResult, error) {
+	rsp, err := c.ReserveByocRegionWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReserveByocRegionHTTPResult(rsp)
+}
+
+// ReserveByocRegionWithResponse Reserve a BYOC region and its image pull key before its cluster exists
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/ReserveByocRegion (the `ReserveByocRegion` operationId).
+func (c *ClientWithResponses) ReserveByocRegionWithResponse(ctx context.Context, accountId AccountId, body ReserveByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*ReserveByocRegionHTTPResult, error) {
+	rsp, err := c.ReserveByocRegion(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseReserveByocRegionHTTPResult(rsp)
+}
+
+// SetRegionGrantWithBodyWithResponse Hand over a GRANT region's grant, which starts building the region
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/SetRegionGrant (the `SetRegionGrant` operationId).
+func (c *ClientWithResponses) SetRegionGrantWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetRegionGrantHTTPResult, error) {
+	rsp, err := c.SetRegionGrantWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetRegionGrantHTTPResult(rsp)
+}
+
+// SetRegionGrantWithResponse Hand over a GRANT region's grant, which starts building the region
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/SetRegionGrant (the `SetRegionGrant` operationId).
+func (c *ClientWithResponses) SetRegionGrantWithResponse(ctx context.Context, accountId AccountId, body SetRegionGrantJSONRequestBody, reqEditors ...RequestEditorFn) (*SetRegionGrantHTTPResult, error) {
+	rsp, err := c.SetRegionGrant(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetRegionGrantHTTPResult(rsp)
 }
 
 // UpdateEnvironmentWithBodyWithResponse Update environment details
@@ -9479,6 +15592,53 @@ func (c *ClientWithResponses) UpdateEnvironmentTierWithResponse(ctx context.Cont
 	return ParseUpdateEnvironmentTierHTTPResult(rsp)
 }
 
+// ParseCheckPermissionHTTPResult parses an HTTP response from a CheckPermissionWithResponse call
+func ParseCheckPermissionHTTPResult(rsp *http.Response) (*CheckPermissionHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CheckPermissionHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CheckPermissionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateAccountHTTPResult parses an HTTP response from a CreateAccountWithResponse call
 func ParseCreateAccountHTTPResult(rsp *http.Response) (*CreateAccountHTTPResult, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -9526,6 +15686,53 @@ func ParseCreateAccountHTTPResult(rsp *http.Response) (*CreateAccountHTTPResult,
 	return response, nil
 }
 
+// ParseCreateOrganizationApiKeyHTTPResult parses an HTTP response from a CreateOrganizationApiKeyWithResponse call
+func ParseCreateOrganizationApiKeyHTTPResult(rsp *http.Response) (*CreateOrganizationApiKeyHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateOrganizationApiKeyHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreateOrganizationApiKeyResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseDeleteAccountHTTPResult parses an HTTP response from a DeleteAccountWithResponse call
 func ParseDeleteAccountHTTPResult(rsp *http.Response) (*DeleteAccountHTTPResult, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -9542,6 +15749,53 @@ func ParseDeleteAccountHTTPResult(rsp *http.Response) (*DeleteAccountHTTPResult,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest DeleteAccountResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteOrganizationApiKeyHTTPResult parses an HTTP response from a DeleteOrganizationApiKeyWithResponse call
+func ParseDeleteOrganizationApiKeyHTTPResult(rsp *http.Response) (*DeleteOrganizationApiKeyHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteOrganizationApiKeyHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeleteOrganizationApiKeyResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -9777,6 +16031,53 @@ func ParseListAccountsHTTPResult(rsp *http.Response) (*ListAccountsHTTPResult, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ListAccountsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListOrganizationApiKeysHTTPResult parses an HTTP response from a ListOrganizationApiKeysWithResponse call
+func ParseListOrganizationApiKeysHTTPResult(rsp *http.Response) (*ListOrganizationApiKeysHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListOrganizationApiKeysHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListOrganizationApiKeysResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -10184,6 +16485,88 @@ func ParseAddAccountSecondaryOwnerHTTPResult(rsp *http.Response) (*AddAccountSec
 	return response, nil
 }
 
+// ParseConfirmRegionGrantHTTPResult parses an HTTP response from a ConfirmRegionGrantWithResponse call
+func ParseConfirmRegionGrantHTTPResult(rsp *http.Response) (*ConfirmRegionGrantHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ConfirmRegionGrantHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ConfirmRegionGrantResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest GoneError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ServiceUnavailableError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateAccountApiKeyHTTPResult parses an HTTP response from a CreateAccountApiKeyWithResponse call
 func ParseCreateAccountApiKeyHTTPResult(rsp *http.Response) (*CreateAccountApiKeyHTTPResult, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -10325,6 +16708,163 @@ func ParseCreateEnvironmentHTTPResult(rsp *http.Response) (*CreateEnvironmentHTT
 	return response, nil
 }
 
+// ParseCreateRegionHTTPResult parses an HTTP response from a CreateRegionWithResponse call
+func ParseCreateRegionHTTPResult(rsp *http.Response) (*CreateRegionHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateRegionHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreateRegionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 412:
+		var dest PreconditionFailedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON412 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 501:
+		var dest NotImplementedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON501 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateRegionGrantHTTPResult parses an HTTP response from a CreateRegionGrantWithResponse call
+func ParseCreateRegionGrantHTTPResult(rsp *http.Response) (*CreateRegionGrantHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateRegionGrantHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreateRegionGrantResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest GoneError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 501:
+		var dest NotImplementedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON501 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateStripePortalSessionHTTPResult parses an HTTP response from a CreateStripePortalSessionWithResponse call
 func ParseCreateStripePortalSessionHTTPResult(rsp *http.Response) (*CreateStripePortalSessionHTTPResult, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -10359,6 +16899,60 @@ func ParseCreateStripePortalSessionHTTPResult(rsp *http.Response) (*CreateStripe
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateWebhookHTTPResult parses an HTTP response from a CreateWebhookWithResponse call
+func ParseCreateWebhookHTTPResult(rsp *http.Response) (*CreateWebhookHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateWebhookHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreateWebhookResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerInternalError
@@ -10560,6 +17154,297 @@ func ParseDeleteApiKeyHTTPResult(rsp *http.Response) (*DeleteApiKeyHTTPResult, e
 	return response, nil
 }
 
+// ParseDeleteDefaultOrganizationMembersRoleBindingHTTPResult parses an HTTP response from a DeleteDefaultOrganizationMembersRoleBindingWithResponse call
+func ParseDeleteDefaultOrganizationMembersRoleBindingHTTPResult(rsp *http.Response) (*DeleteDefaultOrganizationMembersRoleBindingHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDefaultOrganizationMembersRoleBindingHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeleteDefaultOrganizationMembersRoleBindingResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRegionHTTPResult parses an HTTP response from a DeleteRegionWithResponse call
+func ParseDeleteRegionHTTPResult(rsp *http.Response) (*DeleteRegionHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRegionHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeleteRegionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRegionGrantHTTPResult parses an HTTP response from a DeleteRegionGrantWithResponse call
+func ParseDeleteRegionGrantHTTPResult(rsp *http.Response) (*DeleteRegionGrantHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRegionGrantHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeleteRegionGrantResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteWebhookHTTPResult parses an HTTP response from a DeleteWebhookWithResponse call
+func ParseDeleteWebhookHTTPResult(rsp *http.Response) (*DeleteWebhookHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteWebhookHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeleteWebhookResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeregisterByocRegionHTTPResult parses an HTTP response from a DeregisterByocRegionWithResponse call
+func ParseDeregisterByocRegionHTTPResult(rsp *http.Response) (*DeregisterByocRegionHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeregisterByocRegionHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeregisterByocRegionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseDescribeAccountHTTPResult parses an HTTP response from a DescribeAccountWithResponse call
 func ParseDescribeAccountHTTPResult(rsp *http.Response) (*DescribeAccountHTTPResult, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -10654,6 +17539,53 @@ func ParseDescribeApiKeyHTTPResult(rsp *http.Response) (*DescribeApiKeyHTTPResul
 	return response, nil
 }
 
+// ParseDescribeByocAuthorizationHTTPResult parses an HTTP response from a DescribeByocAuthorizationWithResponse call
+func ParseDescribeByocAuthorizationHTTPResult(rsp *http.Response) (*DescribeByocAuthorizationHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DescribeByocAuthorizationHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DescribeByocAuthorizationResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseDescribeEnvironmentHTTPResult parses an HTTP response from a DescribeEnvironmentWithResponse call
 func ParseDescribeEnvironmentHTTPResult(rsp *http.Response) (*DescribeEnvironmentHTTPResult, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -10688,6 +17620,175 @@ func ParseDescribeEnvironmentHTTPResult(rsp *http.Response) (*DescribeEnvironmen
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDescribeRegionHTTPResult parses an HTTP response from a DescribeRegionWithResponse call
+func ParseDescribeRegionHTTPResult(rsp *http.Response) (*DescribeRegionHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DescribeRegionHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DescribeRegionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDescribeRegionGrantHTTPResult parses an HTTP response from a DescribeRegionGrantWithResponse call
+func ParseDescribeRegionGrantHTTPResult(rsp *http.Response) (*DescribeRegionGrantHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DescribeRegionGrantHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DescribeRegionGrantResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDescribeWebhookHTTPResult parses an HTTP response from a DescribeWebhookWithResponse call
+func ParseDescribeWebhookHTTPResult(rsp *http.Response) (*DescribeWebhookHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DescribeWebhookHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DescribeWebhookResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerInternalError
@@ -11077,6 +18178,53 @@ func ParseListEnvironmentsHTTPResult(rsp *http.Response) (*ListEnvironmentsHTTPR
 	return response, nil
 }
 
+// ParseListRegionGrantsHTTPResult parses an HTTP response from a ListRegionGrantsWithResponse call
+func ParseListRegionGrantsHTTPResult(rsp *http.Response) (*ListRegionGrantsHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListRegionGrantsHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListRegionGrantsResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListRegionsHTTPResult parses an HTTP response from a ListRegionsWithResponse call
 func ParseListRegionsHTTPResult(rsp *http.Response) (*ListRegionsHTTPResult, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -11111,6 +18259,60 @@ func ParseListRegionsHTTPResult(rsp *http.Response) (*ListRegionsHTTPResult, err
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListWebhooksHTTPResult parses an HTTP response from a ListWebhooksWithResponse call
+func ParseListWebhooksHTTPResult(rsp *http.Response) (*ListWebhooksHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListWebhooksHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ListWebhooksResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerInternalError
@@ -11218,6 +18420,107 @@ func ParsePutAccountUserRoleBindingHTTPResult(rsp *http.Response) (*PutAccountUs
 	return response, nil
 }
 
+// ParsePutDefaultOrganizationMembersRoleBindingHTTPResult parses an HTTP response from a PutDefaultOrganizationMembersRoleBindingWithResponse call
+func ParsePutDefaultOrganizationMembersRoleBindingHTTPResult(rsp *http.Response) (*PutDefaultOrganizationMembersRoleBindingHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutDefaultOrganizationMembersRoleBindingHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PutDefaultOrganizationMembersRoleBindingResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRegisterByocRegionHTTPResult parses an HTTP response from a RegisterByocRegionWithResponse call
+func ParseRegisterByocRegionHTTPResult(rsp *http.Response) (*RegisterByocRegionHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RegisterByocRegionHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RegisterByocRegionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseRemoveAccountSecondaryOwnerHTTPResult parses an HTTP response from a RemoveAccountSecondaryOwnerWithResponse call
 func ParseRemoveAccountSecondaryOwnerHTTPResult(rsp *http.Response) (*RemoveAccountSecondaryOwnerHTTPResult, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -11252,6 +18555,128 @@ func ParseRemoveAccountSecondaryOwnerHTTPResult(rsp *http.Response) (*RemoveAcco
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseReserveByocRegionHTTPResult parses an HTTP response from a ReserveByocRegionWithResponse call
+func ParseReserveByocRegionHTTPResult(rsp *http.Response) (*ReserveByocRegionHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ReserveByocRegionHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ReserveByocRegionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSetRegionGrantHTTPResult parses an HTTP response from a SetRegionGrantWithResponse call
+func ParseSetRegionGrantHTTPResult(rsp *http.Response) (*SetRegionGrantHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SetRegionGrantHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SetRegionGrantResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 410:
+		var dest GoneError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON410 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerInternalError

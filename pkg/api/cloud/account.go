@@ -2,6 +2,7 @@ package cloud
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -47,25 +48,54 @@ func (c *Client) DescribeAccount(ctx context.Context) (Account, error) {
 }
 
 // ValidateCredentials proves the configured key can perform a read-only, account-scoped operation
-// against the configured account. It names the two failure modes an operator is most likely to hit,
-// because "HTTP 403" does not distinguish a wrong key from a right key pointed at the wrong account.
-func (c *Client) ValidateCredentials(ctx context.Context) error {
+// against the configured account, and reports which kind of key it is. It names the two failure modes
+// an operator is most likely to hit, because "HTTP 403" does not distinguish a wrong key from a right
+// key pointed at the wrong account.
+//
+// An organization's region grant key is not an administrator of any account, so it cannot describe
+// one. It is recognised by listing the organization's region grants through the account instead.
+func (c *Client) ValidateCredentials(ctx context.Context) (CredentialKind, error) {
 	_, err := c.DescribeAccount(ctx)
 	if err == nil {
-		return nil
+		return CredentialAccount, nil
+	}
+	if api.IsUnauthorized(err) || api.IsForbidden(err) || api.IsNotFound(err) {
+		_, listErr := c.RegionGrants().List(ctx, RegionGrantOwnerOrganization)
+		if listErr == nil {
+			return CredentialOrganizationRegionGrants, nil
+		}
+		// A refusal of the probe confirms the first answer. Anything else means the probe could not
+		// tell, and hiding it would blame the key for an outage.
+		if !api.IsUnauthorized(listErr) && !api.IsForbidden(listErr) && !api.IsNotFound(listErr) && !api.IsBadRequest(listErr) {
+			return "", fmt.Errorf("the configured management API key cannot read account %s, and checking whether it is an organization key failed: %w",
+				c.accountID, errors.Join(err, listErr))
+		}
 	}
 
 	switch {
 	case api.IsUnauthorized(err):
-		return fmt.Errorf("the Restate Cloud management API key was rejected by %s: it is missing, malformed, or revoked: %w", c.baseURL, err)
+		return "", fmt.Errorf("the Restate Cloud management API key was rejected by %s: it is missing, malformed, or revoked: %w", c.baseURL, err)
 	case api.IsForbidden(err), api.IsNotFound(err):
 		// In practice both mean the same thing: this credential cannot see this account.
-		return fmt.Errorf("the configured management API key cannot read account %s: check that the key is account-scoped with role %s and that it belongs to this account, not another one: %w",
-			c.accountID, RoleManagementAccess, err)
+		return "", fmt.Errorf("the configured management API key cannot read account %s: check that the key is account-scoped with role %s and that it belongs to this account, not another one, or that it is an organization key with role %s for the account's organization: %w",
+			c.accountID, RoleManagementAccess, RoleOrganizationRegionGrantAccess, err)
 	default:
-		return err
+		return "", err
 	}
 }
+
+// CredentialKind says what the configured key may reach.
+type CredentialKind string
+
+const (
+	// CredentialAccount is an account's key, or an administrator's token: everything the account
+	// holds.
+	CredentialAccount CredentialKind = "account"
+	// CredentialOrganizationRegionGrants is an organization key with role
+	// OrganizationRegionGrantAccess: the organization's region grants and the regions built with them,
+	// in any of its accounts, and nothing else.
+	CredentialOrganizationRegionGrants CredentialKind = "organization-region-grants"
+)
 
 // GetAccountLimits reads the account's quota usage.
 func (c *Client) GetAccountLimits(ctx context.Context) (AccountLimits, error) {
@@ -107,7 +137,15 @@ func (c *Client) ListRegions(ctx context.Context) ([]Region, error) {
 		regions = append(regions, Region{
 			Name:        region.RegionName,
 			DisplayName: derefString(region.RegionDisplayName),
+			Status:      string(derefRegionStatus(region.Status)),
 		})
 	}
 	return regions, nil
+}
+
+func derefRegionStatus(status *generated.RegionStatus) generated.RegionStatus {
+	if status == nil {
+		return ""
+	}
+	return *status
 }

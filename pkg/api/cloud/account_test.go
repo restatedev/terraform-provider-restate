@@ -67,12 +67,39 @@ func TestValidateCredentialsSucceedsOnAReadableAccount(t *testing.T) {
 	server := testutil.NewAPIServer(t)
 	server.On("DescribeAccount", testutil.JSON(`{"environments":[]}`))
 
-	if err := newClient(t, server).ValidateCredentials(context.Background()); err != nil {
+	kind, err := newClient(t, server).ValidateCredentials(context.Background())
+	if err != nil {
 		t.Fatalf("ValidateCredentials: %v", err)
+	}
+	if kind != cloud.CredentialAccount {
+		t.Errorf("kind = %q, want %q", kind, cloud.CredentialAccount)
 	}
 	// Validation must be exactly one read-only round trip, not a probe sequence.
 	if count := server.CallCount("DescribeAccount"); count != 1 {
 		t.Errorf("DescribeAccount called %d times, want 1", count)
+	}
+}
+
+// An organization's region grant key cannot describe any account, so it is recognised by the one read
+// it can make, which lists the organization's grants through the account.
+func TestValidateCredentialsRecognisesAnOrganizationRegionGrantKey(t *testing.T) {
+	server := testutil.NewAPIServer(t)
+	server.On("DescribeAccount", testutil.Error(http.StatusForbidden, "not an account key"))
+	server.On("ListRegionGrants", testutil.JSON(`{"grants":[]}`))
+
+	kind, err := newClient(t, server).ValidateCredentials(context.Background())
+	if err != nil {
+		t.Fatalf("ValidateCredentials: %v", err)
+	}
+	if kind != cloud.CredentialOrganizationRegionGrants {
+		t.Errorf("kind = %q, want %q", kind, cloud.CredentialOrganizationRegionGrants)
+	}
+	var body struct {
+		Owner string `json:"owner"`
+	}
+	server.LastRequest().DecodeBody(t, &body)
+	if body.Owner != "ORGANIZATION" {
+		t.Errorf("ListRegionGrants owner = %q, want ORGANIZATION", body.Owner)
 	}
 }
 
@@ -93,7 +120,7 @@ func TestValidateCredentialsExplainsAnAuthorizationFailure(t *testing.T) {
 			server := testutil.NewAPIServer(t)
 			server.On("DescribeAccount", testutil.Error(tt.status, "denied"))
 
-			err := newClient(t, server).ValidateCredentials(context.Background())
+			_, err := newClient(t, server).ValidateCredentials(context.Background())
 			if err == nil {
 				t.Fatal("expected an error")
 			}
@@ -116,7 +143,7 @@ func TestValidateCredentialsPreservesTheUnderlyingAPIError(t *testing.T) {
 		Header: map[string]string{"X-Amzn-Requestid": "req-99"},
 	})
 
-	err := newClient(t, server).ValidateCredentials(context.Background())
+	_, err := newClient(t, server).ValidateCredentials(context.Background())
 	apiErr, ok := api.AsError(err)
 	if !ok {
 		t.Fatalf("the underlying API error was lost: %v", err)
@@ -132,7 +159,7 @@ func TestValidateCredentialsPassesThroughAnUnrelatedFailure(t *testing.T) {
 	server := testutil.NewAPIServer(t)
 	server.On("DescribeAccount", testutil.Error(http.StatusBadGateway, "gateway error"))
 
-	err := newClient(t, server).ValidateCredentials(context.Background())
+	_, err := newClient(t, server).ValidateCredentials(context.Background())
 	if err == nil {
 		t.Fatal("expected an error")
 	}
@@ -145,7 +172,8 @@ func TestListRegions(t *testing.T) {
 	server := testutil.NewAPIServer(t)
 	server.On("ListRegions", testutil.JSON(`{"regions":[
 	  {"regionName":"us-east-1","regionDisplayName":"US East (N. Virginia)"},
-	  {"regionName":"eu-central-1"}
+	  {"regionName":"eu-central-1"},
+	  {"regionName":"rgn_a1b2c3d4e5","name":"prod-eu","status":"PENDING","statusReason":"DEPLOYING"}
 	]}`))
 
 	got, err := newClient(t, server).ListRegions(context.Background())
@@ -156,6 +184,8 @@ func TestListRegions(t *testing.T) {
 		{Name: "us-east-1", DisplayName: "US East (N. Virginia)"},
 		// The display name is optional in the contract, so an absent one is empty, not an error.
 		{Name: "eu-central-1", DisplayName: ""},
+		// The account's BYOC regions are listed while they are built, so their status matters.
+		{Name: "rgn_a1b2c3d4e5", Status: "PENDING"},
 	}
 	if len(got) != len(want) {
 		t.Fatalf("got %d regions, want %d", len(got), len(want))
