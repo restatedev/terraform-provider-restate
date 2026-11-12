@@ -1,0 +1,9 @@
+s/data\.aws_region\.current\.region/"eu-central-1"/g
+s/aws_iam_role\.grant\.arn/terraform_data.role.output/g
+s/aws_iam_role\.grant\.assume_role_policy/terraform_data.role.output/g
+s/aws_iam_role_policy\.grant\.policy/terraform_data.rolepolicy.output/g
+s/aws_iam_policy\.boundary\.policy/terraform_data.boundary.output/g
+s/aws_iam_policy\.boundary\.arn/terraform_data.boundary.output/g
+s/aws_iam_role_policy\.grant/terraform_data.rolepolicy/g
+s/aws_iam_role\.grant/terraform_data.role/g
+s/aws_iam_policy\.boundary/terraform_data.boundary/g

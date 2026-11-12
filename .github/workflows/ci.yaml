@@ -171,6 +171,72 @@ jobs:
 
           exit $status
 
+  byoc-modules:
+    name: BYOC grant modules
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        cloud: [aws, gcp, azure]
+    steps:
+      - uses: actions/checkout@v4.4.0
+      - uses: actions/setup-go@v5.6.0
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: hashicorp/setup-terraform@v3.1.2
+        with:
+          terraform_version: "1.10.5"
+          terraform_wrapper: false
+
+      # The modules require restatedev/restate, which is built from this commit and served from a
+      # filesystem mirror, so a module change is always tested against the provider it ships with.
+      # dev_overrides would not do: terraform init refuses a provider the registry does not list.
+      - name: Build the provider into a filesystem mirror
+        run: |
+          mirror="$RUNNER_TEMP/mirror"
+          dir="$mirror/registry.terraform.io/restatedev/restate/0.0.1/$(go env GOOS)_$(go env GOARCH)"
+          mkdir -p "$dir"
+          go build -o "$dir/terraform-provider-restate_v0.0.1" .
+          cat > "$RUNNER_TEMP/mirror.tfrc" <<EOF
+          provider_installation {
+            filesystem_mirror {
+              path    = "$mirror"
+              include = ["registry.terraform.io/restatedev/restate"]
+            }
+            direct {
+              exclude = ["registry.terraform.io/restatedev/restate"]
+            }
+          }
+          EOF
+          echo "TF_CLI_CONFIG_FILE=$RUNNER_TEMP/mirror.tfrc" >> "$GITHUB_ENV"
+
+      - name: Format
+        run: terraform fmt -check -recursive modules/byoc
+
+      - name: Validate and test the module
+        run: |
+          dirs="modules/byoc/${{ matrix.cloud }}"
+          [ "${{ matrix.cloud }}" != aws ] || dirs="$dirs modules/byoc/aws/oidc-provider"
+          for dir in $dirs; do
+            terraform -chdir="$dir" init -backend=false -input=false
+            terraform -chdir="$dir" validate
+            terraform -chdir="$dir" test
+          done
+
+      - name: Validate the examples
+        run: |
+          for dir in modules/byoc/examples/${{ matrix.cloud }}/*/; do
+            terraform -chdir="$dir" init -backend=false -input=false
+            terraform -chdir="$dir" validate
+          done
+
+      # The order of the calls to Restate Cloud relative to the cloud's own changes, against a fake
+      # API. The harness builds the provider itself.
+      - name: Integration
+        run: modules/byoc/tests/integration/run.sh ${{ matrix.cloud }}
+
   vulncheck:
     name: Vulnerability scan
     runs-on: ubuntu-latest
