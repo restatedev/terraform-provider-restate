@@ -65,6 +65,21 @@ func (e CreateApiKeyResponseState) Valid() bool {
 	}
 }
 
+// Defines values for CreateByokRegistrationKeyRequestCloud.
+const (
+	CreateByokRegistrationKeyRequestCloudGcp CreateByokRegistrationKeyRequestCloud = "gcp"
+)
+
+// Valid indicates whether the value is a known member of the CreateByokRegistrationKeyRequestCloud enum.
+func (e CreateByokRegistrationKeyRequestCloud) Valid() bool {
+	switch e {
+	case CreateByokRegistrationKeyRequestCloudGcp:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CreateEnvironmentRequestTierId.
 const (
 	CreateEnvironmentRequestTierIdBUSINESS CreateEnvironmentRequestTierId = "BUSINESS"
@@ -143,6 +158,21 @@ const (
 func (e CreateRegionRequestIdentity) Valid() bool {
 	switch e {
 	case Region:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for DeleteByokRegionResponseStatus.
+const (
+	DeleteByokRegionResponseStatusDELETED DeleteByokRegionResponseStatus = "DELETED"
+)
+
+// Valid indicates whether the value is a known member of the DeleteByokRegionResponseStatus enum.
+func (e DeleteByokRegionResponseStatus) Valid() bool {
+	switch e {
+	case DeleteByokRegionResponseStatusDELETED:
 		return true
 	default:
 		return false
@@ -1004,6 +1034,33 @@ type CreateApiKeyResponse struct {
 // CreateApiKeyResponseState defines model for CreateApiKeyResponse.State.
 type CreateApiKeyResponseState string
 
+// CreateByokRegistrationKeyRequest defines model for CreateByokRegistrationKeyRequest.
+type CreateByokRegistrationKeyRequest struct {
+	// Cloud Cloud the region's cluster runs on. BYOK supports GCP.
+	Cloud CreateByokRegistrationKeyRequestCloud `json:"cloud"`
+
+	// ProviderRegion The cloud's own name for where the region runs. The region must report the same name to register.
+	ProviderRegion string `json:"providerRegion"`
+
+	// RegionDisplayName The name the console shows for the region.
+	RegionDisplayName *string `json:"regionDisplayName,omitempty"`
+}
+
+// CreateByokRegistrationKeyRequestCloud Cloud the region's cluster runs on. BYOK supports GCP.
+type CreateByokRegistrationKeyRequestCloud string
+
+// CreateByokRegistrationKeyResponse defines model for CreateByokRegistrationKeyResponse.
+type CreateByokRegistrationKeyResponse struct {
+	// ExpiresAt When the key stops working if no region has used it.
+	ExpiresAt string `json:"expiresAt"`
+
+	// RegionId The id the key gives the region it registers, reserved when the key is minted. Give it to the BYOC chart as `region.id`. The chart derives the region's Concierge audience and proxy endpoint from it.
+	RegionId RegionId `json:"regionId"`
+
+	// RegistrationKey Registers one BYOK region for this account, cloud and provider region, once. Shown only in this response. Give it to the BYOC chart as its registration Secret.
+	RegistrationKey string `json:"registrationKey"`
+}
+
 // CreateEnvironmentRequest defines model for CreateEnvironmentRequest.
 type CreateEnvironmentRequest struct {
 	Name    string `json:"name"`
@@ -1229,6 +1286,20 @@ type DeleteApiKeyResponse_Result struct {
 	union json.RawMessage
 }
 
+// DeleteByokRegionRequest defines model for DeleteByokRegionRequest.
+type DeleteByokRegionRequest struct {
+	RegionId RegionId `json:"regionId"`
+}
+
+// DeleteByokRegionResponse defines model for DeleteByokRegionResponse.
+type DeleteByokRegionResponse struct {
+	RegionId RegionId                       `json:"regionId"`
+	Status   DeleteByokRegionResponseStatus `json:"status"`
+}
+
+// DeleteByokRegionResponseStatus defines model for DeleteByokRegionResponse.Status.
+type DeleteByokRegionResponseStatus string
+
 // DeleteDefaultOrganizationMembersRoleBindingRequest defines model for DeleteDefaultOrganizationMembersRoleBindingRequest.
 type DeleteDefaultOrganizationMembersRoleBindingRequest struct {
 	// ExpectedRevision Opaque revision from ListAccountRoleBindings. A stale revision is rejected with 409; omit only for legacy unconditional writes.
@@ -1383,18 +1454,30 @@ type DescribeEnvironmentResponse struct {
 		EnvironmentId string `json:"environmentId"`
 		KeyId         string `json:"keyId"`
 	} `json:"apiKeys"`
-	EnvironmentId        string                            `json:"environmentId"`
-	IngressBaseUrl       string                            `json:"ingressBaseUrl"`
-	InvocationMetricsUrl *string                           `json:"invocationMetricsUrl,omitempty"`
-	Name                 string                            `json:"name"`
-	ProxyBaseUrl         string                            `json:"proxyBaseUrl"`
-	Region               string                            `json:"region"`
-	RegionDisplayName    *string                           `json:"regionDisplayName,omitempty"`
-	SigningPublicKey     string                            `json:"signingPublicKey"`
-	Status               DescribeEnvironmentResponseStatus `json:"status"`
-	TierId               DescribeEnvironmentResponseTierId `json:"tierId"`
-	TunnelBaseUrl        string                            `json:"tunnelBaseUrl"`
-	TunnelSrv            string                            `json:"tunnelSrv"`
+	EnvironmentId        string  `json:"environmentId"`
+	IngressBaseUrl       string  `json:"ingressBaseUrl"`
+	InvocationMetricsUrl *string `json:"invocationMetricsUrl,omitempty"`
+	Name                 string  `json:"name"`
+
+	// ProviderIdentity Identities the environment presents to other clouds.
+	ProviderIdentity *struct {
+		// GcpFederation Present when the environment is configured to call IAM-protected Google Cloud services, such as private Cloud Run services, through AWS to Google Cloud workload identity federation. The environment uses it once it runs Restate 1.8.0 or later with this configuration applied.
+		GcpFederation *struct {
+			// AwsAccountId The AWS account that a Google Cloud workload identity pool provider must trust.
+			AwsAccountId string `json:"awsAccountId"`
+
+			// Subject The environment's federated subject. Grant it roles/iam.serviceAccountOpenIdTokenCreator on the service account that Restate should impersonate.
+			Subject string `json:"subject"`
+		} `json:"gcpFederation,omitempty"`
+	} `json:"providerIdentity,omitempty"`
+	ProxyBaseUrl      string                            `json:"proxyBaseUrl"`
+	Region            string                            `json:"region"`
+	RegionDisplayName *string                           `json:"regionDisplayName,omitempty"`
+	SigningPublicKey  string                            `json:"signingPublicKey"`
+	Status            DescribeEnvironmentResponseStatus `json:"status"`
+	TierId            DescribeEnvironmentResponseTierId `json:"tierId"`
+	TunnelBaseUrl     string                            `json:"tunnelBaseUrl"`
+	TunnelSrv         string                            `json:"tunnelSrv"`
 }
 
 // DescribeEnvironmentResponseStatus defines model for DescribeEnvironmentResponse.Status.
@@ -2251,6 +2334,12 @@ type SetRegionGrantRequest struct {
 // SetRegionGrantResponse defines model for SetRegionGrantResponse.
 type SetRegionGrantResponse = RegionDescription
 
+// TooManyRequestsError defines model for TooManyRequestsError.
+type TooManyRequestsError struct {
+	Code    float32 `json:"code"`
+	Message string  `json:"message"`
+}
+
 // UnauthorizedError defines model for UnauthorizedError.
 type UnauthorizedError struct {
 	Code    float32 `json:"code"`
@@ -2377,6 +2466,9 @@ type CreateAccountApiKeyJSONRequestBody = CreateAccountApiKeyRequest
 // CreateApiKeyJSONRequestBody defines body for CreateApiKey for application/json ContentType.
 type CreateApiKeyJSONRequestBody = CreateApiKeyRequest
 
+// CreateByokRegistrationKeyJSONRequestBody defines body for CreateByokRegistrationKey for application/json ContentType.
+type CreateByokRegistrationKeyJSONRequestBody = CreateByokRegistrationKeyRequest
+
 // CreateEnvironmentJSONRequestBody defines body for CreateEnvironment for application/json ContentType.
 type CreateEnvironmentJSONRequestBody = CreateEnvironmentRequest
 
@@ -2403,6 +2495,9 @@ type DeleteAccountUserRoleBindingJSONRequestBody = DeleteAccountUserRoleBindingR
 
 // DeleteApiKeyJSONRequestBody defines body for DeleteApiKey for application/json ContentType.
 type DeleteApiKeyJSONRequestBody = DeleteApiKeyRequest
+
+// DeleteByokRegionJSONRequestBody defines body for DeleteByokRegion for application/json ContentType.
+type DeleteByokRegionJSONRequestBody = DeleteByokRegionRequest
 
 // DeleteDefaultOrganizationMembersRoleBindingJSONRequestBody defines body for DeleteDefaultOrganizationMembersRoleBinding for application/json ContentType.
 type DeleteDefaultOrganizationMembersRoleBindingJSONRequestBody = DeleteDefaultOrganizationMembersRoleBindingRequest
@@ -3290,6 +3385,24 @@ type ClientInterface interface {
 	// Corresponds with POST /{accountId}/CreateApiKey (the `CreateApiKey` operationId).
 	CreateApiKey(ctx context.Context, accountId AccountId, body CreateApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateByokRegistrationKeyWithBody Create a one-use key that registers a BYOK region installed with the BYOC chart
+	//
+	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/CreateByokRegistrationKey (the `CreateByokRegistrationKey` operationId).
+	CreateByokRegistrationKeyWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateByokRegistrationKey Create a one-use key that registers a BYOK region installed with the BYOC chart
+	//
+	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/CreateByokRegistrationKey (the `CreateByokRegistrationKey` operationId).
+	CreateByokRegistrationKey(ctx context.Context, accountId AccountId, body CreateByokRegistrationKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateEnvironmentWithBody Create a new environment
 	//
 	// Takes any type of body and a specified content type.
@@ -3423,6 +3536,24 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /{accountId}/DeleteApiKey (the `DeleteApiKey` operationId).
 	DeleteApiKey(ctx context.Context, accountId AccountId, body DeleteApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteByokRegionWithBody Remove a BYOK region of the account, whatever its status. Refused while it hosts environments
+	//
+	// Revokes the region's access keys, removes its Twingate objects and marks it deleted, whether or not it has activated. Repeating the call on a deleted region answers the same.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/DeleteByokRegion (the `DeleteByokRegion` operationId).
+	DeleteByokRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteByokRegion Remove a BYOK region of the account, whatever its status. Refused while it hosts environments
+	//
+	// Revokes the region's access keys, removes its Twingate objects and marks it deleted, whether or not it has activated. Repeating the call on a deleted region answers the same.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/DeleteByokRegion (the `DeleteByokRegion` operationId).
+	DeleteByokRegion(ctx context.Context, accountId AccountId, body DeleteByokRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteDefaultOrganizationMembersRoleBindingWithBody Remove the default account roles for organization members
 	//
@@ -4625,6 +4756,44 @@ func (c *Client) CreateApiKey(ctx context.Context, accountId AccountId, body Cre
 	return c.Client.Do(req)
 }
 
+// CreateByokRegistrationKeyWithBody Create a one-use key that registers a BYOK region installed with the BYOC chart
+//
+// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/CreateByokRegistrationKey (the `CreateByokRegistrationKey` operationId).
+func (c *Client) CreateByokRegistrationKeyWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateByokRegistrationKeyRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// CreateByokRegistrationKey Create a one-use key that registers a BYOK region installed with the BYOC chart
+//
+// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/CreateByokRegistrationKey (the `CreateByokRegistrationKey` operationId).
+func (c *Client) CreateByokRegistrationKey(ctx context.Context, accountId AccountId, body CreateByokRegistrationKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateByokRegistrationKeyRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // CreateEnvironmentWithBody Create a new environment
 //
 // Takes any type of body and a specified content type.
@@ -4929,6 +5098,44 @@ func (c *Client) DeleteApiKeyWithBody(ctx context.Context, accountId AccountId, 
 // Corresponds with POST /{accountId}/DeleteApiKey (the `DeleteApiKey` operationId).
 func (c *Client) DeleteApiKey(ctx context.Context, accountId AccountId, body DeleteApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteApiKeyRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteByokRegionWithBody Remove a BYOK region of the account, whatever its status. Refused while it hosts environments
+//
+// Revokes the region's access keys, removes its Twingate objects and marks it deleted, whether or not it has activated. Repeating the call on a deleted region answers the same.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/DeleteByokRegion (the `DeleteByokRegion` operationId).
+func (c *Client) DeleteByokRegionWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteByokRegionRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// DeleteByokRegion Remove a BYOK region of the account, whatever its status. Refused while it hosts environments
+//
+// Revokes the region's access keys, removes its Twingate objects and marks it deleted, whether or not it has activated. Repeating the call on a deleted region answers the same.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/DeleteByokRegion (the `DeleteByokRegion` operationId).
+func (c *Client) DeleteByokRegion(ctx context.Context, accountId AccountId, body DeleteByokRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteByokRegionRequest(c.Server, accountId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -6939,6 +7146,53 @@ func NewCreateApiKeyRequestWithBody(server string, accountId AccountId, contentT
 	return req, nil
 }
 
+// NewCreateByokRegistrationKeyRequest calls the generic CreateByokRegistrationKey builder with application/json body
+func NewCreateByokRegistrationKeyRequest(server string, accountId AccountId, body CreateByokRegistrationKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateByokRegistrationKeyRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewCreateByokRegistrationKeyRequestWithBody constructs an http.Request for the CreateByokRegistrationKey method, with any body, and a specified content type
+func NewCreateByokRegistrationKeyRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/CreateByokRegistrationKey", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateEnvironmentRequest calls the generic CreateEnvironment builder with application/json body
 func NewCreateEnvironmentRequest(server string, accountId AccountId, body CreateEnvironmentJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -7343,6 +7597,53 @@ func NewDeleteApiKeyRequestWithBody(server string, accountId AccountId, contentT
 	}
 
 	operationPath := fmt.Sprintf("/%s/DeleteApiKey", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteByokRegionRequest calls the generic DeleteByokRegion builder with application/json body
+func NewDeleteByokRegionRequest(server string, accountId AccountId, body DeleteByokRegionJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteByokRegionRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewDeleteByokRegionRequestWithBody constructs an http.Request for the DeleteByokRegion method, with any body, and a specified content type
+func NewDeleteByokRegionRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/DeleteByokRegion", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -9218,6 +9519,24 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with POST /{accountId}/CreateApiKey (the `CreateApiKey` operationId).
 	CreateApiKeyWithResponse(ctx context.Context, accountId AccountId, body CreateApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateApiKeyHTTPResult, error)
 
+	// CreateByokRegistrationKeyWithBodyWithResponse Create a one-use key that registers a BYOK region installed with the BYOC chart
+	//
+	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/CreateByokRegistrationKey (the `CreateByokRegistrationKey` operationId).
+	CreateByokRegistrationKeyWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateByokRegistrationKeyHTTPResult, error)
+
+	// CreateByokRegistrationKeyWithResponse Create a one-use key that registers a BYOK region installed with the BYOC chart
+	//
+	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/CreateByokRegistrationKey (the `CreateByokRegistrationKey` operationId).
+	CreateByokRegistrationKeyWithResponse(ctx context.Context, accountId AccountId, body CreateByokRegistrationKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateByokRegistrationKeyHTTPResult, error)
+
 	// CreateEnvironmentWithBodyWithResponse Create a new environment
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -9351,6 +9670,24 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /{accountId}/DeleteApiKey (the `DeleteApiKey` operationId).
 	DeleteApiKeyWithResponse(ctx context.Context, accountId AccountId, body DeleteApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteApiKeyHTTPResult, error)
+
+	// DeleteByokRegionWithBodyWithResponse Remove a BYOK region of the account, whatever its status. Refused while it hosts environments
+	//
+	// Revokes the region's access keys, removes its Twingate objects and marks it deleted, whether or not it has activated. Repeating the call on a deleted region answers the same.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeleteByokRegion (the `DeleteByokRegion` operationId).
+	DeleteByokRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteByokRegionHTTPResult, error)
+
+	// DeleteByokRegionWithResponse Remove a BYOK region of the account, whatever its status. Refused while it hosts environments
+	//
+	// Revokes the region's access keys, removes its Twingate objects and marks it deleted, whether or not it has activated. Repeating the call on a deleted region answers the same.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/DeleteByokRegion (the `DeleteByokRegion` operationId).
+	DeleteByokRegionWithResponse(ctx context.Context, accountId AccountId, body DeleteByokRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteByokRegionHTTPResult, error)
 
 	// DeleteDefaultOrganizationMembersRoleBindingWithBodyWithResponse Remove the default account roles for organization members
 	//
@@ -11204,6 +11541,82 @@ func (r CreateApiKeyHTTPResult) ContentType() string {
 	return ""
 }
 
+type CreateByokRegistrationKeyHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *CreateByokRegistrationKeyResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON429 the response for an HTTP 429 `application/json` response
+	JSON429 *TooManyRequestsError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r CreateByokRegistrationKeyHTTPResult) GetJSON200() *CreateByokRegistrationKeyResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r CreateByokRegistrationKeyHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r CreateByokRegistrationKeyHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r CreateByokRegistrationKeyHTTPResult) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON429 returns the response for an HTTP 429 `application/json` response
+func (r CreateByokRegistrationKeyHTTPResult) GetJSON429() *TooManyRequestsError {
+	return r.JSON429
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r CreateByokRegistrationKeyHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r CreateByokRegistrationKeyHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateByokRegistrationKeyHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateByokRegistrationKeyHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r CreateByokRegistrationKeyHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type CreateEnvironmentHTTPResult struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -11826,6 +12239,82 @@ func (r DeleteApiKeyHTTPResult) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r DeleteApiKeyHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type DeleteByokRegionHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *DeleteByokRegionResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r DeleteByokRegionHTTPResult) GetJSON200() *DeleteByokRegionResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r DeleteByokRegionHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r DeleteByokRegionHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r DeleteByokRegionHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r DeleteByokRegionHTTPResult) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r DeleteByokRegionHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetBody returns the raw response body bytes
+func (r DeleteByokRegionHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteByokRegionHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteByokRegionHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r DeleteByokRegionHTTPResult) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -14514,6 +15003,36 @@ func (c *ClientWithResponses) CreateApiKeyWithResponse(ctx context.Context, acco
 	return ParseCreateApiKeyHTTPResult(rsp)
 }
 
+// CreateByokRegistrationKeyWithBodyWithResponse Create a one-use key that registers a BYOK region installed with the BYOC chart
+//
+// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/CreateByokRegistrationKey (the `CreateByokRegistrationKey` operationId).
+func (c *ClientWithResponses) CreateByokRegistrationKeyWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateByokRegistrationKeyHTTPResult, error) {
+	rsp, err := c.CreateByokRegistrationKeyWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateByokRegistrationKeyHTTPResult(rsp)
+}
+
+// CreateByokRegistrationKeyWithResponse Create a one-use key that registers a BYOK region installed with the BYOC chart
+//
+// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/CreateByokRegistrationKey (the `CreateByokRegistrationKey` operationId).
+func (c *ClientWithResponses) CreateByokRegistrationKeyWithResponse(ctx context.Context, accountId AccountId, body CreateByokRegistrationKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateByokRegistrationKeyHTTPResult, error) {
+	rsp, err := c.CreateByokRegistrationKey(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateByokRegistrationKeyHTTPResult(rsp)
+}
+
 // CreateEnvironmentWithBodyWithResponse Create a new environment
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
@@ -14754,6 +15273,36 @@ func (c *ClientWithResponses) DeleteApiKeyWithResponse(ctx context.Context, acco
 		return nil, err
 	}
 	return ParseDeleteApiKeyHTTPResult(rsp)
+}
+
+// DeleteByokRegionWithBodyWithResponse Remove a BYOK region of the account, whatever its status. Refused while it hosts environments
+//
+// Revokes the region's access keys, removes its Twingate objects and marks it deleted, whether or not it has activated. Repeating the call on a deleted region answers the same.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeleteByokRegion (the `DeleteByokRegion` operationId).
+func (c *ClientWithResponses) DeleteByokRegionWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteByokRegionHTTPResult, error) {
+	rsp, err := c.DeleteByokRegionWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteByokRegionHTTPResult(rsp)
+}
+
+// DeleteByokRegionWithResponse Remove a BYOK region of the account, whatever its status. Refused while it hosts environments
+//
+// Revokes the region's access keys, removes its Twingate objects and marks it deleted, whether or not it has activated. Repeating the call on a deleted region answers the same.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/DeleteByokRegion (the `DeleteByokRegion` operationId).
+func (c *ClientWithResponses) DeleteByokRegionWithResponse(ctx context.Context, accountId AccountId, body DeleteByokRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteByokRegionHTTPResult, error) {
+	rsp, err := c.DeleteByokRegion(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteByokRegionHTTPResult(rsp)
 }
 
 // DeleteDefaultOrganizationMembersRoleBindingWithBodyWithResponse Remove the default account roles for organization members
@@ -16661,6 +17210,67 @@ func ParseCreateApiKeyHTTPResult(rsp *http.Response) (*CreateApiKeyHTTPResult, e
 	return response, nil
 }
 
+// ParseCreateByokRegistrationKeyHTTPResult parses an HTTP response from a CreateByokRegistrationKeyWithResponse call
+func ParseCreateByokRegistrationKeyHTTPResult(rsp *http.Response) (*CreateByokRegistrationKeyHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateByokRegistrationKeyHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreateByokRegistrationKeyResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest TooManyRequestsError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateEnvironmentHTTPResult parses an HTTP response from a CreateEnvironmentWithResponse call
 func ParseCreateEnvironmentHTTPResult(rsp *http.Response) (*CreateEnvironmentHTTPResult, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -17141,6 +17751,67 @@ func ParseDeleteApiKeyHTTPResult(rsp *http.Response) (*DeleteApiKeyHTTPResult, e
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteByokRegionHTTPResult parses an HTTP response from a DeleteByokRegionWithResponse call
+func ParseDeleteByokRegionHTTPResult(rsp *http.Response) (*DeleteByokRegionHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteByokRegionHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeleteByokRegionResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ServerInternalError

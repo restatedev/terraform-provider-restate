@@ -44,6 +44,21 @@ Managed BYOC, from the Cloud Management API snapshot of 2026-11-12:
   `rst:role::OrganizationRegionGrantAccess`. The provider recognises it at configure time and gives
   an explicit error when it is used for anything other than region grants and BYOC regions.
 
+BYOK, where the customer builds the Kubernetes cluster, from the Cloud Management API snapshot of
+2026-11-18 (an unmerged revision of `restatedev/restate-cloud`, recorded in
+`pkg/api/cloud/PROVENANCE.md`):
+
+- `restate_cloud_byok_registration_key` creates the one-use key that registers a BYOK region, and
+  exports the key (sensitive), the region id it reserves and its expiry. A key expires four hours after
+  it is created. The API cannot read a key back, so a refresh keeps the state, every argument other than
+  `deregister_region_on_destroy` replaces the key, and the resource cannot be imported. With
+  `deregister_region_on_destroy` a destroy also removes the region the key registered
+  (`DeleteByokRegion`), which Restate refuses while the region hosts environments. It is off by default.
+- `modules/byoc/gcp-byok` builds a GKE cluster for a BYOK region, registers it with the resource above and
+  installs the BYOC Helm chart. It turns on `enable_insecure_binding_system_unauthenticated` for the
+  Concierge and keeps the binding to `system:authenticated` refused.
+- Registration keys that start with `rrk_` are redacted from error text.
+
 Resources:
 
 - `restate_cloud_environment` — create, rename, resize, import and destroy Restate Cloud

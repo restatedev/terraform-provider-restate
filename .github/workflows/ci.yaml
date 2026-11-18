@@ -178,7 +178,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cloud: [aws, gcp, azure]
+        cloud: [aws, gcp, azure, gcp-byok]
     steps:
       - uses: actions/checkout@v4.4.0
       - uses: actions/setup-go@v5.6.0
@@ -233,8 +233,10 @@ jobs:
           done
 
       # The order of the calls to Restate Cloud relative to the cloud's own changes, against a fake
-      # API. The harness builds the provider itself.
+      # API. The harness builds the provider itself. It covers the region grant modules, and the
+      # BYOK module has no grant.
       - name: Integration
+        if: matrix.cloud != 'gcp-byok'
         run: modules/byoc/tests/integration/run.sh ${{ matrix.cloud }}
 
   vulncheck:

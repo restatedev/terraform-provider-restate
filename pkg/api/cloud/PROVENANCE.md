@@ -4,14 +4,19 @@
 | --- | --- |
 | File | `openapi.yaml` |
 | Source | `generated/schema/openapi.yaml` in the `restatedev/restate-cloud` repository |
-| Upstream revision | `ea764f52897028cb6b6f2763e092f23c90e990f0` |
-| Retrieved | 2026-11-12 |
+| Upstream revision | `00e44d37d34516e6f4c8cec72f984d3d1b335655`, the tip of the unmerged branch `bh/byok-concierge` |
+| Retrieved | 2026-11-18 |
 | Advertised `info.version` | `v1` |
 | OpenAPI version | 3.1.0 |
-| SHA-256 | `6e190d62ada89dde740918cc7a1443cd27a5c11b3645f9e8a6431982e70c3e59` |
+| SHA-256 | `0c09055e1a4f17a9fcf9c5a9e578b0b478cfc2386a964e41c64c9e6eb5d79b3e` |
 | License | Proprietary; vendored with permission as the contract this provider is built against. |
 
 The snapshot is committed pristine and is never edited.
+
+The revision is not on the upstream main branch yet. It differs from the previous snapshot
+(`ea764f52897028cb6b6f2763e092f23c90e990f0`) only by the BYOK operations `CreateByokRegistrationKey` and
+`DeleteByokRegion` with their schemas, and the response of `CreateByokRegistrationKey` carries the `regionId`
+only on this branch. Pin the merge commit of that branch and regenerate once it is on main.
 
 ## Generator
 

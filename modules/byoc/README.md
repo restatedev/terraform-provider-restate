@@ -11,6 +11,10 @@ active, you create environments in it just as you would in a Restate-hosted regi
 Managed BYOC is in preview. Your cloud provider charges your account for the region's resources from the moment Restate
 starts building them.
 
+This guide covers Managed BYOC, where Restate builds the cluster. To build the GKE cluster yourself and let Restate run
+environments in it, use the [`gcp-byok`](gcp-byok/README.md) module instead. It creates the cluster, registers it with
+Restate Cloud and installs the BYOC chart, and it needs no grant.
+
 ## Key terms
 
 | Term            | Meaning                                                                                                                                                                                                   |

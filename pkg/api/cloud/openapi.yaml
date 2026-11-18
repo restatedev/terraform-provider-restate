@@ -1436,6 +1436,132 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/CreateByokRegistrationKey:
+    post:
+      operationId: CreateByokRegistrationKey
+      summary: Create a one-use key that registers a BYOK region installed with the
+        BYOC chart
+      description: The response carries the region id the key will register, so it can
+        be given to the chart before the region exists. Registering with the key
+        creates the region under that id.
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateByokRegistrationKeyRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateByokRegistrationKeyResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: The principal is not allowed to make this request. The account has
+            no BYOC grant, or the key's role cannot register regions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "429":
+          description: The account is at a limit this operation counts against. The
+            account already holds the most registration keys that no region has
+            used.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TooManyRequestsError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/DeleteByokRegion:
+    post:
+      operationId: DeleteByokRegion
+      summary: Remove a BYOK region of the account, whatever its status. Refused while
+        it hosts environments
+      description: Revokes the region's access keys, removes its Twingate objects and
+        marks it deleted, whether or not it has activated. Repeating the call on
+        a deleted region answers the same.
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteByokRegionRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteByokRegionResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            region does not exist, is not a BYOK region, or belongs to another
+            account.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "409":
+          description: The request conflicts with the current state of the resource. The
+            account still has environments in the region.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
   /{accountId}/DeregisterByocRegion:
     post:
       operationId: DeregisterByocRegion
@@ -3423,6 +3549,43 @@ components:
         - kubeconfig
         - providerRegion
       additionalProperties: false
+    CreateByokRegistrationKeyRequest:
+      type: object
+      properties:
+        cloud:
+          type: string
+          enum:
+            - gcp
+          description: Cloud the region's cluster runs on. BYOK supports GCP.
+        providerRegion:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: The cloud's own name for where the region runs. The region must
+            report the same name to register.
+          example: us-central1
+        regionDisplayName:
+          description: The name the console shows for the region.
+          example: customer-a us-central1
+          type: string
+          minLength: 1
+          maxLength: 128
+      required:
+        - cloud
+        - providerRegion
+      additionalProperties: false
+    DeleteByokRegionRequest:
+      type: object
+      properties:
+        regionId:
+          $ref: "#/components/schemas/RegionId"
+      required:
+        - regionId
+      additionalProperties: false
+    RegionId:
+      type: string
+      pattern: ^rgn_[a-z0-9]+$
+      example: rgn_a1b2c3d4e5
     DeregisterByocRegionRequest:
       type: object
       properties:
@@ -3555,10 +3718,6 @@ components:
         - regionId
         - grant
       additionalProperties: false
-    RegionId:
-      type: string
-      pattern: ^rgn_[a-z0-9]+$
-      example: rgn_a1b2c3d4e5
     DeleteRegionRequest:
       type: object
       properties:
@@ -4660,6 +4819,74 @@ components:
         - status
         - created
       additionalProperties: false
+    CreateByokRegistrationKeyResponse:
+      type: object
+      properties:
+        registrationKey:
+          type: string
+          description: Registers one BYOK region for this account, cloud and provider
+            region, once. Shown only in this response. Give it to the BYOC chart
+            as its registration Secret.
+          example: rrk_1a2b3c.4d5e6f
+        regionId:
+          description: The id the key gives the region it registers, reserved when the key
+            is minted. Give it to the BYOC chart as `region.id`. The chart
+            derives the region's Concierge audience and proxy endpoint from it.
+          $ref: "#/components/schemas/RegionId"
+        expiresAt:
+          type: string
+          description: When the key stops working if no region has used it.
+          example: 2026-11-16T22:00:00.000Z
+      required:
+        - registrationKey
+        - regionId
+        - expiresAt
+      additionalProperties: false
+    ForbiddenError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    TooManyRequestsError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    DeleteByokRegionResponse:
+      type: object
+      properties:
+        regionId:
+          $ref: "#/components/schemas/RegionId"
+        status:
+          type: string
+          const: DELETED
+      required:
+        - regionId
+        - status
+      additionalProperties: false
+    NotFoundError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
     DeregisterByocRegionResponse:
       type: object
       properties:
@@ -4823,28 +5050,6 @@ components:
         - infrastructure
         - status
         - createdAt
-      additionalProperties: false
-    ForbiddenError:
-      type: object
-      properties:
-        code:
-          type: number
-        message:
-          type: string
-      required:
-        - code
-        - message
-      additionalProperties: false
-    NotFoundError:
-      type: object
-      properties:
-        code:
-          type: number
-        message:
-          type: string
-      required:
-        - code
-        - message
       additionalProperties: false
     PreconditionFailedError:
       type: object
@@ -5132,6 +5337,32 @@ components:
             - BUSINESS
             - PREMIUM
             - CUSTOM
+        providerIdentity:
+          description: Identities the environment presents to other clouds.
+          type: object
+          properties:
+            gcpFederation:
+              description: Present when the environment is configured to call IAM-protected
+                Google Cloud services, such as private Cloud Run services,
+                through AWS to Google Cloud workload identity federation. The
+                environment uses it once it runs Restate 1.8.0 or later with
+                this configuration applied.
+              type: object
+              properties:
+                awsAccountId:
+                  type: string
+                  description: The AWS account that a Google Cloud workload identity pool provider
+                    must trust.
+                subject:
+                  type: string
+                  description: The environment's federated subject. Grant it
+                    roles/iam.serviceAccountOpenIdTokenCreator on the service
+                    account that Restate should impersonate.
+              required:
+                - awsAccountId
+                - subject
+              additionalProperties: false
+          additionalProperties: false
       required:
         - environmentId
         - region

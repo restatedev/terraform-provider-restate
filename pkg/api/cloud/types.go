@@ -379,3 +379,26 @@ type CreateRegionInput struct {
 	// MachineType is empty for the API's default. AWS takes none.
 	MachineType string
 }
+
+// ByokRegistrationKey is a one-use key that registers one BYOK region, which the customer's own
+// Terraform builds. The region exists only once the BYOC chart registers with the key.
+type ByokRegistrationKey struct {
+	// Key is shown only in the response that mints it. Whoever holds it can register one region for the
+	// account until ExpiresAt.
+	Key string
+	// RegionID is the id the key reserves for the region it registers. It is the BYOC chart's region.id.
+	RegionID string
+	// ExpiresAt is when the key stops working if no region has used it.
+	ExpiresAt string
+}
+
+// CreateByokRegistrationKeyInput is a request to mint a BYOK registration key.
+type CreateByokRegistrationKeyInput struct {
+	// Cloud is the cloud the region's cluster runs on. BYOK supports GCP only.
+	Cloud CloudProvider
+	// ProviderRegion is the cloud's own name for where the region runs, such as us-central1. The
+	// registering region must report the same name.
+	ProviderRegion string
+	// DisplayName is empty for the API's default.
+	DisplayName string
+}

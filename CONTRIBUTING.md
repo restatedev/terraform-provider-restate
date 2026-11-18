@@ -33,6 +33,11 @@ checklist, and the decisions that are still open. Also read the two pinned OpenA
   There are deliberately no *per-page* templates. A resource's description, attribute documentation,
   and example already live next to the thing they describe, and a page template would move prose
   away from the code it documents and let the two drift.
+
+  The one exception is `templates/resources/cloud_byok_registration_key.md.tmpl`. The fallback
+  template always renders an Import section, and that resource cannot be imported, because the API
+  shows a registration key once. The page template is the fallback with that section replaced by one
+  sentence, and it has no `.sh` file in `examples/resources/`.
 - `examples/resources/` and `examples/data-sources/` are each a single Terraform module whose files
   are named after the page that embeds them: `restate_deployment.tf` is what
   `docs/resources/deployment.md` shows, and `restate_deployment.sh` is its import command. CI

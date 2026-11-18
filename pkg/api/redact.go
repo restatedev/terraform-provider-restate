@@ -17,7 +17,7 @@ const Redacted = "[REDACTED]"
 // The prefixes are shared by key IDs and key secrets, so a long key ID quoted by the *server* is
 // redacted too. That is the safe direction to err in; the provider's own diagnostics name key IDs
 // directly and do not pass through here.
-var bearerPattern = regexp.MustCompile(`(?i)\b(bearer\s+|key_|rst_)[A-Za-z0-9._~+/=-]{8,}`)
+var bearerPattern = regexp.MustCompile(`(?i)\b(bearer\s+|key_|rst_|rrk_)[A-Za-z0-9._~+/=-]{8,}`)
 
 // RedactString removes credentials from text about to be logged or put in a diagnostic.
 //
