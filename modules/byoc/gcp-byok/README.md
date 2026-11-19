@@ -94,13 +94,12 @@ Every Restate image in the cluster must come from `image_source_registry`. Mirro
 | `hold` | Keep the region at its applied release. The default is false. |
 | `restate_operator_canary_image_tag` | The tag of `<image_source_registry>/alpine`. The default is `3.21`. |
 | `chart_values` | More values for the chart as YAML documents, which Helm merges over the module's values. |
-| `tunnel_zones` | The number of tunnel LoadBalancer Services, which the chart creates one for each zone, from 3 to 9. The cloud operator renders at least three tunnels and the installer accepts at most nine. The default is the length of `node_locations`, or else the number of available zones of the region capped at nine. The module refuses a default below three or a `node_locations` list longer than nine, so set `tunnel_zones` then. The installer waits until every Service has an address. |
 | `helm_timeout_seconds` | How long Terraform waits for Config Connector's object. The BYOC chart's release is not waited for. The default is 900. |
 | `release_channel`, `kubernetes_version` | The GKE release channel, `REGULAR` by default, and an optional minimum version. The chart needs Kubernetes 1.30 or later. |
 | `deletion_protection` | GKE's protection against deleting the cluster. The default is true. |
 | `network`, `subnet_cidr`, `pods_cidr`, `services_cidr` | A subnetwork of your own with its secondary range names, or the ranges of the network the module creates. |
 | `enable_private_nodes`, `enable_private_endpoint`, `master_ipv4_cidr_block`, `master_authorized_networks` | How the cluster is reached. The nodes are private by default. |
-| `node_locations` | The zones of the node pools. Give at least three, because the chart needs three tunnel Services, or set `tunnel_zones` when you give fewer. |
+| `node_locations` | The zones of the node pools, from 3 to 9 distinct names. The default is every zone of the region that Google Cloud picks for the cluster. The module passes the zones the cluster runs in, sorted by name, to the chart as `region.availabilityZones`. The chart creates one tunnel Service for each zone, and the installer waits until every Service has an address. |
 | `system_node_pool`, `environments_node_pool` | The machine type, the node counts per zone and the disk of each pool. |
 | `node_service_account_roles` | The project roles of the nodes' service account. |
 | `snapshot_bucket_name`, `snapshot_bucket_force_destroy` | The bucket's name and whether a destroy deletes the snapshots in it. |
@@ -130,4 +129,4 @@ The module was tested with mocked providers only, and no cluster has been built 
 | The chart's values | The module sets the values listed in the chart's README and `restateOperator.gcpWorkloadIdentity`, which the chart passes to restate-operator. A chart release that renames one of them needs a matching release of this module. |
 | Environment scheduling | The chart limits which node selector and tolerations environment pods may use. Whether Restate's control plane sets them on a BYOK environment is a question for the control plane's release, and until it does, environment pods that name neither stay off the tainted pool. |
 | Static addresses | The chart creates the ingress and tunnel Services, and this module reserves no addresses for them. |
-| The number of tunnel Services | The module assumes that a regional cluster uses every available zone of its region, or the zones in `node_locations`. If the region reports another number of zones, set `tunnel_zones`. The chart accepts 3 to 9 tunnel Services, so a region with fewer than three available zones, or a node pool in fewer than three zones, needs `tunnel_zones` set to at least 3, and the plan refuses it otherwise. |
+| The availability zones | The module reads the zones from the cluster it creates, so they are the ones in `node_locations`, or the ones Google Cloud picks when you give none. Those are unknown until the cluster exists, and the apply refuses a cluster in fewer than three or more than nine zones before it installs the chart. A region with fewer than three zones cannot host the chart. |

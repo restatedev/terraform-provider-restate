@@ -4,9 +4,6 @@ mock_provider "google" {
   mock_data "google_client_config" {
     defaults = { access_token = "mock-token" }
   }
-  mock_data "google_compute_zones" {
-    defaults = { names = ["us-central1-a", "us-central1-b", "us-central1-c", "us-central1-f"] }
-  }
   mock_resource "google_container_cluster" {
     defaults = {
       endpoint    = "203.0.113.10"
@@ -32,6 +29,13 @@ mock_provider "restate" {
       expires_at = "2026-11-18T16:00:00.000Z"
     }
   }
+}
+
+# The zones Google Cloud picks when node_locations is not set, in no particular order, because the
+# provider reports a set. The module sorts them for the chart.
+override_resource {
+  target = google_container_cluster.this
+  values = { node_locations = ["us-central1-f", "us-central1-a", "us-central1-c", "us-central1-b"] }
 }
 
 # Each account answers its own email, so that an assertion can tell them apart.
@@ -218,21 +222,22 @@ run "chart_values" {
   }
 
   assert {
-    condition = (yamldecode(helm_release.byoc.values[0]).loadBalancers == { tunnel = { zones = 4 } }
+    condition = (!can(yamldecode(helm_release.byoc.values[0]).loadBalancers)
     && helm_release.config_connector.wait)
-    error_message = "The chart must create one tunnel Service for each available zone of the region, and Config Connector's object must be waited for."
+    error_message = "The chart must no longer be given loadBalancers.tunnel.zones, which region.availabilityZones replaced, and Config Connector's object must be waited for."
   }
 
   assert {
     condition = (yamldecode(helm_release.byoc.values[0]).region == {
-      id             = "rgn_a1b2c3d4e5"
-      cloud          = "gcp"
-      providerRegion = "us-central1"
+      id                = "rgn_a1b2c3d4e5"
+      cloud             = "gcp"
+      providerRegion    = "us-central1"
+      availabilityZones = ["us-central1-a", "us-central1-b", "us-central1-c", "us-central1-f"]
       }
       && yamldecode(helm_release.byoc.values[0]).controlPlane == { url = "https://api.dev.restate.cloud" }
       && yamldecode(helm_release.byoc.values[0]).imageSource == { registry = "us-central1-docker.pkg.dev/my-restate-region/restate" }
     && yamldecode(helm_release.byoc.values[0]).registration == { secretName = "registration" })
-    error_message = "The chart must be told the region the key reserved, its cloud and provider region, the control plane and the image source."
+    error_message = "The chart must be told the region the key reserved, its cloud and provider region, the sorted zones of the cluster, the control plane and the image source."
   }
 
   assert {

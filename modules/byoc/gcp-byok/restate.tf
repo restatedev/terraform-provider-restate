@@ -37,13 +37,14 @@ locals {
       id             = restate_cloud_byok_registration_key.this.region_id
       cloud          = "gcp"
       providerRegion = var.region
+      # The chart creates one tunnel Service for each zone, which the installer waits to get an address
+      # before it activates the region, and the region installation operator reports the names to the
+      # control plane.
+      availabilityZones = local.availability_zones
     }
     staffGate  = { enabled = var.staff_gate_enabled }
     hold       = var.hold
     scheduling = local.scheduling
-    # One tunnel Service for each zone, which the installer waits to get an address before it
-    # activates the region.
-    loadBalancers = { tunnel = { zones = local.tunnel_zones } }
     environments = {
       gcpServiceAccount = google_service_account.environments.email
       snapshotBucket    = google_storage_bucket.snapshots.name
@@ -115,8 +116,8 @@ resource "helm_release" "byoc" {
 
   lifecycle {
     precondition {
-      condition     = local.tunnel_zones >= 3 && local.tunnel_zones <= 9
-      error_message = "The BYOC chart needs 3 to 9 tunnel Services, and ${var.region} gives ${local.tunnel_zones}. Set tunnel_zones from 3 to 9."
+      condition     = length(local.availability_zones) >= 3 && length(local.availability_zones) <= 9
+      error_message = "The BYOC chart needs 3 to 9 availability zones, and the cluster in ${var.region} runs in ${length(local.availability_zones)}. Set node_locations to a list of 3 to 9 zones."
     }
   }
 

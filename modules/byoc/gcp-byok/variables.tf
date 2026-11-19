@@ -133,17 +133,6 @@ variable "chart_values" {
   default     = []
 }
 
-variable "tunnel_zones" {
-  description = "The number of tunnel LoadBalancer Services the chart creates, as `loadBalancers.tunnel.zones`. The chart accepts 3 to 9, because the cloud operator renders at least three tunnels and the installer accepts at most nine. The default is the length of `node_locations` when set, and otherwise the number of available zones of `region`, which is what a regional cluster uses, capped at 9. A default below 3 is refused, so set this or give `node_locations` at least three zones."
-  type        = number
-  default     = null
-
-  validation {
-    condition     = var.tunnel_zones == null ? true : (var.tunnel_zones >= 3 && var.tunnel_zones <= 9)
-    error_message = "tunnel_zones must be from 3 to 9, which is the range the BYOC chart accepts."
-  }
-}
-
 variable "helm_timeout_seconds" {
   description = "How long Terraform waits for Config Connector's object to be applied. The module does not wait for the BYOC chart, whose pods become ready only after the region has registered."
   type        = number
@@ -232,18 +221,18 @@ variable "master_authorized_networks" {
 }
 
 variable "node_locations" {
-  description = "The zones of the node pools, for example `[\"us-central1-a\", \"us-central1-b\", \"us-central1-c\"]`. The default is every zone of the region that Google Cloud picks for the cluster. The chart creates one tunnel Service for each zone and accepts 3 to 9, so give at least three zones, or set `tunnel_zones` when you give fewer."
+  description = "The zones of the node pools, for example `[\"us-central1-a\", \"us-central1-b\", \"us-central1-c\"]`. The default is every zone of the region that Google Cloud picks for the cluster. The module passes the zones of the cluster, sorted by name, to the chart as `region.availabilityZones`, and the chart creates one tunnel Service for each zone. The chart accepts 3 to 9 distinct zones, so give at least three, and no more than nine."
   type        = list(string)
   default     = null
 
   validation {
-    condition     = var.node_locations == null ? true : (length(var.node_locations) >= 3 || var.tunnel_zones != null)
-    error_message = "node_locations lists fewer than three zones, and the BYOC chart needs at least three tunnel Services. Give at least three zones, or set tunnel_zones from 3 to 9."
+    condition     = var.node_locations == null ? true : (length(var.node_locations) >= 3 && length(var.node_locations) <= 9)
+    error_message = "node_locations must list 3 to 9 zones, which is the range of availability zones that the BYOC chart accepts."
   }
 
   validation {
-    condition     = var.node_locations == null ? true : (length(var.node_locations) <= 9 || var.tunnel_zones != null)
-    error_message = "node_locations lists more than nine zones, and the BYOC chart accepts at most nine tunnel Services. Set tunnel_zones from 3 to 9."
+    condition     = var.node_locations == null ? true : length(distinct(var.node_locations)) == length(var.node_locations)
+    error_message = "node_locations must not repeat a zone, because the BYOC chart needs distinct availability zones."
   }
 }
 

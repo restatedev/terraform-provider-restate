@@ -4,9 +4,6 @@ mock_provider "google" {
   mock_data "google_client_config" {
     defaults = { access_token = "mock-token" }
   }
-  mock_data "google_compute_zones" {
-    defaults = { names = ["europe-west1-b", "europe-west1-c", "europe-west1-d"] }
-  }
   mock_resource "google_container_cluster" {
     defaults = {
       endpoint    = "10.0.0.2"
@@ -146,26 +143,39 @@ run "chart_from_a_repository_with_overrides" {
   }
 
   assert {
-    condition     = yamldecode(helm_release.byoc.values[0]).loadBalancers == { tunnel = { zones = 4 } }
-    error_message = "With node_locations the chart must create one tunnel Service for each listed zone, not for each zone of the region, which the mock reports as three."
+    condition = (yamldecode(helm_release.byoc.values[0]).region.availabilityZones == ["europe-west1-b", "europe-west1-c", "europe-west1-d", "europe-west1-f"]
+    && !can(yamldecode(helm_release.byoc.values[0]).loadBalancers))
+    error_message = "With node_locations the chart must get exactly the listed zones as region.availabilityZones, and no loadBalancers.tunnel.zones."
   }
 }
 
-run "tunnel_zones_can_be_set" {
+run "node_locations_in_any_order_reach_the_chart_sorted" {
   command = apply
 
   variables {
-    tunnel_zones   = 3
-    node_locations = ["europe-west1-b", "europe-west1-c"]
+    node_locations = ["europe-west1-d", "europe-west1-b", "europe-west1-c"]
   }
 
   assert {
-    condition     = yamldecode(helm_release.byoc.values[0]).loadBalancers == { tunnel = { zones = 3 } }
-    error_message = "tunnel_zones must make two node locations acceptable and override the count taken from them."
+    condition     = yamldecode(helm_release.byoc.values[0]).region.availabilityZones == ["europe-west1-b", "europe-west1-c", "europe-west1-d"]
+    error_message = "The chart's zone list is ordered, so the module must give it the same sorted list whatever order node_locations has."
   }
 }
 
-run "refuses_two_node_locations_without_tunnel_zones" {
+run "accepts_nine_node_locations" {
+  command = apply
+
+  variables {
+    node_locations = ["z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9"]
+  }
+
+  assert {
+    condition     = length(yamldecode(helm_release.byoc.values[0]).region.availabilityZones) == 9
+    error_message = "The chart accepts nine availability zones, so the module must pass all nine."
+  }
+}
+
+run "refuses_two_node_locations" {
   command = plan
 
   variables {
@@ -175,21 +185,7 @@ run "refuses_two_node_locations_without_tunnel_zones" {
   expect_failures = [var.node_locations]
 }
 
-run "caps_node_locations_at_nine_tunnels" {
-  command = apply
-
-  variables {
-    tunnel_zones   = 9
-    node_locations = ["z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9", "z10"]
-  }
-
-  assert {
-    condition     = yamldecode(helm_release.byoc.values[0]).loadBalancers == { tunnel = { zones = 9 } }
-    error_message = "More than nine node locations need an explicit tunnel_zones, which the chart accepts up to nine."
-  }
-}
-
-run "refuses_ten_node_locations_without_tunnel_zones" {
+run "refuses_ten_node_locations" {
   command = plan
 
   variables {
@@ -199,54 +195,46 @@ run "refuses_ten_node_locations_without_tunnel_zones" {
   expect_failures = [var.node_locations]
 }
 
-run "refuses_tunnel_zones_outside_three_to_nine" {
+run "refuses_a_repeated_node_location" {
   command = plan
 
   variables {
-    tunnel_zones = 2
+    node_locations = ["europe-west1-b", "europe-west1-c", "europe-west1-c"]
   }
 
-  expect_failures = [var.tunnel_zones]
+  expect_failures = [var.node_locations]
 }
 
-run "refuses_ten_tunnel_zones" {
+# A region where Google Cloud picks fewer than three zones would give the chart a list it refuses.
+run "refuses_a_cluster_in_two_zones" {
   command = plan
 
-  variables {
-    tunnel_zones = 10
-  }
-
-  expect_failures = [var.tunnel_zones]
-}
-
-# A region with fewer than three available zones would give the chart a count it refuses.
-run "refuses_a_region_with_two_zones" {
-  command = plan
-
-  override_data {
-    target = data.google_compute_zones.available
-    values = { names = ["europe-west1-b", "europe-west1-c"] }
+  override_resource {
+    target = google_container_cluster.this
+    values = { node_locations = ["europe-west1-b", "europe-west1-c"] }
   }
 
   expect_failures = [helm_release.byoc]
 }
 
-run "caps_a_region_with_many_zones_at_nine" {
-  command = apply
+run "refuses_a_cluster_in_ten_zones" {
+  command = plan
 
-  override_data {
-    target = data.google_compute_zones.available
-    values = { names = ["z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9", "z10", "z11"] }
+  override_resource {
+    target = google_container_cluster.this
+    values = { node_locations = ["z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "z9", "z10"] }
   }
 
-  assert {
-    condition     = yamldecode(helm_release.byoc.values[0]).loadBalancers == { tunnel = { zones = 9 } }
-    error_message = "The zones of the region must be capped at the nine tunnels the chart accepts."
-  }
+  expect_failures = [helm_release.byoc]
 }
 
 run "environments_role_can_be_narrowed" {
   command = plan
+
+  override_resource {
+    target = google_container_cluster.this
+    values = { node_locations = ["europe-west1-b", "europe-west1-c", "europe-west1-d"] }
+  }
 
   variables {
     config_connector_environment_role = "organizations/123/roles/environmentsIamPolicyAdmin"

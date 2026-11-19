@@ -30,21 +30,11 @@ locals {
     "storage.googleapis.com",
   ]
 
-  # A regional cluster puts a node pool in every available zone of its region, unless node_locations
-  # names fewer. The chart accepts 3 to 9 tunnel Services, so the count is capped at 9 and
-  # helm_release.byoc refuses a count below 3.
-  tunnel_zones = coalesce(
-    var.tunnel_zones,
-    min(9, var.node_locations == null ? length(data.google_compute_zones.available.names) : length(var.node_locations)),
-  )
-}
-
-data "google_compute_zones" "available" {
-  project = var.project
-  region  = var.region
-  status  = "UP"
-
-  depends_on = [google_project_service.this]
+  # The zones the cluster runs in, which the chart takes as region.availabilityZones. The provider
+  # reports them as a set, which has no order of its own, so they are sorted to give the chart the same
+  # list on every apply, because the chart's list is ordered. Google Cloud picks them when node_locations
+  # is not set, so they are unknown until the cluster exists.
+  availability_zones = sort(tolist(google_container_cluster.this.node_locations))
 }
 
 resource "google_project_service" "this" {

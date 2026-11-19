@@ -56,7 +56,9 @@ BYOK, where the customer builds the Kubernetes cluster, from the Cloud Managemen
   (`DeleteByokRegion`), which Restate refuses while the region hosts environments. It is off by default.
 - `modules/byoc/gcp-byok` builds a GKE cluster for a BYOK region, registers it with the resource above and
   installs the BYOC Helm chart. It turns on `enable_insecure_binding_system_unauthenticated` for the
-  Concierge and keeps the binding to `system:authenticated` refused.
+  Concierge and keeps the binding to `system:authenticated` refused. It passes the zones of the cluster,
+  sorted by name, to the chart as `region.availabilityZones`, from 3 to 9 distinct names, and
+  `node_locations` accepts 3 to 9 zones to match.
 - Registration keys that start with `rrk_` are redacted from error text.
 
 Resources:
