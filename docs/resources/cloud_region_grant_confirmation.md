@@ -3,7 +3,7 @@
 page_title: "restate_cloud_region_grant_confirmation Resource - Restate"
 subcategory: ""
 description: |-
-  Confirms a restate_cloud_region_grant with the output of the grant module in modules/byoc https://github.com/restatedev/terraform-restate-cloud/tree/main/modules/byoc. Restate signs in through the cloud grant and checks that it acts in the grant's cloud account, and the grant becomes READY.
+  Confirms a restate_cloud_region_grant with the output of the grant module in modules/byoc https://github.com/restatedev/terraform-provider-restate/tree/main/modules/byoc. Restate signs in through the cloud grant and checks that it acts in the grant's cloud account, and the grant becomes READY.
   Restate signs in through the cloud grant in the background, and keeps trying for 20 minutes while the cloud spreads a new identity. The apply waits until the grant is READY, and fails with the cloud's answer when Restate gives up (CONFIRMATION_FAILED). When the create timeout passes first, the apply fails with the cloud's last answer, and the next apply keeps waiting on the same sign-in.
   Destroying this resource deletes the region grant at Restate. Terraform destroys it before the grant module, so Restate stops using the cloud grant before it is removed. Restate refuses while a region still uses the grant, which stops the destroy and keeps the cloud grant in place, including for regions that other configurations built with an organization's grant.
   A change to grant confirms the grant again in place. Restate accepts the output it confirmed and refuses any other, because regions built with the grant depend on it; to move to another cloud grant, replace the restate_cloud_region_grant.
@@ -11,7 +11,7 @@ description: |-
 
 # restate_cloud_region_grant_confirmation (Resource)
 
-Confirms a `restate_cloud_region_grant` with the output of the grant module in [modules/byoc](https://github.com/restatedev/terraform-restate-cloud/tree/main/modules/byoc). Restate signs in through the cloud grant and checks that it acts in the grant's cloud account, and the grant becomes `READY`.
+Confirms a `restate_cloud_region_grant` with the output of the grant module in [modules/byoc](https://github.com/restatedev/terraform-provider-restate/tree/main/modules/byoc). Restate signs in through the cloud grant and checks that it acts in the grant's cloud account, and the grant becomes `READY`.
 
 Restate signs in through the cloud grant in the background, and keeps trying for 20 minutes while the cloud spreads a new identity. The apply waits until the grant is `READY`, and fails with the cloud's answer when Restate gives up (`CONFIRMATION_FAILED`). When the create timeout passes first, the apply fails with the cloud's last answer, and the next apply keeps waiting on the same sign-in.
 

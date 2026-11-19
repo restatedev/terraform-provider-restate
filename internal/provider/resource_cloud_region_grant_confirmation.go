@@ -60,7 +60,7 @@ type cloudRegionGrantConfirmationModel struct {
 func (r *CloudRegionGrantConfirmationResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Confirms a `restate_cloud_region_grant` with the output of the grant module in " +
-			"[modules/byoc](https://github.com/restatedev/terraform-restate-cloud/tree/main/modules/byoc). Restate " +
+			"[modules/byoc](https://github.com/restatedev/terraform-provider-restate/tree/main/modules/byoc). Restate " +
 			"signs in through the cloud grant and checks that it acts in the grant's cloud account, and the grant " +
 			"becomes `READY`.\n\n" +
 			"Restate signs in through the cloud grant in the background, and keeps trying for 20 minutes while " +

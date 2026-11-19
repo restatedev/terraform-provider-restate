@@ -26,7 +26,7 @@ the cloud provider's configuration for the cloud account.
 provider "restate" {} # RESTATE_CLOUD_ACCOUNT_ID and RESTATE_CLOUD_MANAGEMENT_API_KEY
 
 module "restate_byoc" {
-  source = "github.com/restatedev/terraform-restate-cloud//modules/byoc/aws"
+  source = "github.com/restatedev/terraform-provider-restate//modules/byoc/aws"
 
   region_grant = {
     owner = "ACCOUNT"
@@ -52,7 +52,7 @@ another team.
 | `restate_cloud_byoc_region` | Builds a region with a `READY` grant, and waits until it is `ACTIVE`. |
 
 The cloud side of the grant sits between the first two. The grant module in
-[`modules/byoc`](https://github.com/restatedev/terraform-restate-cloud/tree/main/modules/byoc) creates it,
+[`modules/byoc`](https://github.com/restatedev/terraform-provider-restate/tree/main/modules/byoc) creates it,
 with one directory for each cloud. It takes four values from `restate_cloud_region_grant`, and its
 `grant` output goes unchanged to `restate_cloud_region_grant_confirmation`.
 
