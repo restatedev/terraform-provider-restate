@@ -50,7 +50,7 @@ terraform apply
 This repository ignores `*.tfvars` files and Terraform state, so your values and the state stay out of git. Keep the
 state, because you need it to remove what the example created. To use an example in a repository of your own, copy its
 directory and change the module's `source` before you run `terraform init`. The new source is
-`github.com/restatedev/terraform-restate-cloud//modules/byoc/aws`, with the directory of your cloud in place of `aws`.
+`github.com/restatedev/terraform-provider-restate//modules/byoc/aws`, with the directory of your cloud in place of `aws`.
 
 ## Removing what an example created
 

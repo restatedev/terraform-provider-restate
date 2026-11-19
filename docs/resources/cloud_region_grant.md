@@ -4,7 +4,7 @@ page_title: "restate_cloud_region_grant Resource - Restate"
 subcategory: ""
 description: |-
   A Managed BYOC region grant: access to one AWS account, GCP project or Azure subscription that builds any number of BYOC regions there.
-  A grant has two halves. This resource is Restate's half. It answers the values the cloud half is built from (restate_issuer, grant_subject, token_audience and resource_prefix), which go to the grant module in modules/byoc https://github.com/restatedev/terraform-restate-cloud/tree/main/modules/byoc, which can also create this resource and its confirmation itself. restate_cloud_region_grant_confirmation then hands the module's output to Restate, which signs in through it and marks the grant READY. Only then can restate_cloud_byoc_region build regions with it.
+  A grant has two halves. This resource is Restate's half. It answers the values the cloud half is built from (restate_issuer, grant_subject, token_audience and resource_prefix), which go to the grant module in modules/byoc https://github.com/restatedev/terraform-provider-restate/tree/main/modules/byoc, which can also create this resource and its confirmation itself. restate_cloud_region_grant_confirmation then hands the module's output to Restate, which signs in through it and marks the grant READY. Only then can restate_cloud_byoc_region build regions with it.
   A grant that is not confirmed within seven days expires. A refresh that finds the grant expired or deleted removes it from the state, so the next apply creates a new one.
   The API has no update operation, so changing any argument replaces the grant, and a grant that regions still use cannot be deleted.
 ---
@@ -13,7 +13,7 @@ description: |-
 
 A Managed BYOC region grant: access to one AWS account, GCP project or Azure subscription that builds any number of BYOC regions there.
 
-A grant has two halves. This resource is Restate's half. It answers the values the cloud half is built from (`restate_issuer`, `grant_subject`, `token_audience` and `resource_prefix`), which go to the grant module in [modules/byoc](https://github.com/restatedev/terraform-restate-cloud/tree/main/modules/byoc), which can also create this resource and its confirmation itself. `restate_cloud_region_grant_confirmation` then hands the module's output to Restate, which signs in through it and marks the grant `READY`. Only then can `restate_cloud_byoc_region` build regions with it.
+A grant has two halves. This resource is Restate's half. It answers the values the cloud half is built from (`restate_issuer`, `grant_subject`, `token_audience` and `resource_prefix`), which go to the grant module in [modules/byoc](https://github.com/restatedev/terraform-provider-restate/tree/main/modules/byoc), which can also create this resource and its confirmation itself. `restate_cloud_region_grant_confirmation` then hands the module's output to Restate, which signs in through it and marks the grant `READY`. Only then can `restate_cloud_byoc_region` build regions with it.
 
 A grant that is not confirmed within seven days expires. A refresh that finds the grant expired or deleted removes it from the state, so the next apply creates a new one.
 

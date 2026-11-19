@@ -133,7 +133,7 @@ In this mode the module makes its Restate Cloud calls through the `restatedev/re
 provider "restate" {} # RESTATE_CLOUD_ACCOUNT_ID and RESTATE_CLOUD_MANAGEMENT_API_KEY
 
 module "restate_byoc" {
-  source = "github.com/restatedev/terraform-restate-cloud//modules/byoc/gcp"
+  source = "github.com/restatedev/terraform-provider-restate//modules/byoc/gcp"
 
   project = "acme-restate-prod"
   region_grant = {

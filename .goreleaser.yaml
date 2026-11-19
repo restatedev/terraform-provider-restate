@@ -5,6 +5,10 @@
 # signature over that manifest, and a manifest.json declaring the supported protocol versions.
 version: 2
 
+# goreleaser would otherwise name the artifacts after the repository, and the registry rejects any
+# artifact whose name does not start with terraform-provider-<name>.
+project_name: terraform-provider-restate
+
 before:
   hooks:
     # A release must not ship a stale generated client or a stale go.sum.
@@ -51,6 +55,9 @@ archives:
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
   algorithm: sha256
+  extra_files:
+    - glob: terraform-registry-manifest.json
+      name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
 
 signs:
   - artifacts: checksum
@@ -69,6 +76,9 @@ release:
   # A release is published as a draft so the changelog and artifacts can be reviewed before anyone
   # can consume them: the registry picks up a release as soon as it is public.
   draft: true
+  extra_files:
+    - glob: terraform-registry-manifest.json
+      name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
 
 changelog:
   disable: true

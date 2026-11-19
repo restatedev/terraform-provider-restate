@@ -304,7 +304,7 @@ provider with an organization administrator's token or an organization API key w
 provider "restate" {} # RESTATE_CLOUD_ACCOUNT_ID and RESTATE_CLOUD_MANAGEMENT_API_KEY
 
 module "restate_byoc" {
-  source = "github.com/restatedev/terraform-restate-cloud//modules/byoc/aws"
+  source = "github.com/restatedev/terraform-provider-restate//modules/byoc/aws"
 
   region_grant = {
     owner   = "ACCOUNT"

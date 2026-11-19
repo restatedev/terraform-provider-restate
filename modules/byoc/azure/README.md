@@ -76,7 +76,7 @@ A subscription can have one confirmed region grant. Confirming a second one fail
 provider "restate" {} # RESTATE_CLOUD_ACCOUNT_ID and RESTATE_CLOUD_MANAGEMENT_API_KEY
 
 module "restate_byoc" {
-  source = "github.com/restatedev/terraform-restate-cloud//modules/byoc/azure"
+  source = "github.com/restatedev/terraform-provider-restate//modules/byoc/azure"
 
   subscription_id = "00000000-0000-0000-0000-000000000000"
   region_grant = {
