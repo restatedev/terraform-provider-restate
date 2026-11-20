@@ -1,0 +1,6 @@
+apiVersion: v2
+name: config-connector
+description: Points the GKE Config Connector add-on at the Google service account it acts as.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

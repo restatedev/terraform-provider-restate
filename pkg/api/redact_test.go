@@ -17,6 +17,7 @@ func TestRedactStringRemovesBearerCredentials(t *testing.T) {
 		{"authorization header value", "unexpected header Authorization: Bearer key_live_abcdef1234567890", "key_live_abcdef1234567890"},
 		{"bare restate key prefix", "invalid credential key_live_abcdef1234567890 supplied", "key_live_abcdef1234567890"},
 		{"legacy token prefix", "token rst_abcdef1234567890 is expired", "rst_abcdef1234567890"},
+		{"byok registration key", "registration with rrk_1a2b3c4d.5e6f7a8b9c was refused", "rrk_1a2b3c4d.5e6f7a8b9c"},
 		{"lowercase bearer", "got bearer key_live_abcdef1234567890", "key_live_abcdef1234567890"},
 		{"url userinfo", `Post "https://user:sup3rsecret@api.us.restate.cloud/cloud": EOF`, "sup3rsecret"},
 	}

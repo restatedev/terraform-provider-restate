@@ -114,6 +114,10 @@ func IsGone(err error) bool { return hasStatus(err, http.StatusGone) }
 // IsBadRequest reports whether err is a 400.
 func IsBadRequest(err error) bool { return hasStatus(err, http.StatusBadRequest) }
 
+// IsTooManyRequests reports whether err is a 429: the account is at a limit the operation counts
+// against, or the API is throttling it.
+func IsTooManyRequests(err error) bool { return hasStatus(err, http.StatusTooManyRequests) }
+
 // IsServiceUnavailable reports whether err is a 503.
 func IsServiceUnavailable(err error) bool { return hasStatus(err, http.StatusServiceUnavailable) }
 

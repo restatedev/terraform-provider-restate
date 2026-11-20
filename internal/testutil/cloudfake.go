@@ -69,6 +69,23 @@ type CloudFake struct {
 	// RegionDeletingPolls how many deletes answer 409 while the teardown runs.
 	RegionPendingPolls  int
 	RegionDeletingPolls int
+
+	byokKeyCounter int
+	byokKeys       map[string]*FakeByokKey
+	// ByokKeyLimit is how many keys that no region has used the account may hold before the API
+	// answers 429. Zero means no limit.
+	ByokKeyLimit int
+}
+
+// FakeByokKey is one BYOK registration key's state. The region it reserves exists only after
+// RegisterByokRegion, as at Restate, where the chart's registration creates it.
+type FakeByokKey struct {
+	Secret         string
+	RegionID       string
+	Cloud          string
+	ProviderRegion string
+	DisplayName    string
+	Registered     bool
 }
 
 // FakeRegionGrant is one region grant's state.
@@ -138,6 +155,7 @@ func NewCloudFake(t *testing.T, accountID string) *CloudFake {
 		BillingMode:    "account",
 		grants:         map[string]*FakeRegionGrant{},
 		regions:        map[string]*FakeByocRegion{},
+		byokKeys:       map[string]*FakeByokKey{},
 		OrganizationID: "org_1",
 		Regions:        []string{"us-east-1", "eu-central-1"},
 	}
@@ -275,6 +293,9 @@ func (f *CloudFake) register() {
 	f.OnFunc("CreateRegion", f.createRegion)
 	f.OnFunc("DescribeRegion", f.describeRegion)
 	f.OnFunc("DeleteRegion", f.deleteRegion)
+
+	f.OnFunc("CreateByokRegistrationKey", f.createByokRegistrationKey)
+	f.OnFunc("DeleteByokRegion", f.deleteByokRegion)
 
 	f.OnFunc("CreateApiKey", f.createAPIKey)
 	f.OnFunc("DescribeApiKey", f.describeAPIKey)
@@ -893,6 +914,97 @@ func (f *CloudFake) deleteRegion(request Request) Response {
 	}
 	region.Status = "DELETED"
 	return jsonResponse(http.StatusOK, regionJSON(region))
+}
+
+// ByokKey returns the registration key that reserved a region id.
+func (f *CloudFake) ByokKey(regionID string) *FakeByokKey {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.byokKeys[regionID]
+}
+
+// RegisterByokRegion simulates the BYOC chart registering with the key that reserved regionID, which
+// is what creates the region at Restate.
+func (f *CloudFake) RegisterByokRegion(regionID string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	key := f.byokKeys[regionID]
+	key.Registered = true
+	f.regions[regionID] = &FakeByocRegion{
+		ID:           regionID,
+		Name:         regionID,
+		DisplayName:  key.DisplayName,
+		Cloud:        key.Cloud,
+		CloudRegion:  key.ProviderRegion,
+		CloudAccount: "customer-project",
+		Status:       "ACTIVE",
+	}
+}
+
+func (f *CloudFake) createByokRegistrationKey(request Request) Response {
+	var body struct {
+		Cloud             string `json:"cloud"`
+		ProviderRegion    string `json:"providerRegion"`
+		RegionDisplayName string `json:"regionDisplayName"`
+	}
+	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
+		return clientError(http.StatusBadRequest, "malformed request body")
+	}
+	if body.Cloud != "gcp" || body.ProviderRegion == "" {
+		return clientError(http.StatusBadRequest, "BYOK supports gcp, and the provider region is required")
+	}
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	unused := 0
+	for _, key := range f.byokKeys {
+		if !key.Registered {
+			unused++
+		}
+	}
+	if f.ByokKeyLimit > 0 && unused >= f.ByokKeyLimit {
+		return clientError(http.StatusTooManyRequests, "the account already holds the most registration keys that no region has used")
+	}
+
+	f.byokKeyCounter++
+	key := &FakeByokKey{
+		Secret:         fmt.Sprintf("rrk_%d.fakesecret%d", f.byokKeyCounter, f.byokKeyCounter),
+		RegionID:       fmt.Sprintf("rgn_byok%d", f.byokKeyCounter),
+		Cloud:          body.Cloud,
+		ProviderRegion: body.ProviderRegion,
+		DisplayName:    body.RegionDisplayName,
+	}
+	f.byokKeys[key.RegionID] = key
+	return jsonResponse(http.StatusOK, map[string]any{
+		"registrationKey": key.Secret,
+		"regionId":        key.RegionID,
+		"expiresAt":       "2026-11-18T16:00:00.000Z",
+	})
+}
+
+// deleteByokRegion answers as the API describes: 404 for a region that does not exist, which includes
+// one whose key no chart has used, and 409 while the region hosts environments.
+func (f *CloudFake) deleteByokRegion(request Request) Response {
+	var body struct {
+		RegionID string `json:"regionId"`
+	}
+	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
+		return clientError(http.StatusBadRequest, "malformed request body")
+	}
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	region, ok := f.regions[body.RegionID]
+	if !ok || f.byokKeys[body.RegionID] == nil {
+		return clientError(http.StatusNotFound, "region not found")
+	}
+	if region.Status == "DELETED" {
+		return jsonResponse(http.StatusOK, map[string]any{"regionId": region.ID, "status": "DELETED"})
+	}
+	if region.Environments > 0 {
+		return clientError(http.StatusConflict, "the account still has environments in the region")
+	}
+	region.Status = "DELETED"
+	return jsonResponse(http.StatusOK, map[string]any{"regionId": region.ID, "status": "DELETED"})
 }
 
 func regionJSON(region *FakeByocRegion) map[string]any {

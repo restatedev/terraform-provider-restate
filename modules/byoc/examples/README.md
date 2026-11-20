@@ -25,6 +25,9 @@ own identity yet. Set it to `true` where it does.
   In `gcp/region`, the optional `identity_project` puts the service account and its pool in a second project. The
   service account then cannot change its own access in the region project.
 - **Azure:** [`azure/region`](azure/region) and [`azure/region-grant`](azure/region-grant).
+- **Google Cloud, bring your own Kubernetes:** [`gcp-byok/region`](gcp-byok/region) builds a GKE cluster, registers it
+  with Restate Cloud and installs the BYOC chart. It needs no grant, and it uses the `restatedev/restate` provider for
+  its Restate calls.
 
 The [AWS](../aws/README.md), [Google Cloud](../gcp/README.md) and [Azure](../azure/README.md) READMEs describe every input
 and the permissions each grant holds.
