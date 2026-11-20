@@ -45,8 +45,8 @@ Managed BYOC, from the Cloud Management API snapshot of 2026-11-12:
   an explicit error when it is used for anything other than region grants and BYOC regions.
 
 BYOK, where the customer builds the Kubernetes cluster, from the Cloud Management API snapshot of
-2026-11-18 (an unmerged revision of `restatedev/restate-cloud`, recorded in
-`pkg/api/cloud/PROVENANCE.md`):
+2026-11-20 (the `main` revision of `restatedev/restate-cloud` recorded in
+`pkg/api/cloud/PROVENANCE.md`, which includes the merge of #2699):
 
 - `restate_cloud_byok_registration_key` creates the one-use key that registers a BYOK region, and
   exports the key (sensitive), the region id it reserves and its expiry. A key expires four hours after
