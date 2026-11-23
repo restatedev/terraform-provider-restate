@@ -18,9 +18,14 @@ module "restate_byok" {
   project = var.project
   region  = var.region
 
-  control_plane_url     = var.control_plane_url
+  control_plane_url = var.control_plane_url
+  byoc_chart        = var.byoc_chart
+
+  # Direct mode, the default, pulls every image from Restate's registry proxy with the credential that
+  # comes with the registration key. To mirror the images into a registry of your own instead, set
+  # image_source_mode to "mirror" and image_source_registry to its address.
+  image_source_mode     = var.image_source_mode
   image_source_registry = var.image_source_registry
-  byoc_chart            = var.byoc_chart
 
   # Only the networks that run Terraform need to reach the API server.
   master_authorized_networks = var.master_authorized_networks
@@ -40,13 +45,20 @@ variable "control_plane_url" {
   type        = string
 }
 
-variable "image_source_registry" {
-  description = "Where Restate's images are mirrored, for example us-central1-docker.pkg.dev/my-project/restate."
+variable "image_source_mode" {
+  description = "direct pulls Restate's images from Restate's registry proxy. mirror pulls them from image_source_registry."
   type        = string
+  default     = "direct"
+}
+
+variable "image_source_registry" {
+  description = "Mirror mode only: where Restate's images are mirrored, for example us-central1-docker.pkg.dev/my-project/restate."
+  type        = string
+  default     = ""
 }
 
 variable "byoc_chart" {
-  description = "Where the BYOC chart comes from. For a checkout, set chart to the path of charts/byoc and dependency_update to true."
+  description = "Where the BYOC chart comes from. Pin version to a chart release that has imageSource.mode, which direct mode needs. For a checkout, set chart to the path of charts/byoc and dependency_update to true."
   type = object({
     chart             = string
     repository        = optional(string)

@@ -390,6 +390,23 @@ type ByokRegistrationKey struct {
 	RegionID string
 	// ExpiresAt is when the key stops working if no region has used it.
 	ExpiresAt string
+	// ImagePull is the credential for Restate's registry proxy that the region reserved by this key
+	// pulls its images with. It is nil when the control plane serves no images, and for a control
+	// plane that predates the field.
+	ImagePull *ByokImagePull
+}
+
+// ByokImagePull is the registry credential that comes with a BYOK registration key. It is shown only
+// in the response that mints the key.
+type ByokImagePull struct {
+	// Registry is the registry proxy host, such as registry.us.restate.cloud.
+	Registry string
+	// Username is any value: Docker and crane insist on one.
+	Username string
+	// Password is a Restate API key for the registry proxy.
+	Password string
+	// RepositoryPrefix is what a repository name is appended to: the registry host and the stage's prefix.
+	RepositoryPrefix string
 }
 
 // CreateByokRegistrationKeyInput is a request to mint a BYOK registration key.

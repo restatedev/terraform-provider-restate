@@ -8,6 +8,11 @@ output "registration_key_expires_at" {
   value       = restate_cloud_byok_registration_key.this.expires_at
 }
 
+output "image_registry" {
+  description = "The registry every Restate image in the cluster comes from: `registry.<domain>` in direct mode, `image_source_registry` in mirror mode."
+  value       = local.image_registry
+}
+
 output "cluster_name" {
   description = "The name of the GKE cluster."
   value       = google_container_cluster.this.name

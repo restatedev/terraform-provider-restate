@@ -1443,7 +1443,9 @@ paths:
         BYOC chart
       description: The response carries the region id the key will register, so it can
         be given to the chart before the region exists. Registering with the key
-        creates the region under that id.
+        creates the region under that id. It also carries the credential for
+        copying Restate's private images into the customer's own registry, which
+        the chart needs before the region can activate.
       parameters:
         - in: path
           name: accountId
@@ -4837,6 +4839,43 @@ components:
           type: string
           description: When the key stops working if no region has used it.
           example: 2026-11-16T22:00:00.000Z
+        imagePull:
+          description: What the customer copies Restate's private images into their own
+            registry with, before the region exists. A Restate API key for the
+            registry proxy that pulls the images of the region this key reserves
+            and nothing else. Shown only in this response. It stops working when
+            the registration key expires unused, or when the account closes.
+            After a region registers with the key it keeps working until the
+            region activates, and for 24 hours after that, while the region's
+            own pull key replaces it. A region that has not activated 7 days
+            after it registered loses the key. Absent on a stage that serves no
+            images.
+          type: object
+          properties:
+            registry:
+              type: string
+              description: The registry proxy to copy images from.
+              example: registry.us.restate.cloud
+            username:
+              type: string
+              description: Any value works. Docker and crane insist on one.
+            password:
+              type: string
+              description: A Restate API key for the registry proxy. Shown only in this
+                response.
+            repositoryPrefix:
+              type: string
+              description: "What a repository name is appended to: the registry host and this
+                stage's prefix. The private images of the region (the region
+                installation operator, the cloud operator, ingress and tunnel)
+                live under it."
+              example: registry.dev.restate.cloud/dev-
+          required:
+            - registry
+            - username
+            - password
+            - repositoryPrefix
+          additionalProperties: false
       required:
         - registrationKey
         - regionId

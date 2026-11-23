@@ -5,10 +5,13 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -49,6 +52,28 @@ type cloudByokRegistrationKeyModel struct {
 	Key       types.String `tfsdk:"key"`
 	RegionID  types.String `tfsdk:"region_id"`
 	ExpiresAt types.String `tfsdk:"expires_at"`
+	ImagePull types.Object `tfsdk:"image_pull"`
+}
+
+// imagePullAttrTypes is the shape of image_pull, which is null when the control plane returned no
+// image pull credential.
+var imagePullAttrTypes = map[string]attr.Type{
+	"registry":          types.StringType,
+	"username":          types.StringType,
+	"password":          types.StringType,
+	"repository_prefix": types.StringType,
+}
+
+func imagePullValue(pull *cloud.ByokImagePull) (types.Object, diag.Diagnostics) {
+	if pull == nil {
+		return types.ObjectNull(imagePullAttrTypes), nil
+	}
+	return types.ObjectValue(imagePullAttrTypes, map[string]attr.Value{
+		"registry":          types.StringValue(pull.Registry),
+		"username":          types.StringValue(pull.Username),
+		"password":          types.StringValue(pull.Password),
+		"repository_prefix": types.StringValue(pull.RepositoryPrefix),
+	})
 }
 
 func (r *CloudByokRegistrationKeyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -62,10 +87,13 @@ func (r *CloudByokRegistrationKeyResource) Schema(_ context.Context, _ resource.
 			"and install the chart soon after. A key that expired or was used is not renewed: replace the " +
 			"resource (`terraform apply -replace=...`) to mint a new one, which reserves a new region id. " +
 			"Every key that no region has used counts against an account limit until it expires.\n\n" +
+			"The response that creates the key also carries a pull credential for Restate's registry proxy, " +
+			"which `image_pull` exposes. The chart's direct image source mode stores it in a Secret that the " +
+			"chart's pods pull with, and the region's installer replaces its content once the region is active.\n\n" +
 			"The API has no operation that reads a key back, so a refresh keeps the state as it is, and the key " +
 			"cannot be imported. Changing any argument other than `deregister_region_on_destroy` replaces the " +
-			"key. The key stays in the Terraform state, as every secret this provider stores does, and is " +
-			"useless there once a region has registered with it or it has expired.\n\n" +
+			"key. The key and the pull credential stay in the Terraform state, as every secret this provider " +
+			"stores does, and are useless there once a region has registered with the key or it has expired.\n\n" +
 			"Destroying the resource does not revoke an unused key, because the API cannot, and it leaves the " +
 			"registered region in place unless `deregister_region_on_destroy` is set.",
 		Attributes: map[string]schema.Attribute{
@@ -131,6 +159,38 @@ func (r *CloudByokRegistrationKeyResource) Schema(_ context.Context, _ resource.
 				MarkdownDescription: "When the key stops working if no region has used it.",
 				PlanModifiers:       stable,
 			},
+			"image_pull": schema.SingleNestedAttribute{
+				Computed: true,
+				MarkdownDescription: "The credential for Restate's registry proxy that the region's images are pulled " +
+					"with. The BYOC chart's `imageSource.mode = \"direct\"` pulls every image from the proxy, and the " +
+					"credential goes into a `kubernetes.io/dockerconfigjson` Secret in the chart's namespace. " +
+					"It is also what copies the images into your own registry first, in mirror mode. Restate shows it " +
+					"only in the response that creates the key, and the credential stops working when the key " +
+					"expires unused. After a region registers with the key, the credential keeps working until " +
+					"the region activates and for 24 hours after that, while the region's own pull key replaces " +
+					"it. `null` when the control plane returned no credential, which is the case for a stage that serves no images.",
+				PlanModifiers: []planmodifier.Object{objectplanmodifier.UseStateForUnknown()},
+				Attributes: map[string]schema.Attribute{
+					"registry": schema.StringAttribute{
+						Computed:            true,
+						MarkdownDescription: "The registry proxy host, such as `registry.us.restate.cloud`.",
+					},
+					"username": schema.StringAttribute{
+						Computed:            true,
+						MarkdownDescription: "The user name for the registry. Any value works; Docker and crane insist on one.",
+					},
+					"password": schema.StringAttribute{
+						Computed:            true,
+						Sensitive:           true,
+						MarkdownDescription: "A Restate API key for the registry proxy, which pulls the images of the region this key reserves and nothing else.",
+					},
+					"repository_prefix": schema.StringAttribute{
+						Computed: true,
+						MarkdownDescription: "What a repository name is appended to: the registry host and the stage's prefix. " +
+							"The region's private images live under it.",
+					},
+				},
+			},
 		},
 	}
 }
@@ -189,6 +249,9 @@ func (r *CloudByokRegistrationKeyResource) Create(ctx context.Context, req resou
 	state.Key = types.StringValue(key.Key)
 	state.RegionID = types.StringValue(key.RegionID)
 	state.ExpiresAt = types.StringValue(key.ExpiresAt)
+	imagePull, diags := imagePullValue(key.ImagePull)
+	resp.Diagnostics.Append(diags...)
+	state.ImagePull = imagePull
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

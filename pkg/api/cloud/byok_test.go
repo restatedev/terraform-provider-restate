@@ -43,6 +43,46 @@ func TestCreateByokRegistrationKeySendsTheRegionItIsFor(t *testing.T) {
 	}
 }
 
+func TestCreateByokRegistrationKeyReturnsTheImagePullCredential(t *testing.T) {
+	server := testutil.NewAPIServer(t)
+	input := cloud.CreateByokRegistrationKeyInput{Cloud: cloud.CloudGCP, ProviderRegion: "us-central1"}
+
+	server.On("CreateByokRegistrationKey", testutil.JSON(`{"registrationKey":"rrk_1a2b3c.4d5e6f","regionId":"rgn_a1b2c3d4e5","expiresAt":"2026-11-18T16:00:00.000Z",`+
+		`"imagePull":{"registry":"registry.us.restate.cloud","username":"restate","password":"key_pull","repositoryPrefix":"registry.us.restate.cloud/us-"}}`))
+	got, err := newClient(t, server).ByokRegistrations().Create(context.Background(), input)
+	if err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	want := cloud.ByokImagePull{Registry: "registry.us.restate.cloud", Username: "restate", Password: "key_pull", RepositoryPrefix: "registry.us.restate.cloud/us-"}
+	if got.ImagePull == nil || *got.ImagePull != want {
+		t.Errorf("ImagePull = %+v, want %+v", got.ImagePull, want)
+	}
+
+	// A control plane that predates the field, or serves no images, answers without it.
+	server = testutil.NewAPIServer(t)
+	server.On("CreateByokRegistrationKey", testutil.JSON(byokKeyResponse))
+	got, err = newClient(t, server).ByokRegistrations().Create(context.Background(), input)
+	if err != nil {
+		t.Fatalf("Create without imagePull: %v", err)
+	}
+	if got.ImagePull != nil || got.Key == "" {
+		t.Errorf("a response without imagePull must give a key and no credential, got %+v", got)
+	}
+}
+
+func TestCreateByokRegistrationKeyRefusesAnIncompleteImagePull(t *testing.T) {
+	server := testutil.NewAPIServer(t)
+	server.On("CreateByokRegistrationKey", testutil.JSON(`{"registrationKey":"rrk_1a2b3c.4d5e6f","regionId":"rgn_a1b2c3d4e5","expiresAt":"2026-11-18T16:00:00.000Z",`+
+		`"imagePull":{"registry":"registry.us.restate.cloud","username":"restate","password":"","repositoryPrefix":"x"}}`))
+
+	_, err := newClient(t, server).ByokRegistrations().Create(context.Background(), cloud.CreateByokRegistrationKeyInput{
+		Cloud: cloud.CloudGCP, ProviderRegion: "us-central1",
+	})
+	if err == nil || strings.Contains(err.Error(), "rrk_1a2b3c") {
+		t.Errorf("want an error that carries no secret, got %v", err)
+	}
+}
+
 func TestCreateByokRegistrationKeySendsTheDisplayName(t *testing.T) {
 	server := testutil.NewAPIServer(t)
 	server.On("CreateByokRegistrationKey", testutil.JSON(byokKeyResponse))
