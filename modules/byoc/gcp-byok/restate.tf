@@ -9,14 +9,30 @@
 #    everything that can take a long time, and the chart follows at once.
 # 3. The registration Secret and the chart's release. The chart's region installation operator presents
 #    the key to Restate Cloud, which creates the region under the reserved id, and installs a release
-#    that Restate Cloud chooses.
+#    that Restate Cloud chooses. In direct image mode, the pull Secret of the chart's pods is created
+#    from the key's image_pull credential before the release.
 #
-# A destroy runs backwards. The chart goes first, then the Secret, and then the key, which removes the
+# A destroy runs backwards. The chart goes first, then the Secrets, and then the key, which removes the
 # region at Restate Cloud when deregister_region_on_destroy is set. Restate refuses while the region
 # hosts environments, so the destroy stops there with the cluster still in place, and runs again once
 # the environments are deleted.
 
 locals {
+  direct = var.image_source_mode == "direct"
+
+  # In direct mode the registry is the proxy of the control plane's domain, which is how the chart
+  # derives it from controlPlane.url too. The chart refuses a restate-operator or canary image that is
+  # not under it, and does not fill them in, so the module names them.
+  image_registry = local.direct ? "registry.${trimprefix(var.control_plane_url, "https://api.")}" : var.image_source_registry
+
+  image_source = local.direct ? {
+    mode           = "direct"
+    pullSecretName = var.image_pull_secret_name
+    } : {
+    mode     = "mirror"
+    registry = var.image_source_registry
+  }
+
   # The environment pods may use this selector and these tolerations and no others. They are the label
   # and the taint of the environments node pool.
   scheduling = {
@@ -30,7 +46,7 @@ locals {
   }
 
   chart_values = {
-    imageSource  = { registry = var.image_source_registry }
+    imageSource  = local.image_source
     registration = { secretName = var.registration_secret_name }
     controlPlane = { url = var.control_plane_url }
     region = {
@@ -49,16 +65,19 @@ locals {
       gcpServiceAccount = google_service_account.environments.email
       snapshotBucket    = google_storage_bucket.snapshots.name
     }
-    restateOperator = {
+    restateOperator = merge({
       enabled = true
       # The chart refuses any other repository, because its image policy admits only images under the
       # image source.
-      image       = { repository = "${var.image_source_registry}/restate-operator" }
-      canaryImage = "${var.image_source_registry}/alpine:${var.restate_operator_canary_image_tag}"
+      image       = { repository = "${local.image_registry}/restate-operator" }
+      canaryImage = "${local.image_registry}/alpine:${var.restate_operator_canary_image_tag}"
       # restate-operator writes a Config Connector IAMPolicyMember for the `restate` ServiceAccount of
       # each environment, which identity.tf lets Config Connector apply.
       gcpWorkloadIdentity = true
-    }
+      },
+      # A subchart cannot read the parent's values, so restate-operator names the pull Secret again.
+      local.direct ? { imagePullSecrets = [{ name = var.image_pull_secret_name }] } : {},
+    )
   }
 }
 
@@ -98,6 +117,48 @@ resource "kubernetes_secret_v1" "registration" {
   }
 }
 
+# The registry credential of the chart's pods in direct mode, from the pull key that comes with the
+# registration key. Once the region is active, the region installation operator replaces the content
+# with the region's own key, so the data is ignored after creation, or every apply would put the
+# first key back. A new registration key reserves a new region, so the Secret is replaced with it.
+resource "kubernetes_secret_v1" "image_pull" {
+  count = local.direct ? 1 : 0
+
+  metadata {
+    name      = var.image_pull_secret_name
+    namespace = kubernetes_namespace_v1.release.metadata[0].name
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+
+  data = {
+    ".dockerconfigjson" = jsonencode({
+      auths = {
+        (restate_cloud_byok_registration_key.this.image_pull.registry) = {
+          username = restate_cloud_byok_registration_key.this.image_pull.username
+          password = restate_cloud_byok_registration_key.this.image_pull.password
+          auth     = base64encode("${restate_cloud_byok_registration_key.this.image_pull.username}:${restate_cloud_byok_registration_key.this.image_pull.password}")
+        }
+      }
+    })
+  }
+
+  lifecycle {
+    ignore_changes       = [data, binary_data]
+    replace_triggered_by = [restate_cloud_byok_registration_key.this.region_id]
+
+    precondition {
+      condition     = restate_cloud_byok_registration_key.this.image_pull != null
+      error_message = "Restate Cloud returned no registry credential with the registration key, so direct image mode cannot pull the region's images. The control plane serves no images, or predates the credential. Set image_source_mode to mirror."
+    }
+
+    precondition {
+      condition     = try(restate_cloud_byok_registration_key.this.image_pull.registry, local.image_registry) == local.image_registry
+      error_message = "The registration key's pull credential is for ${try(restate_cloud_byok_registration_key.this.image_pull.registry, "")}, but the chart pulls from ${local.image_registry}, which follows from control_plane_url. Check that control_plane_url is the control plane that issued the key."
+    }
+  }
+}
+
 resource "helm_release" "byoc" {
   name       = var.release_name
   namespace  = kubernetes_namespace_v1.release.metadata[0].name
@@ -125,6 +186,7 @@ resource "helm_release" "byoc" {
 
   depends_on = [
     kubernetes_secret_v1.registration,
+    kubernetes_secret_v1.image_pull,
     google_container_node_pool.environments,
   ]
 }

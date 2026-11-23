@@ -1054,6 +1054,21 @@ type CreateByokRegistrationKeyResponse struct {
 	// ExpiresAt When the key stops working if no region has used it.
 	ExpiresAt string `json:"expiresAt"`
 
+	// ImagePull What the customer copies Restate's private images into their own registry with, before the region exists. A Restate API key for the registry proxy that pulls the images of the region this key reserves and nothing else. Shown only in this response. It stops working when the registration key expires unused, or when the account closes. After a region registers with the key it keeps working until the region activates, and for 24 hours after that, while the region's own pull key replaces it. A region that has not activated 7 days after it registered loses the key. Absent on a stage that serves no images.
+	ImagePull *struct {
+		// Password A Restate API key for the registry proxy. Shown only in this response.
+		Password string `json:"password"`
+
+		// Registry The registry proxy to copy images from.
+		Registry string `json:"registry"`
+
+		// RepositoryPrefix What a repository name is appended to: the registry host and this stage's prefix. The private images of the region (the region installation operator, the cloud operator, ingress and tunnel) live under it.
+		RepositoryPrefix string `json:"repositoryPrefix"`
+
+		// Username Any value works. Docker and crane insist on one.
+		Username string `json:"username"`
+	} `json:"imagePull,omitempty"`
+
 	// RegionId The id the key gives the region it registers, reserved when the key is minted. Give it to the BYOC chart as `region.id`. The chart derives the region's Concierge audience and proxy endpoint from it.
 	RegionId RegionId `json:"regionId"`
 
@@ -3387,7 +3402,7 @@ type ClientInterface interface {
 
 	// CreateByokRegistrationKeyWithBody Create a one-use key that registers a BYOK region installed with the BYOC chart
 	//
-	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id. It also carries the credential for copying Restate's private images into the customer's own registry, which the chart needs before the region can activate.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -3396,7 +3411,7 @@ type ClientInterface interface {
 
 	// CreateByokRegistrationKey Create a one-use key that registers a BYOK region installed with the BYOC chart
 	//
-	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id. It also carries the credential for copying Restate's private images into the customer's own registry, which the chart needs before the region can activate.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -4758,7 +4773,7 @@ func (c *Client) CreateApiKey(ctx context.Context, accountId AccountId, body Cre
 
 // CreateByokRegistrationKeyWithBody Create a one-use key that registers a BYOK region installed with the BYOC chart
 //
-// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id. It also carries the credential for copying Restate's private images into the customer's own registry, which the chart needs before the region can activate.
 //
 // Takes any type of body and a specified content type.
 //
@@ -4777,7 +4792,7 @@ func (c *Client) CreateByokRegistrationKeyWithBody(ctx context.Context, accountI
 
 // CreateByokRegistrationKey Create a one-use key that registers a BYOK region installed with the BYOC chart
 //
-// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id. It also carries the credential for copying Restate's private images into the customer's own registry, which the chart needs before the region can activate.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -9521,7 +9536,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateByokRegistrationKeyWithBodyWithResponse Create a one-use key that registers a BYOK region installed with the BYOC chart
 	//
-	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id. It also carries the credential for copying Restate's private images into the customer's own registry, which the chart needs before the region can activate.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9530,7 +9545,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateByokRegistrationKeyWithResponse Create a one-use key that registers a BYOK region installed with the BYOC chart
 	//
-	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+	// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id. It also carries the credential for copying Restate's private images into the customer's own registry, which the chart needs before the region can activate.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -15005,7 +15020,7 @@ func (c *ClientWithResponses) CreateApiKeyWithResponse(ctx context.Context, acco
 
 // CreateByokRegistrationKeyWithBodyWithResponse Create a one-use key that registers a BYOK region installed with the BYOC chart
 //
-// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id. It also carries the credential for copying Restate's private images into the customer's own registry, which the chart needs before the region can activate.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15020,7 +15035,7 @@ func (c *ClientWithResponses) CreateByokRegistrationKeyWithBodyWithResponse(ctx 
 
 // CreateByokRegistrationKeyWithResponse Create a one-use key that registers a BYOK region installed with the BYOC chart
 //
-// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id.
+// The response carries the region id the key will register, so it can be given to the chart before the region exists. Registering with the key creates the region under that id. It also carries the credential for copying Restate's private images into the customer's own registry, which the chart needs before the region can activate.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //

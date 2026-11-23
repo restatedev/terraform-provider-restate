@@ -46,6 +46,10 @@ func TestByokRegistrationKeyLifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr("restate_cloud_byok_registration_key.test", "key", "rrk_1.fakesecret1"),
 					resource.TestCheckResourceAttr("restate_cloud_byok_registration_key.test", "expires_at", "2026-11-18T16:00:00.000Z"),
 					resource.TestCheckResourceAttr("restate_cloud_byok_registration_key.test", "deregister_region_on_destroy", "false"),
+					resource.TestCheckResourceAttr("restate_cloud_byok_registration_key.test", "image_pull.registry", "registry.fake.restate.cloud"),
+					resource.TestCheckResourceAttr("restate_cloud_byok_registration_key.test", "image_pull.username", "restate"),
+					resource.TestCheckResourceAttr("restate_cloud_byok_registration_key.test", "image_pull.password", "key_fakepull1"),
+					resource.TestCheckResourceAttr("restate_cloud_byok_registration_key.test", "image_pull.repository_prefix", "registry.fake.restate.cloud/fake-"),
 					func(*terraform.State) error {
 						// What the key was minted for is what the registering region must report.
 						if key := cloud.ByokKey("rgn_byok1"); key.Cloud != "gcp" || key.ProviderRegion != "us-central1" || key.DisplayName != "customer-a us-central1" {
@@ -64,10 +68,13 @@ func TestByokRegistrationKeyLifecycle(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 						// Still sensitive once it is in the state.
 						plancheck.ExpectSensitiveValue("restate_cloud_byok_registration_key.test", tfjsonpath.New("key")),
+						plancheck.ExpectSensitiveValue("restate_cloud_byok_registration_key.test", tfjsonpath.New("image_pull").AtMapKey("password")),
 					},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("restate_cloud_byok_registration_key.test", "key", "rrk_1.fakesecret1"),
+					// Restate shows the credential once, so a refresh must keep it too.
+					resource.TestCheckResourceAttr("restate_cloud_byok_registration_key.test", "image_pull.password", "key_fakepull1"),
 					func(*terraform.State) error {
 						if got := cloud.CallCount("CreateByokRegistrationKey"); got != 1 {
 							return fmt.Errorf("%d keys were minted, want 1", got)
@@ -82,6 +89,36 @@ func TestByokRegistrationKeyLifecycle(t *testing.T) {
 				return fmt.Errorf("a destroy without deregister_region_on_destroy called DeleteByokRegion %d times", got)
 			}
 			return nil
+		},
+	})
+}
+
+// A control plane that predates image_pull, or a stage that serves no images, answers without it,
+// and the attribute is null rather than an error.
+func TestByokRegistrationKeyWithoutImagePull(t *testing.T) {
+	clearProviderEnvironment(t)
+	cloud := cloudFake(t)
+	cloud.OmitByokImagePull = true
+
+	config := byokKeyConfig(cloud.URL, "")
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: protocolProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("restate_cloud_byok_registration_key.test", "key", "rrk_1.fakesecret1"),
+					resource.TestCheckNoResourceAttr("restate_cloud_byok_registration_key.test", "image_pull.password"),
+					resource.TestCheckNoResourceAttr("restate_cloud_byok_registration_key.test", "image_pull.registry"),
+				),
+			},
+			{
+				Config: config,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
 		},
 	})
 }

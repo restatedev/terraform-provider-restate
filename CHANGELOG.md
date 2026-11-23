@@ -60,6 +60,13 @@ BYOK, where the customer builds the Kubernetes cluster, from the Cloud Managemen
   sorted by name, to the chart as `region.availabilityZones`, from 3 to 9 distinct names, and
   `node_locations` accepts 3 to 9 zones to match.
 - Registration keys that start with `rrk_` are redacted from error text.
+- `restate_cloud_byok_registration_key` exports `image_pull` (`registry`, `username`, `password`
+  (sensitive) and `repository_prefix`), the registry proxy credential that `CreateByokRegistrationKey`
+  returns with the key, from the `main` revision of `restatedev/restate-cloud` recorded in
+  `pkg/api/cloud/PROVENANCE.md`. It is null when the control plane returns none. `modules/byoc/gcp-byok`
+  takes `image_source_mode`, `direct` by default, which pulls every image from Restate's registry proxy
+  with a Secret built from `image_pull`, and `mirror`, which keeps the earlier behaviour and still needs
+  `image_source_registry`. Direct mode needs a BYOC chart that has `imageSource.mode`.
 
 Resources:
 

@@ -56,7 +56,21 @@ func (r *ByokRegistrations) Create(ctx context.Context, input CreateByokRegistra
 		return ByokRegistrationKey{}, &api.Error{Service: api.ServiceCloud, Operation: "CreateByokRegistrationKey",
 			Message: "the API reported success but returned no registration key or no region ID"}
 	}
-	return ByokRegistrationKey{Key: response.RegistrationKey, RegionID: response.RegionId, ExpiresAt: response.ExpiresAt}, nil
+	key := ByokRegistrationKey{Key: response.RegistrationKey, RegionID: response.RegionId, ExpiresAt: response.ExpiresAt}
+	if pull := response.ImagePull; pull != nil {
+		if pull.Registry == "" || pull.Password == "" {
+			// Neither credential is in the message, because both are secrets.
+			return ByokRegistrationKey{}, &api.Error{Service: api.ServiceCloud, Operation: "CreateByokRegistrationKey",
+				Message: "the API returned an image pull credential without a registry or a password"}
+		}
+		key.ImagePull = &ByokImagePull{
+			Registry:         pull.Registry,
+			Username:         pull.Username,
+			Password:         pull.Password,
+			RepositoryPrefix: pull.RepositoryPrefix,
+		}
+	}
+	return key, nil
 }
 
 // DeleteRegion removes a BYOK region of the account, whatever its status, which revokes its access

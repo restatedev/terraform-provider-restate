@@ -22,16 +22,17 @@ A BYOK region supports Google Cloud only. The module needs the `restatedev/resta
 | The Config Connector object | Points the add-on at `<name>-cnrm`. For each environment, restate-operator writes a Config Connector `IAMPolicyMember` that lets the environment's `restate` ServiceAccount act as `<name>-env`. Config Connector serves the `IAMPolicyMember` kind only after this object has been applied, so the first environment may wait for it. |
 | `restate_cloud_byok_registration_key` | The one-use key and the id of the region it registers. |
 | The namespace and the Secret `registration` | The Secret holds the key under `key`, in the namespace of the chart's release. |
+| The Secret `restate-registry` | Direct image mode only. A `kubernetes.io/dockerconfigjson` Secret in the chart's namespace, built from the pull credential that came with the registration key. The chart's pods pull Restate's images with it. |
 | The chart's Helm release | Installs the region installation operator, the Concierge, the admission policies, restate-operator and the rest of the BYOC chart, with values taken from the resources above and from the variables. |
 | Enabled APIs | Cloud Resource Manager, Compute Engine, Kubernetes Engine, IAM, IAM Service Account Credentials and Cloud Storage. They stay enabled after a destroy. |
 
 ## The order of an apply
 
-The cluster and the node pools come first, and then the identities and the bucket. Config Connector's object follows after a wait, because the add-on creates that kind from a pod, which runs only once there is a node. The registration key is created after all of these, because it expires four hours after it is created and the chart has to present it before then. The Secret and the chart's release follow at once.
+The cluster and the node pools come first, and then the identities and the bucket. Config Connector's object follows after a wait, because the add-on creates that kind from a pod, which runs only once there is a node. The registration key is created after all of these, because it expires four hours after it is created and the chart has to present it before then. The registration Secret, the pull Secret in direct mode and the chart's release follow at once.
 
 The apply does not wait for the chart's pods. The Twingate Connector's pod starts only after the installer has registered the region and written the Connector's token pair, so a wait would make the apply depend on the registration. A wait that fails would also leave a release that a later apply might uninstall and install again, and a new installation replaces the break-glass token with one that Restate never saw.
 
-A destroy runs backwards. The chart is removed first, then the Secret, and then the registration key. With `deregister_region_on_destroy`, which is off by default, removing the key also removes the region at Restate Cloud, which revokes its access keys and removes the Restate side of its access to the cluster. Restate Cloud refuses while the region hosts environments, so the destroy stops there with the cluster still in place. Delete the environments and run the destroy again. With the default, the region stays registered after a destroy, and you remove it in the console or with `DeleteByokRegion`.
+A destroy runs backwards. The chart is removed first, then the Secrets, and then the registration key. With `deregister_region_on_destroy`, which is off by default, removing the key also removes the region at Restate Cloud, which revokes its access keys and removes the Restate side of its access to the cluster. Restate Cloud refuses while the region hosts environments, so the destroy stops there with the cluster still in place. Delete the environments and run the destroy again. With the default, the region stays registered after a destroy, and you remove it in the console or with `DeleteByokRegion`.
 
 ## Checking that the region came up
 
@@ -69,11 +70,38 @@ Changing `region` or `restate_region_display_name` replaces the key, because the
 
 Terraform installs the Secret and the chart through the cluster's API server, so the machine that runs Terraform needs a route to it. By default the API server has a public address, and any address may try to sign in. Set `master_authorized_networks` to the networks that run Terraform and your operators, because Restate needs no inbound access to the API server and a narrow list costs nothing. Set `enable_private_endpoint` to give it only an internal address, and run Terraform from inside the network.
 
-Restate does not use the API server's address. It reaches the cluster through the Concierge, over a connection that the Twingate Connector in the cluster opens outwards, so the cluster needs outbound access to Restate Cloud and to the registry in `image_source_registry`, and no inbound rule for Restate.
+Restate does not use the API server's address. It reaches the cluster through the Concierge, over a connection that the Twingate Connector in the cluster opens outwards, so the cluster needs outbound access to Restate Cloud and to the registry the images come from, and no inbound rule for Restate.
 
 ## Images
 
-Every Restate image in the cluster must come from `image_source_registry`. Mirror Restate's images there before the apply, and make sure the nodes can pull from it. For an Artifact Registry in the region's project, add `roles/artifactregistry.reader` to `node_service_account_roles`. The chart refuses a restate-operator image that is not `<image_source_registry>/restate-operator` and a canary image that is not `<image_source_registry>/alpine:<tag>`, and the module sets both.
+`image_source_mode` decides where every Restate image in the cluster comes from.
+
+| Mode | Where the images come from | What you do |
+| --- | --- | --- |
+| `direct` (the default) | Restate's registry proxy, `registry.<domain>`, where `<domain>` follows from `control_plane_url` | Nothing. The module creates the pull Secret. Leave `image_source_registry` empty. |
+| `mirror` | `image_source_registry`, a registry of yours | Copy Restate's images there before the apply, and make sure the nodes can pull from it. Set `image_source_registry`. |
+
+### Direct mode
+
+The registration key comes with a credential for the registry proxy, which the resource exposes as `image_pull`. The module builds a `kubernetes.io/dockerconfigjson` Secret from it, named `restate-registry` unless `image_pull_secret_name` says otherwise, in the chart's namespace, and creates it before the chart's release. It sets the chart's `imageSource.mode` to `direct` and `imageSource.pullSecretName` to the Secret's name. It also names the Secret in `restateOperator.imagePullSecrets`, because restate-operator is a subchart and cannot read the parent's values, and it sets restate-operator's image and canary image to `registry.<domain>/restate-operator` and `registry.<domain>/alpine:<tag>`, which are the only repositories the chart accepts. The nodes need no registry role, because the pods pull with the Secret.
+
+The Secret is the module's to create and the region installation operator's to keep. Once the region is active, the operator replaces the Secret's content with the region's own key, which does not expire when the registration key does. The module therefore creates the Secret once and ignores later changes to its data, so a later apply never puts the first credential back. The first credential works until the region activates and for 24 hours after that, and a region that has not activated within 7 days of registering loses it. A new registration key (`terraform apply -replace=...`) reserves a new region, so the module replaces the Secret together with it.
+
+Direct mode has these limits:
+
+- The chart refuses `certManager.enabled`, because the proxy does not serve cert-manager's images. Use mirror mode when you need cert-manager.
+- The chart refuses `regionInstallationOperator.imagePullSecrets`, so do not set it through `chart_values`.
+- The Concierge runs in its own namespace, where the pull Secret is not visible, so the chart pulls its image from the public `ghcr.io/vmware` with the node's own access.
+- The module refuses to apply when Restate Cloud returned no pull credential with the key, which a stage that serves no images does, and when the credential is for a different registry than the one that follows from `control_plane_url`. Both messages name the fix.
+- The Secret and the pull credential are in the Terraform state, as every secret the module handles is.
+
+### Mirror mode
+
+Every Restate image must come from `image_source_registry`. Mirror Restate's images there before the apply, and make sure the nodes can pull from it. For an Artifact Registry in the region's project, add `roles/artifactregistry.reader` to `node_service_account_roles`. The chart refuses a restate-operator image that is not `<image_source_registry>/restate-operator` and a canary image that is not `<image_source_registry>/alpine:<tag>`, and the module sets both. The module sets `imageSource.mode` to `mirror` explicitly, so that the chart does not have to infer it. `image_pull` is still available as the credential that copies the images into your registry.
+
+### Chart version
+
+Direct mode needs a BYOC chart that has `imageSource.mode`. The module does not choose the chart: `byoc_chart.version` pins it, and a chart that predates the mode ignores the new values, so it cannot pull from the proxy. Pin `byoc_chart.version` to a release that has the mode before you use direct mode.
 
 ## Inputs
 
@@ -82,7 +110,9 @@ Every Restate image in the cluster must come from `image_source_registry`. Mirro
 | `project` | The project the cluster, the bucket and the service accounts are created in. Use a project of its own for the region. |
 | `region` | The Google Cloud region, for example `us-central1`. The cluster is regional, and Restate registers the region under this name. |
 | `control_plane_url` | The `https://api.<domain>` address of Restate's control plane, which Restate Cloud provides. |
-| `image_source_registry` | The registry and path that every Restate image comes from, with no trailing slash. |
+| `image_source_mode` | `direct` (the default) pulls every image from Restate's registry proxy with the credential that comes with the registration key. `mirror` pulls them from `image_source_registry`. |
+| `image_source_registry` | Mirror mode only: the registry and path that every Restate image comes from, with no trailing slash. It is required in mirror mode and must be empty in direct mode. |
+| `image_pull_secret_name` | Direct mode only: the name of the pull Secret, `restate-registry` by default. It must differ from `registration_secret_name`. |
 | `byoc_chart` | Where the BYOC chart comes from: `chart` and optionally `repository`, `version` and `dependency_update`. For a chart directory, set `chart` to its path and `dependency_update` to true. |
 | `name` | The name of the cluster and the prefix of the service accounts and the bucket. The default is `restate`. It must differ between regions in one project. |
 | `labels` | Google Cloud labels for the cluster, its nodes and the bucket. |
@@ -92,7 +122,7 @@ Every Restate image in the cluster must come from `image_source_registry`. Mirro
 | `namespace`, `release_name`, `registration_secret_name` | The chart's namespace, the Helm release's name and the Secret's name. The defaults are `restate-system`, `byoc` and `registration`. |
 | `staff_gate_enabled` | Let Restate staff reach the environment namespaces and nothing else in the cluster. The default is true. |
 | `hold` | Keep the region at its applied release. The default is false. |
-| `restate_operator_canary_image_tag` | The tag of `<image_source_registry>/alpine`. The default is `3.21`. |
+| `restate_operator_canary_image_tag` | The tag of `alpine` in the image registry. The default is `3.21`. |
 | `chart_values` | More values for the chart as YAML documents, which Helm merges over the module's values. |
 | `helm_timeout_seconds` | How long Terraform waits for Config Connector's object. The BYOC chart's release is not waited for. The default is 900. |
 | `release_channel`, `kubernetes_version` | The GKE release channel, `REGULAR` by default, and an optional minimum version. The chart needs Kubernetes 1.30 or later. |
@@ -101,7 +131,7 @@ Every Restate image in the cluster must come from `image_source_registry`. Mirro
 | `enable_private_nodes`, `enable_private_endpoint`, `master_ipv4_cidr_block`, `master_authorized_networks` | How the cluster is reached. The nodes are private by default. |
 | `node_locations` | The zones of the node pools, from 3 to 9 distinct names. The default is every zone of the region that Google Cloud picks for the cluster. The module passes the zones the cluster runs in, sorted by name, to the chart as `region.availabilityZones`. The chart creates one tunnel Service for each zone, and the installer waits until every Service has an address. |
 | `system_node_pool`, `environments_node_pool` | The machine type, the node counts per zone and the disk of each pool. |
-| `node_service_account_roles` | The project roles of the nodes' service account. |
+| `node_service_account_roles` | The project roles of the nodes' service account. Mirror mode with an Artifact Registry needs its reader role here, and direct mode needs no registry role. |
 | `snapshot_bucket_name`, `snapshot_bucket_force_destroy` | The bucket's name and whether a destroy deletes the snapshots in it. |
 | `config_connector_environment_role` | The role Config Connector's account holds on `<name>-env`. The default is `roles/iam.serviceAccountAdmin`, which is what Managed BYOC regions grant. |
 | `config_connector_ready_delay` | How long to wait before the Config Connector object is applied. The default is `120s`. |
@@ -114,6 +144,7 @@ Every Restate image in the cluster must come from `image_source_registry`. Mirro
 | `registration_key_expires_at` | When the key stops working if the chart has not registered. |
 | `cluster_name`, `cluster_location`, `cluster_endpoint` | The cluster. |
 | `namespace` | The namespace of the chart's release. |
+| `image_registry` | The registry every Restate image comes from: `registry.<domain>` in direct mode and `image_source_registry` in mirror mode. |
 | `snapshot_bucket`, `environments_service_account` | The values of the chart's `environments.snapshotBucket` and `environments.gcpServiceAccount`. |
 | `config_connector_service_account`, `node_service_account` | The other two service accounts. |
 | `scheduling` | The node selector and tolerations that the chart lets environment pods use. |
@@ -127,6 +158,7 @@ The module was tested with mocked providers only, and no cluster has been built 
 | The wait before Config Connector's object | The add-on creates the `ConfigConnector` kind from a pod, so the kind appears some time after the first node. If the first apply fails with a missing kind, raise `config_connector_ready_delay` and apply again. |
 | The role on `<name>-env` | `roles/iam.serviceAccountAdmin` on that one account is what Managed BYOC grants. A narrower custom role needs a test that Config Connector's `IAMPolicyMember` still works with it. |
 | The chart's values | The module sets the values listed in the chart's README and `restateOperator.gcpWorkloadIdentity`, which the chart passes to restate-operator. A chart release that renames one of them needs a matching release of this module. |
+| Direct image mode | The tests check the Secret's content and the chart's values against mocked providers. They do not check that the region installation operator replaces the Secret after activation, or that a later apply leaves the replacement alone. Check both on the first real run. |
 | Environment scheduling | The chart limits which node selector and tolerations environment pods may use. Whether Restate's control plane sets them on a BYOK environment is a question for the control plane's release, and until it does, environment pods that name neither stay off the tainted pool. |
 | Static addresses | The chart creates the ingress and tunnel Services, and this module reserves no addresses for them. |
 | The availability zones | The module reads the zones from the cluster it creates, so they are the ones in `node_locations`, or the ones Google Cloud picks when you give none. Those are unknown until the cluster exists, and the apply refuses a cluster in fewer than three or more than nine zones before it installs the chart. A region with fewer than three zones cannot host the chart. |

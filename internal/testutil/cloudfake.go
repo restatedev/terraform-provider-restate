@@ -75,6 +75,9 @@ type CloudFake struct {
 	// ByokKeyLimit is how many keys that no region has used the account may hold before the API
 	// answers 429. Zero means no limit.
 	ByokKeyLimit int
+	// OmitByokImagePull makes CreateByokRegistrationKey answer without imagePull, as a control plane
+	// that predates it or a stage that serves no images does.
+	OmitByokImagePull bool
 }
 
 // FakeByokKey is one BYOK registration key's state. The region it reserves exists only after
@@ -975,11 +978,20 @@ func (f *CloudFake) createByokRegistrationKey(request Request) Response {
 		DisplayName:    body.RegionDisplayName,
 	}
 	f.byokKeys[key.RegionID] = key
-	return jsonResponse(http.StatusOK, map[string]any{
+	response := map[string]any{
 		"registrationKey": key.Secret,
 		"regionId":        key.RegionID,
 		"expiresAt":       "2026-11-18T16:00:00.000Z",
-	})
+	}
+	if !f.OmitByokImagePull {
+		response["imagePull"] = map[string]any{
+			"registry":         "registry.fake.restate.cloud",
+			"username":         "restate",
+			"password":         fmt.Sprintf("key_fakepull%d", f.byokKeyCounter),
+			"repositoryPrefix": "registry.fake.restate.cloud/fake-",
+		}
+	}
+	return jsonResponse(http.StatusOK, response)
 }
 
 // deleteByokRegion answers as the API describes: 404 for a region that does not exist, which includes

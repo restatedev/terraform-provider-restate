@@ -1,4 +1,4 @@
-# A BYOK region with the module's own network. Nothing here reaches Google Cloud, a cluster or
+# A BYOK region with the module's own network, whose images come from the customer's mirror. Nothing here reaches Google Cloud, a cluster or
 # Restate Cloud: every provider is mocked.
 mock_provider "google" {
   mock_data "google_client_config" {
@@ -70,6 +70,7 @@ variables {
   project               = "my-restate-region"
   region                = "us-central1"
   control_plane_url     = "https://api.dev.restate.cloud"
+  image_source_mode     = "mirror"
   image_source_registry = "us-central1-docker.pkg.dev/my-restate-region/restate"
   byoc_chart            = { chart = "../../../../charts/byoc" }
 }
@@ -235,9 +236,16 @@ run "chart_values" {
       availabilityZones = ["us-central1-a", "us-central1-b", "us-central1-c", "us-central1-f"]
       }
       && yamldecode(helm_release.byoc.values[0]).controlPlane == { url = "https://api.dev.restate.cloud" }
-      && yamldecode(helm_release.byoc.values[0]).imageSource == { registry = "us-central1-docker.pkg.dev/my-restate-region/restate" }
+      && yamldecode(helm_release.byoc.values[0]).imageSource == { mode = "mirror", registry = "us-central1-docker.pkg.dev/my-restate-region/restate" }
     && yamldecode(helm_release.byoc.values[0]).registration == { secretName = "registration" })
     error_message = "The chart must be told the region the key reserved, its cloud and provider region, the sorted zones of the cluster, the control plane and the image source."
+  }
+
+  assert {
+    condition = (length(kubernetes_secret_v1.image_pull) == 0
+      && !can(yamldecode(helm_release.byoc.values[0]).restateOperator.imagePullSecrets)
+    && output.image_registry == "us-central1-docker.pkg.dev/my-restate-region/restate")
+    error_message = "Mirror mode must create no pull Secret and give restate-operator no pull Secrets, because the customer's registry has its own credentials."
   }
 
   assert {

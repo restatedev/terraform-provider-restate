@@ -66,13 +66,48 @@ variable "control_plane_url" {
   }
 }
 
-variable "image_source_registry" {
-  description = "The registry and path that every Restate image in the cluster comes from, such as `europe-docker.pkg.dev/acme/restate`, with no trailing slash. Mirror Restate's images there. The cluster's nodes must be able to pull from it: add the reader role to `node_service_account_roles` for an Artifact Registry in your project."
+variable "image_source_mode" {
+  description = <<-EOT
+    Where every Restate image in the cluster comes from. `direct` pulls them from Restate's registry
+    proxy, `registry.<domain>` where `<domain>` follows from `control_plane_url`, with the pull
+    credential that comes with the registration key. Nothing needs to be mirrored, and the nodes need
+    no registry role. `mirror` pulls them from your own registry, `image_source_registry`, which you copy
+    Restate's images into first. Direct mode needs a BYOC chart that has `imageSource.mode`, and it
+    refuses cert-manager, because the proxy does not serve its images.
+  EOT
   type        = string
+  default     = "direct"
+  nullable    = false
 
   validation {
-    condition     = length(var.image_source_registry) > 0 && !endswith(var.image_source_registry, "/")
-    error_message = "image_source_registry must be a registry and path with no trailing slash."
+    condition     = contains(["direct", "mirror"], var.image_source_mode)
+    error_message = "image_source_mode must be direct or mirror."
+  }
+}
+
+variable "image_source_registry" {
+  description = "Mirror mode only: the registry and path that every Restate image in the cluster comes from, such as `europe-docker.pkg.dev/acme/restate`, with no trailing slash. Mirror Restate's images there. The cluster's nodes must be able to pull from it: add the reader role to `node_service_account_roles` for an Artifact Registry in your project. Leave it empty in direct mode, where the registry follows from `control_plane_url`."
+  type        = string
+  default     = ""
+  nullable    = false
+
+  validation {
+    condition = (var.image_source_mode == "mirror"
+      ? length(var.image_source_registry) > 0 && !endswith(var.image_source_registry, "/")
+    : length(var.image_source_registry) == 0)
+    error_message = "In mirror mode image_source_registry must be a registry and path with no trailing slash. In direct mode it must be empty, because the registry follows from control_plane_url; set image_source_mode to mirror to use your own."
+  }
+}
+
+variable "image_pull_secret_name" {
+  description = "Direct mode only: the name of the `kubernetes.io/dockerconfigjson` Secret that holds the registry credential of the chart's pods, which the chart reads as `imageSource.pullSecretName`. The module creates it from the registration key's pull credential. Once the region is active, the region installation operator replaces its content with the region's own key, and the module does not revert that."
+  type        = string
+  default     = "restate-registry"
+
+  validation {
+    condition = (can(regex("^[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?$", var.image_pull_secret_name))
+    && !contains(["region-access-key", "twingate-connector-tokens", var.registration_secret_name], var.image_pull_secret_name))
+    error_message = "image_pull_secret_name must be the name of a Secret, and must not be region-access-key, twingate-connector-tokens or registration_secret_name, which the chart uses."
   }
 }
 
@@ -122,7 +157,7 @@ variable "hold" {
 }
 
 variable "restate_operator_canary_image_tag" {
-  description = "The tag of `<image_source_registry>/alpine`, which restate-operator runs in environment namespaces to probe a cluster. The chart refuses any other repository. The default is the tag of the chart's own test values, so check it against the chart's release notes."
+  description = "The tag of `alpine` in the image registry (`registry.<domain>` in direct mode, `image_source_registry` in mirror mode), which restate-operator runs in environment namespaces to probe a cluster. The chart refuses any other repository. The default is the tag of the chart's own test values, so check it against the chart's release notes."
   type        = string
   default     = "3.21"
 }
@@ -261,7 +296,7 @@ variable "environments_node_pool" {
 }
 
 variable "node_service_account_roles" {
-  description = "The project roles of the service account the nodes run as. The default is what GKE nodes need. Add the reader role of the registry in `image_source_registry`, for example `roles/artifactregistry.reader`, when it is in your project."
+  description = "The project roles of the service account the nodes run as. The default is what GKE nodes need. In mirror mode, add the reader role of the registry in `image_source_registry`, for example `roles/artifactregistry.reader`, when it is in your project. Direct mode needs none, because the chart's pods pull with a Secret."
   type        = list(string)
   default     = ["roles/container.defaultNodeServiceAccount"]
 }

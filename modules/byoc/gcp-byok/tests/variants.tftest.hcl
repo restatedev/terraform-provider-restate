@@ -41,6 +41,7 @@ variables {
   project               = "my-restate-region"
   region                = "europe-west1"
   control_plane_url     = "https://api.restate.cloud"
+  image_source_mode     = "mirror"
   image_source_registry = "europe-docker.pkg.dev/acme/restate"
   byoc_chart = {
     chart             = "restate-byoc"
@@ -268,6 +269,16 @@ run "refuses_a_control_plane_with_a_path" {
   }
 
   expect_failures = [var.control_plane_url]
+}
+
+run "refuses_a_mirror_without_a_registry" {
+  command = plan
+
+  variables {
+    image_source_registry = ""
+  }
+
+  expect_failures = [var.image_source_registry]
 }
 
 run "refuses_a_registry_with_a_trailing_slash" {
