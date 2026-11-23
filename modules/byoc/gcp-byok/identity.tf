@@ -104,16 +104,18 @@ resource "time_sleep" "config_connector_kind" {
   ]
 }
 
-# The add-on runs nothing until this object exists. Its name is fixed by Config Connector, which
-# accepts only this one, and cluster mode gives the whole cluster one controller and one identity. A
-# chart of its own applies it, because a Terraform manifest resource reads the kind's schema from the
-# cluster while it plans, which cannot work in the apply that creates the cluster.
+# Config Connector reads its settings from this object, whose name it fixes. Cluster mode gives the
+# whole cluster one controller and one identity. A chart of its own applies it, because a Terraform
+# manifest resource reads the kind's schema from the cluster while it plans, which cannot work in the
+# apply that creates the cluster. The GKE add-on creates the object itself in namespaced mode, so the
+# release takes it over and changes it to cluster mode.
 resource "helm_release" "config_connector" {
-  name      = "config-connector"
-  namespace = "kube-system"
-  chart     = "${path.module}/charts/config-connector"
-  wait      = true
-  timeout   = var.helm_timeout_seconds
+  name           = "config-connector"
+  namespace      = "kube-system"
+  chart          = "${path.module}/charts/config-connector"
+  take_ownership = true
+  wait           = true
+  timeout        = var.helm_timeout_seconds
 
   values = [yamlencode({
     googleServiceAccount = google_service_account.config_connector.email
