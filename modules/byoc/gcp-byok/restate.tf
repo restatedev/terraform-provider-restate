@@ -119,8 +119,9 @@ resource "kubernetes_secret_v1" "registration" {
 
 # The registry credential of the chart's pods in direct mode, from the pull key that comes with the
 # registration key. Once the region is active, the region installation operator replaces the content
-# with the region's own key, so the data is ignored after creation, or every apply would put the
-# first key back. A new registration key reserves a new region, so the Secret is replaced with it.
+# with the region's own key, and labels and annotates the Secret with that key's id. All three are
+# ignored after creation, or every apply would put the first key back or strip what the operator
+# wrote. A new registration key reserves a new region, so the Secret is replaced with it.
 resource "kubernetes_secret_v1" "image_pull" {
   count = local.direct ? 1 : 0
 
@@ -144,7 +145,7 @@ resource "kubernetes_secret_v1" "image_pull" {
   }
 
   lifecycle {
-    ignore_changes       = [data, binary_data]
+    ignore_changes       = [data, binary_data, metadata[0].annotations, metadata[0].labels]
     replace_triggered_by = [restate_cloud_byok_registration_key.this.region_id]
 
     precondition {
