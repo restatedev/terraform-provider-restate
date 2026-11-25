@@ -402,6 +402,7 @@ func (p *RestateProvider) Resources(context.Context) []func() resource.Resource 
 		NewCloudRegionGrantResource,
 		NewCloudRegionGrantConfirmationResource,
 		NewCloudByocRegionResource,
+		NewCloudByocRegionAccessResource,
 		NewCloudByokRegistrationKeyResource,
 		NewDeploymentResource,
 		NewKafkaClusterResource,

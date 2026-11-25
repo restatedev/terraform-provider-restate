@@ -440,6 +440,10 @@ Do not silently choose answers to these during implementation; resolve them with
 
     **Still open:** nothing here has run against a live API.
 
+16. **Handled, not resolved.** `restate_cloud_byoc_region_access` is a separate resource keyed by the region ID, not arguments of `restate_cloud_byoc_region`, because the region replaces itself on almost every change and has no update operation, while access is set in place on an `ACTIVE` region and can be changed, removed or imported on its own. `SetRegionAccess` replaces the whole setting, so the resource sends every argument each time and its destroy sends none. A null `entry_source_cidrs` (every address) and an empty one (no address) are different settings and stay different in the schema, the request and the state. The vendored snapshot is the head of restatedev/restate-cloud#2939, which is not merged.
+
+    **Still open:** the snapshot must be replaced with the merge commit's before release; the 409 for "not built yet" is told apart from the other 409s by describing the region, because the contract does not give them codes; and nothing here has run against a live API.
+
 ## Known gaps at the time of writing
 
 These are things a reader should not have to discover by reading the code.

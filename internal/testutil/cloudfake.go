@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/netip"
+	"regexp"
+	"slices"
 	"sync"
 	"testing"
 )
@@ -70,6 +73,16 @@ type CloudFake struct {
 	RegionPendingPolls  int
 	RegionDeletingPolls int
 
+	// AccessServicePolls is how many describes of a region answer without the endpoint service after
+	// SetRegionAccess enabled PrivateLink, as while AWS creates it.
+	AccessServicePolls int
+	// AccessFailures are answered by SetRegionAccess, in order, before it does any work, so a test can
+	// script a 503 or a 501.
+	AccessFailures []Response
+	// OmitDisabledPrivateLink makes a region with PrivateLink disabled report none, rather than
+	// privateLink with enabled false. The contract allows either.
+	OmitDisabledPrivateLink bool
+
 	byokKeyCounter int
 	byokKeys       map[string]*FakeByokKey
 	// ByokKeyLimit is how many keys that no region has used the account may hold before the API
@@ -120,9 +133,34 @@ type FakeByocRegion struct {
 	// Environments is how many environments the region holds; a delete is refused while it is not 0.
 	Environments int
 
+	// Access is nil until SetRegionAccess has run.
+	Access *FakeRegionAccess
+
 	pendingPolls  int
 	deletingPolls int
 }
+
+// FakeRegionAccess is the access setting of a region as SetRegionAccess stored it. A nil
+// EntrySourceCIDRs admits every address, and an empty one admits none.
+type FakeRegionAccess struct {
+	EntrySourceCIDRs []string
+	PrivateLink      *FakePrivateLink
+}
+
+// FakePrivateLink is a region's PrivateLink. The endpoint service fields are what AWS made of it.
+type FakePrivateLink struct {
+	Enabled             bool
+	AllowedPrincipals   []string
+	AcceptanceRequired  bool
+	ServiceName         string
+	ServiceState        string
+	AvailabilityZoneIDs []string
+
+	pendingPolls int
+}
+
+// ClearPendingPolls makes the endpoint service appear at once, as when AWS has finished creating it.
+func (l *FakePrivateLink) ClearPendingPolls() { l.pendingPolls = 0 }
 
 // FakeEnvironment is one environment's state.
 type FakeEnvironment struct {
@@ -296,6 +334,7 @@ func (f *CloudFake) register() {
 	f.OnFunc("CreateRegion", f.createRegion)
 	f.OnFunc("DescribeRegion", f.describeRegion)
 	f.OnFunc("DeleteRegion", f.deleteRegion)
+	f.OnFunc("SetRegionAccess", f.setRegionAccess)
 
 	f.OnFunc("CreateByokRegistrationKey", f.createByokRegistrationKey)
 	f.OnFunc("DeleteByokRegion", f.deleteByokRegion)
@@ -837,7 +876,7 @@ func (f *CloudFake) createRegion(request Request) Response {
 	}
 	for _, region := range f.regions {
 		if region.Name == body.Name && region.Status != "DELETED" {
-			return jsonResponse(http.StatusOK, regionJSON(region))
+			return jsonResponse(http.StatusOK, f.regionJSON(region))
 		}
 	}
 
@@ -864,7 +903,7 @@ func (f *CloudFake) createRegion(request Request) Response {
 		region.Status = "ACTIVE"
 	}
 	f.regions[region.ID] = region
-	return jsonResponse(http.StatusOK, regionJSON(region))
+	return jsonResponse(http.StatusOK, f.regionJSON(region))
 }
 
 func (f *CloudFake) describeRegion(request Request) Response {
@@ -886,7 +925,167 @@ func (f *CloudFake) describeRegion(request Request) Response {
 			region.Status = "ACTIVE"
 		}
 	}
-	return jsonResponse(http.StatusOK, regionJSON(region))
+	if link := regionPrivateLink(region); link != nil && link.pendingPolls > 0 {
+		link.pendingPolls--
+	}
+	return jsonResponse(http.StatusOK, f.regionJSON(region))
+}
+
+func regionPrivateLink(region *FakeByocRegion) *FakePrivateLink {
+	if region.Access == nil {
+		return nil
+	}
+	return region.Access.PrivateLink
+}
+
+var (
+	fakePrincipalPattern = regexp.MustCompile(`^arn:aws:iam::[0-9]{12}:(root|role/.+|user/.+)$`)
+	fakeAccessFields     = []string{"regionId", "entrySourceCidrs", "privateLink", "dryRun"}
+)
+
+// setRegionAccess follows the contract: it replaces the whole setting, answers 409 for a region that
+// is not built, and refuses a field it does not define, which is how a realm principal is refused.
+func (f *CloudFake) setRegionAccess(request Request) Response {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if len(f.AccessFailures) > 0 {
+		failure := f.AccessFailures[0]
+		f.AccessFailures = f.AccessFailures[1:]
+		return failure
+	}
+
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(request.Body), &fields); err != nil {
+		return clientError(http.StatusBadRequest, "malformed request body")
+	}
+	for name := range fields {
+		if !slices.Contains(fakeAccessFields, name) {
+			return clientError(http.StatusBadRequest, "unrecognized key "+name)
+		}
+	}
+	var body struct {
+		RegionID         string    `json:"regionId"`
+		EntrySourceCIDRs *[]string `json:"entrySourceCidrs"`
+		PrivateLink      *struct {
+			Enabled            *bool     `json:"enabled"`
+			AllowedPrincipals  *[]string `json:"allowedPrincipals"`
+			AcceptanceRequired *bool     `json:"acceptanceRequired"`
+		} `json:"privateLink"`
+		DryRun bool `json:"dryRun"`
+	}
+	if err := json.Unmarshal([]byte(request.Body), &body); err != nil {
+		return clientError(http.StatusBadRequest, "malformed request body")
+	}
+	if body.PrivateLink != nil {
+		var link map[string]json.RawMessage
+		_ = json.Unmarshal(fields["privateLink"], &link)
+		for name := range link {
+			if !slices.Contains([]string{"enabled", "allowedPrincipals", "acceptanceRequired"}, name) {
+				return clientError(http.StatusBadRequest, "unrecognized key "+name+" in privateLink")
+			}
+		}
+		if body.PrivateLink.Enabled == nil {
+			return clientError(http.StatusBadRequest, "privateLink.enabled is required")
+		}
+	}
+
+	region, ok := f.regions[body.RegionID]
+	if !ok {
+		return clientError(http.StatusNotFound, "region not found")
+	}
+	switch {
+	case region.Cloud != "aws":
+		return clientError(http.StatusBadRequest, "access is available for AWS regions only")
+	case region.GrantID == "":
+		return clientError(http.StatusConflict, "the region is set up with an installer")
+	case region.Status == "PENDING":
+		return clientError(http.StatusConflict, "the region is not built yet")
+	case region.Status != "ACTIVE":
+		return clientError(http.StatusConflict, "the region is "+region.Status)
+	}
+
+	access := &FakeRegionAccess{}
+	if body.EntrySourceCIDRs != nil {
+		cidrs := *body.EntrySourceCIDRs
+		if len(cidrs) > 10 {
+			return clientError(http.StatusBadRequest, "at most 10 entry source networks")
+		}
+		seen := map[string]bool{}
+		for _, cidr := range cidrs {
+			prefix, err := netip.ParsePrefix(cidr)
+			if err != nil || !prefix.Addr().Is4() || prefix != prefix.Masked() || prefix.String() != cidr {
+				return clientError(http.StatusBadRequest, cidr+" is not an IPv4 network address")
+			}
+			if seen[cidr] {
+				return clientError(http.StatusBadRequest, cidr+" is listed twice")
+			}
+			seen[cidr] = true
+		}
+		access.EntrySourceCIDRs = append([]string{}, cidrs...)
+	}
+	if body.PrivateLink != nil {
+		link := &FakePrivateLink{Enabled: *body.PrivateLink.Enabled}
+		if body.PrivateLink.AllowedPrincipals != nil {
+			principals := *body.PrivateLink.AllowedPrincipals
+			if len(principals) > 20 {
+				return clientError(http.StatusBadRequest, "at most 20 allowed principals")
+			}
+			seen := map[string]bool{}
+			for _, principal := range principals {
+				if !fakePrincipalPattern.MatchString(principal) {
+					return clientError(http.StatusBadRequest, principal+" is not an IAM principal ARN")
+				}
+				if seen[principal] {
+					return clientError(http.StatusBadRequest, principal+" is listed twice")
+				}
+				seen[principal] = true
+			}
+			link.AllowedPrincipals = append([]string{}, principals...)
+		}
+		link.AcceptanceRequired = body.PrivateLink.AcceptanceRequired != nil && *body.PrivateLink.AcceptanceRequired
+		if link.Enabled {
+			if previous := regionPrivateLink(region); previous != nil && previous.Enabled {
+				link.ServiceName, link.ServiceState, link.AvailabilityZoneIDs = previous.ServiceName, previous.ServiceState, previous.AvailabilityZoneIDs
+				link.pendingPolls = previous.pendingPolls
+			} else {
+				link.ServiceName = "com.amazonaws.vpce." + region.CloudRegion + ".vpce-svc-" + region.ID
+				link.ServiceState = "Available"
+				link.AvailabilityZoneIDs = []string{"euc1-az1", "euc1-az2"}
+				link.pendingPolls = f.AccessServicePolls
+			}
+		}
+		access.PrivateLink = link
+	}
+
+	if !body.DryRun {
+		region.Access = access
+	}
+	answer := map[string]any{"regionId": region.ID, "dryRun": body.DryRun}
+	if access.EntrySourceCIDRs != nil {
+		answer["entrySourceCidrs"] = access.EntrySourceCIDRs
+	}
+	if access.PrivateLink != nil {
+		answer["privateLink"] = privateLinkJSON(access.PrivateLink, false)
+	}
+	return jsonResponse(http.StatusOK, answer)
+}
+
+func privateLinkJSON(link *FakePrivateLink, withService bool) map[string]any {
+	described := map[string]any{"enabled": link.Enabled}
+	if link.AllowedPrincipals != nil {
+		described["allowedPrincipals"] = link.AllowedPrincipals
+	}
+	if link.AcceptanceRequired {
+		described["acceptanceRequired"] = true
+	}
+	if withService && link.Enabled && link.pendingPolls == 0 {
+		described["endpointService"] = map[string]any{
+			"serviceName":         link.ServiceName,
+			"state":               link.ServiceState,
+			"availabilityZoneIds": link.AvailabilityZoneIDs,
+		}
+	}
+	return described
 }
 
 func (f *CloudFake) deleteRegion(request Request) Response {
@@ -904,7 +1103,7 @@ func (f *CloudFake) deleteRegion(request Request) Response {
 	}
 	switch {
 	case region.Status == "DELETED":
-		return jsonResponse(http.StatusOK, regionJSON(region))
+		return jsonResponse(http.StatusOK, f.regionJSON(region))
 	case region.Environments > 0:
 		return clientError(http.StatusConflict, "the region still has environments")
 	case region.Status != "DELETING":
@@ -916,7 +1115,7 @@ func (f *CloudFake) deleteRegion(request Request) Response {
 		return clientError(http.StatusConflict, region.ID+" is being deleted")
 	}
 	region.Status = "DELETED"
-	return jsonResponse(http.StatusOK, regionJSON(region))
+	return jsonResponse(http.StatusOK, f.regionJSON(region))
 }
 
 // ByokKey returns the registration key that reserved a region id.
@@ -1019,7 +1218,7 @@ func (f *CloudFake) deleteByokRegion(request Request) Response {
 	return jsonResponse(http.StatusOK, map[string]any{"regionId": region.ID, "status": "DELETED"})
 }
 
-func regionJSON(region *FakeByocRegion) map[string]any {
+func (f *CloudFake) regionJSON(region *FakeByocRegion) map[string]any {
 	described := map[string]any{
 		"regionId":       region.ID,
 		"name":           region.Name,
@@ -1045,6 +1244,16 @@ func regionJSON(region *FakeByocRegion) map[string]any {
 	}
 	if region.Status == "PENDING" {
 		described["statusReason"] = "CREATING_INFRASTRUCTURE"
+	}
+	if region.Access != nil {
+		access := map[string]any{}
+		if region.Access.EntrySourceCIDRs != nil {
+			access["entrySourceCidrs"] = region.Access.EntrySourceCIDRs
+		}
+		if link := region.Access.PrivateLink; link != nil && (link.Enabled || !f.OmitDisabledPrivateLink) {
+			access["privateLink"] = privateLinkJSON(link, true)
+		}
+		described["access"] = access
 	}
 	return described
 }
