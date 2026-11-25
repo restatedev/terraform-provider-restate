@@ -106,8 +106,8 @@ run "account_grant" {
 
   # EKS OIDC providers: any AWS region, create only with the grant's tag, change only tagged ones
   assert {
-    condition     = [for s in jsondecode(aws_iam_role_policy.grant.policy).Statement : s.Sid if endswith(s.Sid, "Issuer") || startswith(s.Sid, "ClusterIssuer") || startswith(s.Sid, "DenyGrantTag")] == ["ClusterIssuerCreate", "ClusterIssuerUpkeep", "DenyGrantTagRewrite", "DenyGrantTagRemoval"]
-    error_message = "A region grant must carry the four EKS OIDC provider statements and no unconditioned one."
+    condition     = [for s in jsondecode(aws_iam_role_policy.grant.policy).Statement : s.Sid if endswith(s.Sid, "Issuer") || startswith(s.Sid, "ClusterIssuer") || startswith(s.Sid, "DenyGrantTag")] == ["ClusterIssuerCreate", "ClusterIssuerUpkeep", "DenyGrantTagTakeover", "DenyGrantTagRewrite", "DenyGrantTagRemoval"]
+    error_message = "A region grant must carry the five EKS OIDC provider statements and no unconditioned one."
   }
   assert {
     condition = (
@@ -126,8 +126,10 @@ run "account_grant" {
   }
   assert {
     condition = (
+      [for s in jsondecode(aws_iam_role_policy.grant.policy).Statement : s if s.Sid == "DenyGrantTagTakeover"][0].Effect == "Deny" &&
+      jsonencode([for s in jsondecode(aws_iam_role_policy.grant.policy).Statement : s if s.Sid == "DenyGrantTagTakeover"][0].Condition) == jsonencode({ Null = { "aws:ResourceTag/restate.cloud/region-grant" = "false" }, StringNotEquals = { "aws:ResourceTag/restate.cloud/region-grant" = "rgr_x5z2y4qjmt" } }) &&
       [for s in jsondecode(aws_iam_role_policy.grant.policy).Statement : s if s.Sid == "DenyGrantTagRewrite"][0].Effect == "Deny" &&
-      jsonencode([for s in jsondecode(aws_iam_role_policy.grant.policy).Statement : s if s.Sid == "DenyGrantTagRewrite"][0].Condition) == jsonencode({ "ForAnyValue:StringEquals" = { "aws:TagKeys" = ["restate.cloud/region-grant"] }, Null = { "aws:ResourceTag/restate.cloud/region-grant" = "false" } }) &&
+      jsonencode([for s in jsondecode(aws_iam_role_policy.grant.policy).Statement : s if s.Sid == "DenyGrantTagRewrite"][0].Condition) == jsonencode({ Null = { "aws:RequestTag/restate.cloud/region-grant" = "false" }, StringNotEquals = { "aws:RequestTag/restate.cloud/region-grant" = "rgr_x5z2y4qjmt" } }) &&
       jsonencode([for s in jsondecode(aws_iam_role_policy.grant.policy).Statement : s if s.Sid == "DenyGrantTagRemoval"][0].Condition) == jsonencode({ "ForAnyValue:StringEquals" = { "aws:TagKeys" = ["restate.cloud/region-grant"] } })
     )
     error_message = "A provider's grant tag must not be rewritten or removed."
