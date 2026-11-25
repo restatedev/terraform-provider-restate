@@ -74,15 +74,26 @@ locals {
       Condition = { StringEquals = { "aws:ResourceTag/${local.grant_tag}" = local.region_grant_id } }
     },
     {
-      # Sending the grant's key to a provider that already has it would rewrite the tag. The first
-      # tag on a provider carries no resource tag yet, so this never matches inside a create.
+      # Inside a create, IAM evaluates aws:ResourceTag against the tags of the create call, so a
+      # deny on the presence of the key would refuse every create. These two compare its value: a
+      # provider of another grant cannot be tagged, and the tag can only ever hold this grant's id.
+      Sid      = "DenyGrantTagTakeover"
+      Effect   = "Deny"
+      Action   = ["iam:TagOpenIDConnectProvider"]
+      Resource = local.eks_providers
+      Condition = {
+        Null            = { "aws:ResourceTag/${local.grant_tag}" = "false" }
+        StringNotEquals = { "aws:ResourceTag/${local.grant_tag}" = local.region_grant_id }
+      }
+    },
+    {
       Sid      = "DenyGrantTagRewrite"
       Effect   = "Deny"
       Action   = ["iam:TagOpenIDConnectProvider"]
       Resource = local.eks_providers
       Condition = {
-        "ForAnyValue:StringEquals" = { "aws:TagKeys" = [local.grant_tag] }
-        Null                       = { "aws:ResourceTag/${local.grant_tag}" = "false" }
+        Null            = { "aws:RequestTag/${local.grant_tag}" = "false" }
+        StringNotEquals = { "aws:RequestTag/${local.grant_tag}" = local.region_grant_id }
       }
     },
     {
