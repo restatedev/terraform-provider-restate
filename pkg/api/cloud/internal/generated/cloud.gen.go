@@ -2021,9 +2021,27 @@ type PutOrganizationUserRoleBindingResponse struct {
 	UserId string                     `json:"userId"`
 }
 
+// RegionAccess AWS: who may reach the region's entry point, as SetRegionAccess last set it.
+type RegionAccess struct {
+	// EntrySourceCidrs AWS: the IPv4 networks that may reach the region's load balancer directly, such as 203.0.113.0/24. Each must be a network address with no host bits set, at most 10 in all. Leave it out to admit every address. An empty list admits no client directly, so the region is reached only through PrivateLink. Restate's control plane is never admitted by this list.
+	EntrySourceCidrs *[]string `json:"entrySourceCidrs,omitempty"`
+
+	// PrivateLink AWS: publish a VPC endpoint service on the region's load balancer, so that the listed principals can connect through interface endpoints. Traffic through an endpoint does not carry the consumer's address, so the principals decide who connects, and entrySourceCidrs does not apply to it. Restate's own AWS account is always admitted, and no request can change that. With enabled false, or with the field left out, the region has no endpoint service.
+	PrivateLink *struct {
+		AcceptanceRequired *bool     `json:"acceptanceRequired,omitempty"`
+		AllowedPrincipals  *[]string `json:"allowedPrincipals,omitempty"`
+		Enabled            bool      `json:"enabled"`
+
+		// EndpointService Once AWS has created the endpoint service.
+		EndpointService *RegionEndpointService `json:"endpointService,omitempty"`
+	} `json:"privateLink,omitempty"`
+}
+
 // RegionDescription defines model for RegionDescription.
 type RegionDescription struct {
-	Aws *struct {
+	// Access AWS regions you built: who may reach the region's entry point. Absent while nobody has set it, which leaves the entry point open to every address.
+	Access *RegionAccess `json:"access,omitempty"`
+	Aws    *struct {
 		// AccountId The AWS account the region runs in.
 		AccountId string `json:"accountId"`
 	} `json:"aws,omitempty"`
@@ -2075,6 +2093,18 @@ type RegionDescriptionCloud string
 
 // RegionDescriptionRequiredActionKind RUN_INSTALLER: retired with INSTALLER regions, which can no longer be created. APPLY_GRANT: apply the grant module with grantInputs, then call SetRegionGrant with its output.
 type RegionDescriptionRequiredActionKind string
+
+// RegionEndpointService defines model for RegionEndpointService.
+type RegionEndpointService struct {
+	// AvailabilityZoneIds The zones the service covers. Zone names differ between accounts, so match your endpoint subnets by zone id.
+	AvailabilityZoneIds *[]string `json:"availabilityZoneIds,omitempty"`
+
+	// ServiceName The name to give an interface endpoint: com.amazonaws.vpce.…
+	ServiceName *string `json:"serviceName,omitempty"`
+
+	// State The state AWS reports for the service, such as Available.
+	State *string `json:"state,omitempty"`
+}
 
 // RegionGrantDescription defines model for RegionGrantDescription.
 type RegionGrantDescription struct {
@@ -2339,6 +2369,40 @@ type ServiceUnavailableError struct {
 	Message string  `json:"message"`
 }
 
+// SetRegionAccessRequest Replaces the region's whole access setting, so a field left out returns to its default: every address is admitted and there is no endpoint service. Send the full setting each time.
+type SetRegionAccessRequest struct {
+	// DryRun Check the settings against the region's infrastructure, and change nothing.
+	DryRun *bool `json:"dryRun,omitempty"`
+
+	// EntrySourceCidrs AWS: the IPv4 networks that may reach the region's load balancer directly, such as 203.0.113.0/24. Each must be a network address with no host bits set, at most 10 in all. Leave it out to admit every address. An empty list admits no client directly, so the region is reached only through PrivateLink. Restate's control plane is never admitted by this list.
+	EntrySourceCidrs *[]string `json:"entrySourceCidrs,omitempty"`
+
+	// PrivateLink AWS: publish a VPC endpoint service on the region's load balancer, so that the listed principals can connect through interface endpoints. Traffic through an endpoint does not carry the consumer's address, so the principals decide who connects, and entrySourceCidrs does not apply to it. Restate's own AWS account is always admitted, and no request can change that. With enabled false, or with the field left out, the region has no endpoint service.
+	PrivateLink *struct {
+		AcceptanceRequired *bool     `json:"acceptanceRequired,omitempty"`
+		AllowedPrincipals  *[]string `json:"allowedPrincipals,omitempty"`
+		Enabled            bool      `json:"enabled"`
+	} `json:"privateLink,omitempty"`
+	RegionId RegionId `json:"regionId"`
+}
+
+// SetRegionAccessResponse defines model for SetRegionAccessResponse.
+type SetRegionAccessResponse struct {
+	// DryRun True when nothing was changed.
+	DryRun bool `json:"dryRun"`
+
+	// EntrySourceCidrs AWS: the IPv4 networks that may reach the region's load balancer directly, such as 203.0.113.0/24. Each must be a network address with no host bits set, at most 10 in all. Leave it out to admit every address. An empty list admits no client directly, so the region is reached only through PrivateLink. Restate's control plane is never admitted by this list.
+	EntrySourceCidrs *[]string `json:"entrySourceCidrs,omitempty"`
+
+	// PrivateLink AWS: publish a VPC endpoint service on the region's load balancer, so that the listed principals can connect through interface endpoints. Traffic through an endpoint does not carry the consumer's address, so the principals decide who connects, and entrySourceCidrs does not apply to it. Restate's own AWS account is always admitted, and no request can change that. With enabled false, or with the field left out, the region has no endpoint service.
+	PrivateLink *struct {
+		AcceptanceRequired *bool     `json:"acceptanceRequired,omitempty"`
+		AllowedPrincipals  *[]string `json:"allowedPrincipals,omitempty"`
+		Enabled            bool      `json:"enabled"`
+	} `json:"privateLink,omitempty"`
+	RegionId RegionId `json:"regionId"`
+}
+
 // SetRegionGrantRequest defines model for SetRegionGrantRequest.
 type SetRegionGrantRequest struct {
 	// Grant The grant module's `grant` output, unchanged: roleArn and permissionsBoundary (AWS); workloadIdentityProvider, serviceAccount and identityProject (GCP); tenantId, clientId and resourceGroup (Azure).
@@ -2600,6 +2664,9 @@ type RemoveAccountSecondaryOwnerJSONRequestBody = RemoveAccountSecondaryOwnerReq
 
 // ReserveByocRegionJSONRequestBody defines body for ReserveByocRegion for application/json ContentType.
 type ReserveByocRegionJSONRequestBody = ReserveByocRegionRequest
+
+// SetRegionAccessJSONRequestBody defines body for SetRegionAccess for application/json ContentType.
+type SetRegionAccessJSONRequestBody = SetRegionAccessRequest
 
 // SetRegionGrantJSONRequestBody defines body for SetRegionGrant for application/json ContentType.
 type SetRegionGrantJSONRequestBody = SetRegionGrantRequest
@@ -3480,7 +3547,7 @@ type ClientInterface interface {
 
 	// CreateWebhookWithBody Create an incoming webhook that sends requests to one handler of an environment
 	//
-	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. A key deduplicates only the same caller's retry of the identical request, for this operation and account; reusing the key for a different request is refused with 422. Use a new key for each new request and reuse it only for retries of that identical request. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -3489,7 +3556,7 @@ type ClientInterface interface {
 
 	// CreateWebhook Create an incoming webhook that sends requests to one handler of an environment
 	//
-	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. A key deduplicates only the same caller's retry of the identical request, for this operation and account; reusing the key for a different request is refused with 422. Use a new key for each new request and reuse it only for retries of that identical request. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -3726,7 +3793,7 @@ type ClientInterface interface {
 
 	// DescribeWebhookWithBody Retrieve one incoming webhook, including the URL its sender posts to
 	//
-	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. Completed responses and journals are not retained, so an idempotency-key only joins the same caller's identical request while it is still running. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
 	//
 	// Takes any type of body and a specified content type.
 	//
@@ -3735,7 +3802,7 @@ type ClientInterface interface {
 
 	// DescribeWebhook Retrieve one incoming webhook, including the URL its sender posts to
 	//
-	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. Completed responses and journals are not retained, so an idempotency-key only joins the same caller's identical request while it is still running. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
 	//
 	// Takes a body of the `application/json` content type.
 	//
@@ -3979,6 +4046,24 @@ type ClientInterface interface {
 	//
 	// Corresponds with POST /{accountId}/ReserveByocRegion (the `ReserveByocRegion` operationId).
 	ReserveByocRegion(ctx context.Context, accountId AccountId, body ReserveByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetRegionAccessWithBody Set who may reach an AWS region's entry point: allowed networks and PrivateLink principals
+	//
+	// AWS regions only: a region on another cloud, or a setting that is not valid, answers 400. The call replaces the region's whole access setting, so send every field you want to keep. DescribeRegion shows the setting and, once AWS has created it, the endpoint service to connect to. Restate's own AWS account always stays among the principals of an enabled endpoint service. A list of allowed networks also keeps out Restate's control plane, so Restate collects no usage from the region's environments while it is restricted, and the Cloud Console's environment views work only from an allowed network.
+	//
+	// Takes any type of body and a specified content type.
+	//
+	// Corresponds with POST /{accountId}/SetRegionAccess (the `SetRegionAccess` operationId).
+	SetRegionAccessWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// SetRegionAccess Set who may reach an AWS region's entry point: allowed networks and PrivateLink principals
+	//
+	// AWS regions only: a region on another cloud, or a setting that is not valid, answers 400. The call replaces the region's whole access setting, so send every field you want to keep. DescribeRegion shows the setting and, once AWS has created it, the endpoint service to connect to. Restate's own AWS account always stays among the principals of an enabled endpoint service. A list of allowed networks also keeps out Restate's control plane, so Restate collects no usage from the region's environments while it is restricted, and the Cloud Console's environment views work only from an allowed network.
+	//
+	// Takes a body of the `application/json` content type.
+	//
+	// Corresponds with POST /{accountId}/SetRegionAccess (the `SetRegionAccess` operationId).
+	SetRegionAccess(ctx context.Context, accountId AccountId, body SetRegionAccessJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// SetRegionGrantWithBody Hand over a GRANT region's grant, which starts building the region
 	//
@@ -4951,7 +5036,7 @@ func (c *Client) CreateStripePortalSession(ctx context.Context, accountId Accoun
 
 // CreateWebhookWithBody Create an incoming webhook that sends requests to one handler of an environment
 //
-// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. A key deduplicates only the same caller's retry of the identical request, for this operation and account; reusing the key for a different request is refused with 422. Use a new key for each new request and reuse it only for retries of that identical request. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
 //
 // Takes any type of body and a specified content type.
 //
@@ -4970,7 +5055,7 @@ func (c *Client) CreateWebhookWithBody(ctx context.Context, accountId AccountId,
 
 // CreateWebhook Create an incoming webhook that sends requests to one handler of an environment
 //
-// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. A key deduplicates only the same caller's retry of the identical request, for this operation and account; reusing the key for a different request is refused with 422. Use a new key for each new request and reuse it only for retries of that identical request. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -5537,7 +5622,7 @@ func (c *Client) DescribeRegionGrant(ctx context.Context, accountId AccountId, b
 
 // DescribeWebhookWithBody Retrieve one incoming webhook, including the URL its sender posts to
 //
-// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. Completed responses and journals are not retained, so an idempotency-key only joins the same caller's identical request while it is still running. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
 //
 // Takes any type of body and a specified content type.
 //
@@ -5556,7 +5641,7 @@ func (c *Client) DescribeWebhookWithBody(ctx context.Context, accountId AccountI
 
 // DescribeWebhook Retrieve one incoming webhook, including the URL its sender posts to
 //
-// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. Completed responses and journals are not retained, so an idempotency-key only joins the same caller's identical request while it is still running. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
 //
 // Takes a body of the `application/json` content type.
 //
@@ -6141,6 +6226,44 @@ func (c *Client) ReserveByocRegionWithBody(ctx context.Context, accountId Accoun
 // Corresponds with POST /{accountId}/ReserveByocRegion (the `ReserveByocRegion` operationId).
 func (c *Client) ReserveByocRegion(ctx context.Context, accountId AccountId, body ReserveByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewReserveByocRegionRequest(c.Server, accountId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SetRegionAccessWithBody Set who may reach an AWS region's entry point: allowed networks and PrivateLink principals
+//
+// AWS regions only: a region on another cloud, or a setting that is not valid, answers 400. The call replaces the region's whole access setting, so send every field you want to keep. DescribeRegion shows the setting and, once AWS has created it, the endpoint service to connect to. Restate's own AWS account always stays among the principals of an enabled endpoint service. A list of allowed networks also keeps out Restate's control plane, so Restate collects no usage from the region's environments while it is restricted, and the Cloud Console's environment views work only from an allowed network.
+//
+// Takes any type of body and a specified content type.
+//
+// Corresponds with POST /{accountId}/SetRegionAccess (the `SetRegionAccess` operationId).
+func (c *Client) SetRegionAccessWithBody(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetRegionAccessRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// SetRegionAccess Set who may reach an AWS region's entry point: allowed networks and PrivateLink principals
+//
+// AWS regions only: a region on another cloud, or a setting that is not valid, answers 400. The call replaces the region's whole access setting, so send every field you want to keep. DescribeRegion shows the setting and, once AWS has created it, the endpoint service to connect to. Restate's own AWS account always stays among the principals of an enabled endpoint service. A list of allowed networks also keeps out Restate's control plane, so Restate collects no usage from the region's environments while it is restricted, and the Cloud Console's environment views work only from an allowed network.
+//
+// Takes a body of the `application/json` content type.
+//
+// Corresponds with POST /{accountId}/SetRegionAccess (the `SetRegionAccess` operationId).
+func (c *Client) SetRegionAccess(ctx context.Context, accountId AccountId, body SetRegionAccessJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSetRegionAccessRequest(c.Server, accountId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -9041,6 +9164,53 @@ func NewReserveByocRegionRequestWithBody(server string, accountId AccountId, con
 	return req, nil
 }
 
+// NewSetRegionAccessRequest calls the generic SetRegionAccess builder with application/json body
+func NewSetRegionAccessRequest(server string, accountId AccountId, body SetRegionAccessJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSetRegionAccessRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewSetRegionAccessRequestWithBody constructs an http.Request for the SetRegionAccess method, with any body, and a specified content type
+func NewSetRegionAccessRequestWithBody(server string, accountId AccountId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "accountId", accountId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/%s/SetRegionAccess", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewSetRegionGrantRequest calls the generic SetRegionGrant builder with application/json body
 func NewSetRegionGrantRequest(server string, accountId AccountId, body SetRegionGrantJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -9614,7 +9784,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateWebhookWithBodyWithResponse Create an incoming webhook that sends requests to one handler of an environment
 	//
-	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. A key deduplicates only the same caller's retry of the identical request, for this operation and account; reusing the key for a different request is refused with 422. Use a new key for each new request and reuse it only for retries of that identical request. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9623,7 +9793,7 @@ type ClientWithResponsesInterface interface {
 
 	// CreateWebhookWithResponse Create an incoming webhook that sends requests to one handler of an environment
 	//
-	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+	// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. A key deduplicates only the same caller's retry of the identical request, for this operation and account; reusing the key for a different request is refused with 422. Use a new key for each new request and reuse it only for retries of that identical request. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9860,7 +10030,7 @@ type ClientWithResponsesInterface interface {
 
 	// DescribeWebhookWithBodyWithResponse Retrieve one incoming webhook, including the URL its sender posts to
 	//
-	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. Completed responses and journals are not retained, so an idempotency-key only joins the same caller's identical request while it is still running. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
 	//
 	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -9869,7 +10039,7 @@ type ClientWithResponsesInterface interface {
 
 	// DescribeWebhookWithResponse Retrieve one incoming webhook, including the URL its sender posts to
 	//
-	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+	// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. Completed responses and journals are not retained, so an idempotency-key only joins the same caller's identical request while it is still running. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
 	//
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 	//
@@ -10113,6 +10283,24 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with POST /{accountId}/ReserveByocRegion (the `ReserveByocRegion` operationId).
 	ReserveByocRegionWithResponse(ctx context.Context, accountId AccountId, body ReserveByocRegionJSONRequestBody, reqEditors ...RequestEditorFn) (*ReserveByocRegionHTTPResult, error)
+
+	// SetRegionAccessWithBodyWithResponse Set who may reach an AWS region's entry point: allowed networks and PrivateLink principals
+	//
+	// AWS regions only: a region on another cloud, or a setting that is not valid, answers 400. The call replaces the region's whole access setting, so send every field you want to keep. DescribeRegion shows the setting and, once AWS has created it, the endpoint service to connect to. Restate's own AWS account always stays among the principals of an enabled endpoint service. A list of allowed networks also keeps out Restate's control plane, so Restate collects no usage from the region's environments while it is restricted, and the Cloud Console's environment views work only from an allowed network.
+	//
+	// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/SetRegionAccess (the `SetRegionAccess` operationId).
+	SetRegionAccessWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetRegionAccessHTTPResult, error)
+
+	// SetRegionAccessWithResponse Set who may reach an AWS region's entry point: allowed networks and PrivateLink principals
+	//
+	// AWS regions only: a region on another cloud, or a setting that is not valid, answers 400. The call replaces the region's whole access setting, so send every field you want to keep. DescribeRegion shows the setting and, once AWS has created it, the endpoint service to connect to. Restate's own AWS account always stays among the principals of an enabled endpoint service. A list of allowed networks also keeps out Restate's control plane, so Restate collects no usage from the region's environments while it is restricted, and the Cloud Console's environment views work only from an allowed network.
+	//
+	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with POST /{accountId}/SetRegionAccess (the `SetRegionAccess` operationId).
+	SetRegionAccessWithResponse(ctx context.Context, accountId AccountId, body SetRegionAccessJSONRequestBody, reqEditors ...RequestEditorFn) (*SetRegionAccessHTTPResult, error)
 
 	// SetRegionGrantWithBodyWithResponse Hand over a GRANT region's grant, which starts building the region
 	//
@@ -14232,6 +14420,103 @@ func (r ReserveByocRegionHTTPResult) ContentType() string {
 	return ""
 }
 
+type SetRegionAccessHTTPResult struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *SetRegionAccessResponse
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *ClientError
+	// JSON401 the response for an HTTP 401 `application/json` response
+	JSON401 *UnauthorizedError
+	// JSON403 the response for an HTTP 403 `application/json` response
+	JSON403 *ForbiddenError
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *NotFoundError
+	// JSON409 the response for an HTTP 409 `application/json` response
+	JSON409 *ConflictError
+	// JSON500 the response for an HTTP 500 `application/json` response
+	JSON500 *ServerInternalError
+	// JSON501 the response for an HTTP 501 `application/json` response
+	JSON501 *NotImplementedError
+	// JSON503 the response for an HTTP 503 `application/json` response
+	JSON503 *ServiceUnavailableError
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r SetRegionAccessHTTPResult) GetJSON200() *SetRegionAccessResponse {
+	return r.JSON200
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r SetRegionAccessHTTPResult) GetJSON400() *ClientError {
+	return r.JSON400
+}
+
+// GetJSON401 returns the response for an HTTP 401 `application/json` response
+func (r SetRegionAccessHTTPResult) GetJSON401() *UnauthorizedError {
+	return r.JSON401
+}
+
+// GetJSON403 returns the response for an HTTP 403 `application/json` response
+func (r SetRegionAccessHTTPResult) GetJSON403() *ForbiddenError {
+	return r.JSON403
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r SetRegionAccessHTTPResult) GetJSON404() *NotFoundError {
+	return r.JSON404
+}
+
+// GetJSON409 returns the response for an HTTP 409 `application/json` response
+func (r SetRegionAccessHTTPResult) GetJSON409() *ConflictError {
+	return r.JSON409
+}
+
+// GetJSON500 returns the response for an HTTP 500 `application/json` response
+func (r SetRegionAccessHTTPResult) GetJSON500() *ServerInternalError {
+	return r.JSON500
+}
+
+// GetJSON501 returns the response for an HTTP 501 `application/json` response
+func (r SetRegionAccessHTTPResult) GetJSON501() *NotImplementedError {
+	return r.JSON501
+}
+
+// GetJSON503 returns the response for an HTTP 503 `application/json` response
+func (r SetRegionAccessHTTPResult) GetJSON503() *ServiceUnavailableError {
+	return r.JSON503
+}
+
+// GetBody returns the raw response body bytes
+func (r SetRegionAccessHTTPResult) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r SetRegionAccessHTTPResult) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SetRegionAccessHTTPResult) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r SetRegionAccessHTTPResult) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 type SetRegionGrantHTTPResult struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -15158,7 +15443,7 @@ func (c *ClientWithResponses) CreateStripePortalSessionWithResponse(ctx context.
 
 // CreateWebhookWithBodyWithResponse Create an incoming webhook that sends requests to one handler of an environment
 //
-// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. A key deduplicates only the same caller's retry of the identical request, for this operation and account; reusing the key for a different request is refused with 422. Use a new key for each new request and reuse it only for retries of that identical request. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15173,7 +15458,7 @@ func (c *ClientWithResponses) CreateWebhookWithBodyWithResponse(ctx context.Cont
 
 // CreateWebhookWithResponse Create an incoming webhook that sends requests to one handler of an environment
 //
-// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. Use a cryptographically random key with at least 128 bits of entropy for each new request and reuse it only for retries of that identical request. Keys are scoped to the operation, not the caller or account, so keep them secret: another authenticated caller using the same key can receive the original metadata response. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
+// Creates a webhook and returns metadata only. Call DescribeWebhook with the returned webhookId to retrieve its URL. The mode sets how the webhook delivers requests: async (the default) answers 202 as soon as Restate accepts the invocation and never returns the handler's result; sync waits for the handler, like a call to the environment's ingress, and returns its response to the sender; it answers 504 if the handler has not finished within 60 seconds (the invocation keeps running); most senders stop waiting much sooner, so sync handlers should answer within a few seconds. Sync mode is available only in regions where it is enabled; elsewhere CreateWebhook rejects it with 400. The mode cannot be changed after creation. Creating a webhook makes the configured handler publicly callable by anyone with its URL. The URL is a unique invocation address, not a secret credential or proof of sender identity. Handlers that require trusted senders must validate signatures or other application-level authentication. The optional idempotency-key header deduplicates retries while the invocation is running and for at least 60 seconds after completion; Restate prunes the result later, so the window can be longer. A key deduplicates only the same caller's retry of the identical request, for this operation and account; reusing the key for a different request is refused with 422. Use a new key for each new request and reuse it only for retries of that identical request. After that, a retry may still return the original response, or may create another webhook. If creation has an uncertain outcome, a principal with viewer access can use ListWebhooks to recover the webhookId, then an authorized administrator can use DescribeWebhook to retrieve its URL. Management API keys cannot list webhooks, so recovery may require another principal. The completed invocation journal is not retained.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15608,7 +15893,7 @@ func (c *ClientWithResponses) DescribeRegionGrantWithResponse(ctx context.Contex
 
 // DescribeWebhookWithBodyWithResponse Retrieve one incoming webhook, including the URL its sender posts to
 //
-// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. Completed responses and journals are not retained, so an idempotency-key only joins the same caller's identical request while it is still running. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
 //
 // Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
 //
@@ -15623,7 +15908,7 @@ func (c *ClientWithResponses) DescribeWebhookWithBodyWithResponse(ctx context.Co
 
 // DescribeWebhookWithResponse Retrieve one incoming webhook, including the URL its sender posts to
 //
-// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. The public gateway ignores the idempotency-key header for this operation so every request runs authorization. Completed responses and journals are not retained. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
+// Returns the full webhook URL to an authorized administrator. Anyone with the URL can invoke its configured handler; the URL is not a secret credential or proof of sender identity. Completed responses and journals are not retained, so an idempotency-key only joins the same caller's identical request while it is still running. Retry DescribeWebhook directly when needed; it does not create or change the webhook.
 //
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
 //
@@ -16076,6 +16361,36 @@ func (c *ClientWithResponses) ReserveByocRegionWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseReserveByocRegionHTTPResult(rsp)
+}
+
+// SetRegionAccessWithBodyWithResponse Set who may reach an AWS region's entry point: allowed networks and PrivateLink principals
+//
+// AWS regions only: a region on another cloud, or a setting that is not valid, answers 400. The call replaces the region's whole access setting, so send every field you want to keep. DescribeRegion shows the setting and, once AWS has created it, the endpoint service to connect to. Restate's own AWS account always stays among the principals of an enabled endpoint service. A list of allowed networks also keeps out Restate's control plane, so Restate collects no usage from the region's environments while it is restricted, and the Cloud Console's environment views work only from an allowed network.
+//
+// Takes any type of body and a specified content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/SetRegionAccess (the `SetRegionAccess` operationId).
+func (c *ClientWithResponses) SetRegionAccessWithBodyWithResponse(ctx context.Context, accountId AccountId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetRegionAccessHTTPResult, error) {
+	rsp, err := c.SetRegionAccessWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetRegionAccessHTTPResult(rsp)
+}
+
+// SetRegionAccessWithResponse Set who may reach an AWS region's entry point: allowed networks and PrivateLink principals
+//
+// AWS regions only: a region on another cloud, or a setting that is not valid, answers 400. The call replaces the region's whole access setting, so send every field you want to keep. DescribeRegion shows the setting and, once AWS has created it, the endpoint service to connect to. Restate's own AWS account always stays among the principals of an enabled endpoint service. A list of allowed networks also keeps out Restate's control plane, so Restate collects no usage from the region's environments while it is restricted, and the Cloud Console's environment views work only from an allowed network.
+//
+// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
+//
+// Corresponds with POST /{accountId}/SetRegionAccess (the `SetRegionAccess` operationId).
+func (c *ClientWithResponses) SetRegionAccessWithResponse(ctx context.Context, accountId AccountId, body SetRegionAccessJSONRequestBody, reqEditors ...RequestEditorFn) (*SetRegionAccessHTTPResult, error) {
+	rsp, err := c.SetRegionAccess(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSetRegionAccessHTTPResult(rsp)
 }
 
 // SetRegionGrantWithBodyWithResponse Hand over a GRANT region's grant, which starts building the region
@@ -19295,6 +19610,88 @@ func ParseReserveByocRegionHTTPResult(rsp *http.Response) (*ReserveByocRegionHTT
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSetRegionAccessHTTPResult parses an HTTP response from a SetRegionAccessWithResponse call
+func ParseSetRegionAccessHTTPResult(rsp *http.Response) (*SetRegionAccessHTTPResult, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SetRegionAccessHTTPResult{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SetRegionAccessResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ClientError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest UnauthorizedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ForbiddenError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest NotFoundError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ConflictError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ServerInternalError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 501:
+		var dest NotImplementedError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON501 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest ServiceUnavailableError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 

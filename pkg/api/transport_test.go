@@ -307,6 +307,8 @@ func TestNeverRetriesAValidationOrAuthenticationFailure(t *testing.T) {
 	for _, status := range []int{
 		http.StatusBadRequest, http.StatusUnauthorized, http.StatusForbidden,
 		http.StatusNotFound, http.StatusConflict, http.StatusUnprocessableEntity,
+		// The server does not offer the operation, so asking again cannot help.
+		http.StatusNotImplemented,
 	} {
 		t.Run(http.StatusText(status), func(t *testing.T) {
 			var attempts atomic.Int32

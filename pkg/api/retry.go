@@ -113,14 +113,17 @@ func (p RetryPolicy) wait(ctx context.Context, d time.Duration) error {
 //
 // A 429 means the request was throttled rather than acted on, and a 503 with Retry-After is the same
 // thing said differently. Any other 5xx may mean the write partially happened, so it is retried only
-// where the operation said so. A 4xx other than 429 is never retried: a validation or authentication
-// failure will not resolve itself.
+// where the operation said so. A 4xx other than 429, and a 501, are never retried: a validation or authentication failure,
+// or an operation the server does not offer, will not resolve itself.
 func retryableStatus(status int, header http.Header, safety RetrySafety) bool {
 	switch {
 	case status == http.StatusTooManyRequests:
 		return true
 	case status == http.StatusServiceUnavailable && header.Get("Retry-After") != "":
 		return true
+	case status == http.StatusNotImplemented:
+		// The server does not offer the operation, and asking again changes nothing.
+		return false
 	case status >= 500 && status <= 599:
 		return safety >= RetryServerErrors
 	default:
