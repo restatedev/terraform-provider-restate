@@ -68,6 +68,22 @@ BYOK, where the customer builds the Kubernetes cluster, from the Cloud Managemen
   with a Secret built from `image_pull`, and `mirror`, which keeps the earlier behaviour and still needs
   `image_source_registry`. Direct mode needs a BYOC chart that has `imageSource.mode`.
 
+Managed BYOC access, from the Cloud Management API snapshot of 2026-11-25 (the head of
+restatedev/restate-cloud#2939, which is not merged yet; see `pkg/api/cloud/PROVENANCE.md`). It needs a Restate
+Cloud control plane release that contains `SetRegionAccess`; against an older one, the resource fails with a
+message that says so.
+
+- `restate_cloud_byoc_region_access` sets who may reach the entry point of an AWS region built with a region
+  grant. `entry_source_cidrs` lists the IPv4 networks that may connect directly, where leaving it out admits
+  every address and an empty set admits none. `private_link` publishes a VPC endpoint service for the
+  principals in `allowed_principals`. The resource exports `endpoint_service_name`, `endpoint_service_state`
+  and `availability_zone_ids`, and an apply that enables PrivateLink waits until AWS has created the service,
+  so an `aws_vpc_endpoint` can use the name in the same apply. It sets the whole setting, so a destroy returns
+  the region to its defaults. A refresh reports changes made outside Terraform, a region that is gone leaves
+  the state, and the import ID is `<account ID>/<region ID>`. A 409 for a region that is still being built and
+  a 503 are retried until the timeout.
+- A 501 answer is no longer retried, because the server does not offer the operation.
+
 Resources:
 
 - `restate_cloud_environment` — create, rename, resize, import and destroy Restate Cloud

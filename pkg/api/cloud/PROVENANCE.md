@@ -4,19 +4,22 @@
 | --- | --- |
 | File | `openapi.yaml` |
 | Source | `generated/schema/openapi.yaml` in the `restatedev/restate-cloud` repository |
-| Upstream revision | `84a5a2144a1877d326c2cad89713bc59d37b2e4d`, the tip of `main` when the snapshot was refreshed |
-| Retrieved | 2026-11-23 |
+| Upstream revision | `848391c44ac79523e7796c506e368535ccaa428b`, the head of restatedev/restate-cloud#2939 (`bh/byoc-region-access-api`), which is open and not merged |
+| Retrieved | 2026-11-25 |
 | Advertised `info.version` | `v1` |
 | OpenAPI version | 3.1.0 |
-| SHA-256 | `99cd77e0709e6793e4e58e2cc986d66d05026f673a2f4f3c7ecac99b106cba47` |
+| SHA-256 | `3aabddd9219649a05593432a5936bef47e39df2472e5f9786aa57e0172cbe053` |
 | License | Proprietary; vendored with permission as the contract this provider is built against. |
 
 The snapshot is committed pristine and is never edited.
 
-The revision is on the upstream main branch. The file was last changed there by `407e761110c513b1dffd43188c6f30a1b6ce6e48`
-(restatedev/restate-cloud#2859). Compared with the previous snapshot (`91acbf0590b7fdef5bf641d4ed9075cd514c5d05`), it adds
-the optional `imagePull` object to the `CreateByokRegistrationKey` response, which carries the registry proxy credential of
-the region the key reserves. It changes no operation and no required field.
+The revision is a pull request head, not a commit on the upstream main branch. Replace the snapshot with the
+`generated/schema/openapi.yaml` of the merge commit of restatedev/restate-cloud#2939 before the provider is released, and
+record that commit here. Compared with the previous snapshot (`84a5a2144a1877d326c2cad89713bc59d37b2e4d`), it adds the
+`SetRegionAccess` operation with its `SetRegionAccessRequest` and `SetRegionAccessResponse` schemas, and the optional
+`access` object (`RegionAccess`, `RegionEndpointService`) of `RegionDescription`. It changes no other operation and no
+required field. It also carries main's later wording changes to the idempotency-key descriptions of `CreateWebhook` and
+`DescribeWebhook`, which the provider does not use.
 
 ## Generator
 

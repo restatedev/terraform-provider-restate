@@ -112,10 +112,63 @@ A grant that is not confirmed within seven days expires. A refresh that finds a 
 deleted removes it from the state, so the next apply creates a new grant and updates the cloud side
 for it.
 
+## Private access on AWS
+
+A region in AWS accepts connections from every address by default. `restate_cloud_byoc_region_access`
+changes that for a region that is `ACTIVE`. It sets the whole access setting, so an argument you leave
+out returns to its default.
+
+| Argument | What it does |
+| --- | --- |
+| `entry_source_cidrs` | The IPv4 networks that may reach the region's load balancer directly. Leave it out to admit every address. An empty set admits no client directly, so the region is reached only through PrivateLink. |
+| `private_link` | Publishes a VPC endpoint service on the region's load balancer. The principals in `allowed_principals` may connect an interface endpoint to it. Restate's own AWS account is always allowed and is never listed. |
+
+The resource exports the endpoint service's name and the zones it covers. The apply waits until AWS has
+created the service, so an interface endpoint in the same configuration gets the name in the same apply.
+Match the endpoint's subnets by zone ID, because zone names differ between AWS accounts.
+
+```hcl
+resource "restate_cloud_byoc_region_access" "prod_eu" {
+  region_id          = restate_cloud_byoc_region.prod_eu.id
+  entry_source_cidrs = []
+
+  private_link = {
+    enabled            = true
+    allowed_principals = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+  }
+}
+
+data "aws_subnet" "endpoint" {
+  for_each = toset(var.endpoint_subnet_ids)
+  id       = each.value
+}
+
+resource "aws_vpc_endpoint" "restate" {
+  vpc_id             = var.vpc_id
+  service_name       = restate_cloud_byoc_region_access.prod_eu.endpoint_service_name
+  vpc_endpoint_type  = "Interface"
+  subnet_ids         = [for id in var.endpoint_subnet_ids : id if contains(restate_cloud_byoc_region_access.prod_eu.availability_zone_ids, data.aws_subnet.endpoint[id].availability_zone_id)]
+  security_group_ids = [var.endpoint_security_group_id]
+}
+```
+
+A list of allowed networks also keeps out Restate's control plane. While it is set, Restate collects no
+usage from the region's environments, and the Cloud Console's environment views work only from an
+allowed network. Traffic through an endpoint carries no consumer address, so the list does not apply to
+it, and the principals decide who connects.
+
+The region must be built with a region grant, and the Restate Cloud control plane must offer
+`SetRegionAccess`. Where it does not, the apply fails and says so. A region built with an organization's
+region grant needs a key that may use that grant.
+
+Destroying the resource returns the region to its defaults, which removes the endpoint service. Terraform
+destroys an `aws_vpc_endpoint` that uses the service name first, because it depends on the name.
+
 ## Destroying
 
 | Resource | What destroy does |
 | --- | --- |
+| `restate_cloud_byoc_region_access` | Returns the region's access to its defaults: every address admitted, and no endpoint service. A region that is gone has nothing to reset. |
 | `restate_cloud_byoc_region` | Deletes the region and waits until Restate has removed what it built. Restate refuses while the region has environments. `deletion_protection`, true by default, refuses the destroy before it reaches Restate, so set it to false and apply first. |
 | `restate_cloud_region_grant_confirmation` | Deletes the grant at Restate. Restate refuses while any region uses the grant. |
 | `restate_cloud_region_grant` | Deletes the grant if the confirmation has not already done so. |

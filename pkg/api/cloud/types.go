@@ -365,6 +365,44 @@ type ByocRegion struct {
 	// StatusReason is empty when the API reports none. New values may appear, so callers act on Status.
 	StatusReason string
 	CreatedAt    string
+	// Access is nil while nobody has set the region's access, which leaves its entry point open to
+	// every address. The API reports it for AWS regions built with a grant only.
+	Access *RegionAccess
+}
+
+// RegionAccess is who may reach an AWS region's entry point, as SetRegionAccess last set it.
+type RegionAccess struct {
+	// EntrySourceCIDRs are the IPv4 networks that may reach the region's load balancer directly. Nil
+	// admits every address, and an empty, non-nil slice admits none, which leaves PrivateLink as the
+	// only way in. The two are different settings and must stay distinguishable.
+	EntrySourceCIDRs []string
+	// PrivateLink is nil when the region has no endpoint service.
+	PrivateLink *RegionPrivateLink
+}
+
+// RegionPrivateLink is the VPC endpoint service on a region's load balancer. Restate's own AWS
+// account is always among the principals of an enabled service, and neither the API nor this type
+// shows or accepts it.
+type RegionPrivateLink struct {
+	Enabled bool
+	// AllowedPrincipals are the IAM principals that may connect an interface endpoint.
+	AllowedPrincipals []string
+	// AcceptanceRequired makes each connection wait for Restate to accept it.
+	AcceptanceRequired bool
+	// EndpointService is what AWS reports once it has created the service. It is read-only, and
+	// SetRegionAccess ignores it.
+	EndpointService *RegionEndpointService
+}
+
+// RegionEndpointService is the endpoint service AWS created for a region's PrivateLink.
+type RegionEndpointService struct {
+	// ServiceName is what to give an interface endpoint, such as com.amazonaws.vpce.eu-central-1.vpce-svc-0a1b.
+	ServiceName string
+	// State is what AWS reports for the service, such as Available.
+	State string
+	// AvailabilityZoneIDs are the zones the service covers. Zone names differ between accounts, so an
+	// endpoint's subnets must be matched by zone ID.
+	AvailabilityZoneIDs []string
 }
 
 // CreateRegionInput is a request to build a BYOC region with a READY region grant.

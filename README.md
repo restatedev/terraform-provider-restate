@@ -16,6 +16,7 @@ Cloud Management API and configures them through the per-environment
 | `restate_cloud_region_grant` | Cloud Management API | Managed BYOC region grants of an account or an organization |
 | `restate_cloud_region_grant_confirmation` | Cloud Management API | Confirming a region grant with the cloud side the grant module creates |
 | `restate_cloud_byoc_region` | Cloud Management API | Managed BYOC regions built with a region grant |
+| `restate_cloud_byoc_region_access` | Cloud Management API | Which networks and AWS principals may reach an AWS Managed BYOC region, including its PrivateLink endpoint service |
 | `restate_cloud_byok_registration_key` | Cloud Management API | The one-use key that registers a BYOK region, which the customer builds in their own Kubernetes cluster |
 | `restate_deployment` | Admin API | Register HTTP and AWS Lambda service deployments |
 | `restate_kafka_cluster` | Admin API | Kafka cluster connection configuration |

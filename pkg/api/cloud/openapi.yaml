@@ -1766,6 +1766,98 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServerInternalError"
+  /{accountId}/SetRegionAccess:
+    post:
+      operationId: SetRegionAccess
+      summary: "Set who may reach an AWS region's entry point: allowed networks and
+        PrivateLink principals"
+      description: "AWS regions only: a region on another cloud, or a setting that is
+        not valid, answers 400. The call replaces the region's whole access
+        setting, so send every field you want to keep. DescribeRegion shows the
+        setting and, once AWS has created it, the endpoint service to connect
+        to. Restate's own AWS account always stays among the principals of an
+        enabled endpoint service. A list of allowed networks also keeps out
+        Restate's control plane, so Restate collects no usage from the region's
+        environments while it is restricted, and the Cloud Console's environment
+        views work only from an allowed network."
+      parameters:
+        - in: path
+          name: accountId
+          schema:
+            $ref: "#/components/schemas/AccountId"
+          required: true
+          description: Unique account identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetRegionAccessRequest"
+      responses:
+        "200":
+          description: The operation completed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetRegionAccessResponse"
+        "400":
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientError"
+        "401":
+          description: The client has not provided a valid token for a principal
+            authorized to make the requested operation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: The principal is not allowed to make this request. The key's role
+            cannot manage regions, or the region is built with an organization's
+            region grant that the caller may not use.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: The resource does not exist, or belongs to another account. The
+            account has no such region.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "409":
+          description: The request conflicts with the current state of the resource. The
+            region is set up with an installer, is not built yet, or is being
+            deleted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "500":
+          description: Indicates a failure on the service-side. Generally this type of
+            error is retryable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerInternalError"
+        "501":
+          description: The operation is not available in this Restate Cloud region. This
+            stage does not support this setting yet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
+        "503":
+          description: A service the operation needs is not available in this Restate
+            Cloud region yet; try again later. The region's infrastructure
+            cannot take the setting yet. Try again later.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceUnavailableError"
   /{accountId}/DeleteRegion:
     post:
       operationId: DeleteRegion
@@ -2539,17 +2631,16 @@ paths:
         application-level authentication. The optional idempotency-key header
         deduplicates retries while the invocation is running and for at least 60
         seconds after completion; Restate prunes the result later, so the window
-        can be longer. Use a cryptographically random key with at least 128 bits
-        of entropy for each new request and reuse it only for retries of that
-        identical request. Keys are scoped to the operation, not the caller or
-        account, so keep them secret: another authenticated caller using the
-        same key can receive the original metadata response. After that, a retry
-        may still return the original response, or may create another webhook.
-        If creation has an uncertain outcome, a principal with viewer access can
-        use ListWebhooks to recover the webhookId, then an authorized
-        administrator can use DescribeWebhook to retrieve its URL. Management
-        API keys cannot list webhooks, so recovery may require another
-        principal. The completed invocation journal is not retained."
+        can be longer. A key deduplicates only the same caller's retry of the
+        identical request, for this operation and account; reusing the key for a
+        different request is refused with 422. Use a new key for each new
+        request and reuse it only for retries of that identical request. After
+        that, a retry may still return the original response, or may create
+        another webhook. If creation has an uncertain outcome, a principal with
+        viewer access can use ListWebhooks to recover the webhookId, then an
+        authorized administrator can use DescribeWebhook to retrieve its URL.
+        Management API keys cannot list webhooks, so recovery may require
+        another principal. The completed invocation journal is not retained."
       parameters:
         - in: path
           name: accountId
@@ -2654,11 +2745,10 @@ paths:
       summary: Retrieve one incoming webhook, including the URL its sender posts to
       description: Returns the full webhook URL to an authorized administrator. Anyone
         with the URL can invoke its configured handler; the URL is not a secret
-        credential or proof of sender identity. The public gateway ignores the
-        idempotency-key header for this operation so every request runs
-        authorization. Completed responses and journals are not retained. Retry
-        DescribeWebhook directly when needed; it does not create or change the
-        webhook.
+        credential or proof of sender identity. Completed responses and journals
+        are not retained, so an idempotency-key only joins the same caller's
+        identical request while it is still running. Retry DescribeWebhook
+        directly when needed; it does not create or change the webhook.
       parameters:
         - in: path
           name: accountId
@@ -3720,6 +3810,55 @@ components:
         - regionId
         - grant
       additionalProperties: false
+    SetRegionAccessRequest:
+      type: object
+      properties:
+        regionId:
+          $ref: "#/components/schemas/RegionId"
+        entrySourceCidrs:
+          description: "AWS: the IPv4 networks that may reach the region's load balancer
+            directly, such as 203.0.113.0/24. Each must be a network address
+            with no host bits set, at most 10 in all. Leave it out to admit
+            every address. An empty list admits no client directly, so the
+            region is reached only through PrivateLink. Restate's control plane
+            is never admitted by this list."
+          maxItems: 10
+          type: array
+          items:
+            type: string
+        privateLink:
+          description: "AWS: publish a VPC endpoint service on the region's load balancer,
+            so that the listed principals can connect through interface
+            endpoints. Traffic through an endpoint does not carry the consumer's
+            address, so the principals decide who connects, and entrySourceCidrs
+            does not apply to it. Restate's own AWS account is always admitted,
+            and no request can change that. With enabled false, or with the
+            field left out, the region has no endpoint service."
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            allowedPrincipals:
+              maxItems: 20
+              type: array
+              items:
+                type: string
+                pattern: ^arn:aws:iam::[0-9]{12}:(root|role\/.+|user\/.+)$
+            acceptanceRequired:
+              type: boolean
+          required:
+            - enabled
+          additionalProperties: false
+        dryRun:
+          description: Check the settings against the region's infrastructure, and change
+            nothing.
+          type: boolean
+      required:
+        - regionId
+      additionalProperties: false
+      description: "Replaces the region's whole access setting, so a field left out
+        returns to its default: every address is admitted and there is no
+        endpoint service. Send the full setting each time."
     DeleteRegionRequest:
       type: object
       properties:
@@ -4990,6 +5129,65 @@ components:
       additionalProperties: false
       description: "GRANT regions: the inputs of the grant module, named after its
         variables."
+    RegionAccess:
+      type: object
+      properties:
+        entrySourceCidrs:
+          description: "AWS: the IPv4 networks that may reach the region's load balancer
+            directly, such as 203.0.113.0/24. Each must be a network address
+            with no host bits set, at most 10 in all. Leave it out to admit
+            every address. An empty list admits no client directly, so the
+            region is reached only through PrivateLink. Restate's control plane
+            is never admitted by this list."
+          maxItems: 10
+          type: array
+          items:
+            type: string
+        privateLink:
+          description: "AWS: publish a VPC endpoint service on the region's load balancer,
+            so that the listed principals can connect through interface
+            endpoints. Traffic through an endpoint does not carry the consumer's
+            address, so the principals decide who connects, and entrySourceCidrs
+            does not apply to it. Restate's own AWS account is always admitted,
+            and no request can change that. With enabled false, or with the
+            field left out, the region has no endpoint service."
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            allowedPrincipals:
+              maxItems: 20
+              type: array
+              items:
+                type: string
+                pattern: ^arn:aws:iam::[0-9]{12}:(root|role\/.+|user\/.+)$
+            acceptanceRequired:
+              type: boolean
+            endpointService:
+              description: Once AWS has created the endpoint service.
+              $ref: "#/components/schemas/RegionEndpointService"
+          required:
+            - enabled
+          additionalProperties: false
+      additionalProperties: false
+      description: "AWS: who may reach the region's entry point, as SetRegionAccess
+        last set it."
+    RegionEndpointService:
+      type: object
+      properties:
+        serviceName:
+          description: "The name to give an interface endpoint: com.amazonaws.vpce.…"
+          type: string
+        state:
+          description: The state AWS reports for the service, such as Available.
+          type: string
+        availabilityZoneIds:
+          description: The zones the service covers. Zone names differ between accounts,
+            so match your endpoint subnets by zone id.
+          type: array
+          items:
+            type: string
+      additionalProperties: false
     RegionDescription:
       type: object
       properties:
@@ -5050,6 +5248,11 @@ components:
           $ref: "#/components/schemas/RegionGrantId"
         grantInputs:
           $ref: "#/components/schemas/RegionGrantInputs"
+        access:
+          description: "AWS regions you built: who may reach the region's entry point.
+            Absent while nobody has set it, which leaves the entry point open to
+            every address."
+          $ref: "#/components/schemas/RegionAccess"
         status:
           $ref: "#/components/schemas/RegionStatus"
         statusReason:
@@ -5115,6 +5318,63 @@ components:
     SetRegionGrantResponse:
       $ref: "#/components/schemas/RegionDescription"
     GoneError:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+      required:
+        - code
+        - message
+      additionalProperties: false
+    SetRegionAccessResponse:
+      type: object
+      properties:
+        regionId:
+          $ref: "#/components/schemas/RegionId"
+        entrySourceCidrs:
+          description: "AWS: the IPv4 networks that may reach the region's load balancer
+            directly, such as 203.0.113.0/24. Each must be a network address
+            with no host bits set, at most 10 in all. Leave it out to admit
+            every address. An empty list admits no client directly, so the
+            region is reached only through PrivateLink. Restate's control plane
+            is never admitted by this list."
+          maxItems: 10
+          type: array
+          items:
+            type: string
+        privateLink:
+          description: "AWS: publish a VPC endpoint service on the region's load balancer,
+            so that the listed principals can connect through interface
+            endpoints. Traffic through an endpoint does not carry the consumer's
+            address, so the principals decide who connects, and entrySourceCidrs
+            does not apply to it. Restate's own AWS account is always admitted,
+            and no request can change that. With enabled false, or with the
+            field left out, the region has no endpoint service."
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            allowedPrincipals:
+              maxItems: 20
+              type: array
+              items:
+                type: string
+                pattern: ^arn:aws:iam::[0-9]{12}:(root|role\/.+|user\/.+)$
+            acceptanceRequired:
+              type: boolean
+          required:
+            - enabled
+          additionalProperties: false
+        dryRun:
+          type: boolean
+          description: True when nothing was changed.
+      required:
+        - regionId
+        - dryRun
+      additionalProperties: false
+    ServiceUnavailableError:
       type: object
       properties:
         code:
@@ -5265,17 +5525,6 @@ components:
       additionalProperties: false
     ConfirmRegionGrantResponse:
       $ref: "#/components/schemas/RegionGrantDescription"
-    ServiceUnavailableError:
-      type: object
-      properties:
-        code:
-          type: number
-        message:
-          type: string
-      required:
-        - code
-        - message
-      additionalProperties: false
     DescribeRegionGrantResponse:
       $ref: "#/components/schemas/RegionGrantDescription"
     ListRegionGrantsResponse:

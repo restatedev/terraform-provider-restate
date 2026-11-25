@@ -121,6 +121,10 @@ func IsTooManyRequests(err error) bool { return hasStatus(err, http.StatusTooMan
 // IsServiceUnavailable reports whether err is a 503.
 func IsServiceUnavailable(err error) bool { return hasStatus(err, http.StatusServiceUnavailable) }
 
+// IsNotImplemented reports whether err is a 501: the control plane knows the operation but does not
+// offer it on this stage.
+func IsNotImplemented(err error) bool { return hasStatus(err, http.StatusNotImplemented) }
+
 func hasStatus(err error, status int) bool {
 	apiErr, ok := AsError(err)
 	return ok && apiErr.StatusCode == status

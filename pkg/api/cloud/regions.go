@@ -199,6 +199,7 @@ func byocRegionFromResponse(response generated.RegionDescription) ByocRegion {
 		Status:       RegionStatus(response.Status),
 		StatusReason: derefString(response.StatusReason),
 		CreatedAt:    response.CreatedAt,
+		Access:       regionAccessFromDescription(response),
 	}
 	switch {
 	case response.Aws != nil:
